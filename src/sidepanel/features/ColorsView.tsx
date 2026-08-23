@@ -1,34 +1,74 @@
+import { useState } from 'react';
 import { isDarkHex } from '../../normalize/colors';
-import { CopyButton, EmptyState } from '../components/CopyButton';
+import { CopyButton, ScanPrompt } from '../components/CopyButton';
 import { useScanStore } from '../store/useScanStore';
 
 export function ColorsView() {
   const colors = useScanStore((s) => s.design?.tokens.colors ?? []);
-  if (colors.length === 0) return <EmptyState>No colors captured.</EmptyState>;
+  const [tab, setTab] = useState<'palette' | 'categories'>('palette');
+  if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />;
+  const grouped = groupByRole(colors);
   return (
-    <div className="palette">
-      {colors.map((color) => (
-        <button
-          key={color.id}
-          type="button"
-          className="palette-card"
-          style={{ background: color.hex, color: isDarkHex(color.hex) ? '#fff' : '#111' }}
-          onClick={() => void navigator.clipboard.writeText(color.hex)}
-        >
-          <strong>{color.hex}</strong>
-          <span>
-            {color.count} {color.count === 1 ? 'instance' : 'instances'}
-          </span>
+    <div className="colors-wrap">
+      <div className="segmented">
+        <button type="button" className={tab === 'palette' ? 'on' : ''} onClick={() => setTab('palette')}>
+          Palette
         </button>
-      ))}
-      <p className="muted">Tap a color to copy its hex value.</p>
+        <button
+          type="button"
+          className={tab === 'categories' ? 'on' : ''}
+          onClick={() => setTab('categories')}
+        >
+          Categories
+        </button>
+      </div>
+      {tab === 'palette' ? (
+        <div className="palette compact-palette">
+          {colors.map((color) => (
+            <button
+              key={color.id}
+              type="button"
+              className="palette-card"
+              style={{ background: color.hex, color: isDarkHex(color.hex) ? '#fff' : '#111' }}
+              onClick={() => void navigator.clipboard.writeText(color.hex)}
+            >
+              <strong>{color.hex}</strong>
+              <span>
+                {color.count} {color.count === 1 ? 'instance' : 'instances'}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="category-list">
+          {Object.entries(grouped).map(([role, items]) => (
+            <section key={role} className="category-block">
+              <h3>{role}</h3>
+              <div className="swatch-grid">
+                {items.map((color) => (
+                  <button
+                    key={color.id}
+                    type="button"
+                    className="mini-swatch"
+                    title={`${color.hex} · ${color.count} instances`}
+                    style={{ background: color.hex, color: isDarkHex(color.hex) ? '#fff' : '#111' }}
+                    onClick={() => void navigator.clipboard.writeText(color.hex)}
+                  >
+                    <span>{color.hex}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 export function TypographyView() {
   const tokens = useScanStore((s) => s.design?.tokens.typography ?? []);
-  if (tokens.length === 0) return <EmptyState>No typography captured.</EmptyState>;
+  if (tokens.length === 0) return <ScanPrompt afterScan="No typography was captured." />;
   return (
     <div className="type-list">
       {tokens.map((token) => (
@@ -48,10 +88,10 @@ export function TypographyView() {
               lineHeight: token.lineHeight,
             }}
           >
-            AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQq
+            AaBbCc
           </p>
           <p className="muted">
-            {token.fontFamily} · {token.fontSize} / {token.lineHeight} · {token.fontWeight}
+            {primaryFont(token.fontFamily)} · {token.fontSize} / {token.lineHeight} · {token.fontWeight}
           </p>
           {token.licenseReviewRequired ? (
             <span className="badge warning">Font license review</span>
@@ -68,7 +108,7 @@ export function TypographyView() {
 
 export function LayoutView() {
   const design = useScanStore((s) => s.design);
-  if (!design) return <EmptyState>No layout data yet.</EmptyState>;
+  if (!design) return <ScanPrompt afterScan="No layout data was captured." />;
   return (
     <>
       <section className="card">
@@ -87,16 +127,14 @@ export function LayoutView() {
       </section>
       <section className="card">
         <h2>Spacing / radius / shadow</h2>
-        {[...design.tokens.spacing, ...design.tokens.radii, ...design.tokens.shadows].map(
-          (token) => (
-            <div key={token.id} className="row">
-              <span>
-                {token.name}: {token.value}
-              </span>
-              <CopyButton value={token.value} label="Copy" />
-            </div>
-          ),
-        )}
+        {[...design.tokens.spacing, ...design.tokens.radii, ...design.tokens.shadows].map((token) => (
+          <div key={token.id} className="row">
+            <span>
+              {token.name}: {token.value}
+            </span>
+            <CopyButton value={token.value} label="Copy" />
+          </div>
+        ))}
       </section>
     </>
   );
@@ -108,4 +146,18 @@ function prettyTypeName(name: string): string {
   if (/h3|heading-3/i.test(name)) return 'Heading 3';
   if (/body|paragraph|text/i.test(name)) return 'Paragraph';
   return name.replace(/[-_]/g, ' ');
+}
+
+function primaryFont(stack: string): string {
+  return stack.split(',')[0]?.replace(/['"]/g, '').trim() || stack;
+}
+
+function groupByRole(colors: Array<{ id: string; hex: string; count: number; role: string }>) {
+  const groups: Record<string, typeof colors> = {};
+  for (const color of colors) {
+    const key = color.role || 'other';
+    groups[key] ??= [];
+    groups[key].push(color);
+  }
+  return groups;
 }

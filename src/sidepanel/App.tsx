@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createRequestId, createScanId } from '../shared/messages';
+import { createRequestId } from '../shared/messages';
 import { userFacingError } from '../shared/errors';
 import { sendRuntime, onRuntimeMessage } from './chrome-api';
 import { BottomNav } from './components/BottomNav';
@@ -8,6 +8,8 @@ import { ColorsView, LayoutView, TypographyView } from './features/ColorsView';
 import { AssetsView, ContentView } from './features/ContentView';
 import { ExportView } from './features/ExportView';
 import { OverviewView } from './features/OverviewView';
+import { downloadAllImagesZip } from './download-asset';
+import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow';
 import { useScanStore } from './store/useScanStore';
 
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting'];
@@ -21,7 +23,6 @@ export function App() {
   const url = useScanStore((s) => s.url);
   const tabRestricted = useScanStore((s) => s.tabRestricted);
   const design = useScanStore((s) => s.design);
-  const options = useScanStore((s) => s.options);
   const counts = useScanStore((s) => s.counts);
   const [inspectOn, setInspectOn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -63,7 +64,7 @@ export function App() {
           setMenuOpen(false);
           useScanStore.getState().setView('export');
         }}
-        onClear={() => void clearData()}
+        onClear={() => void clearScanData()}
         onOpen={(next) => {
           setMenuOpen(false);
           useScanStore.getState().setView(next);
@@ -71,20 +72,21 @@ export function App() {
       />
       <div className="page-head">
         <div>
-          <h1>{headingFor(view)}</h1>
+          <h1>
+            {headingFor(view)}
+            {view !== 'overview' ? <span className="count-pill">{countFor(view, counts)}</span> : null}
+          </h1>
           {view === 'overview' ? (
             <>
               <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
               {url ? <p className="page-url">{url}</p> : null}
             </>
-          ) : (
-            <span className="count-pill">{countFor(view, counts)}</span>
-          )}
+          ) : null}
         </div>
         {view === 'overview' ? (
           <button
             type="button"
-            className="btn"
+            className="btn compact"
             disabled={busy || tabRestricted}
             onClick={() => void startScan()}
           >
@@ -93,9 +95,16 @@ export function App() {
         ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
           <button
             type="button"
-            className="btn ghost"
+            className="btn ghost compact"
             disabled={!canExport}
-            onClick={() => useScanStore.getState().setView('export')}
+            onClick={() => {
+              if (view === 'assets' || view === 'images' || view === 'icons') {
+                const assets = useScanStore.getState().design?.assets ?? [];
+                void downloadAllImagesZip(assets, hostname);
+                return;
+              }
+              useScanStore.getState().setView('export');
+            }}
           >
             Export All
           </button>
@@ -141,54 +150,6 @@ export function App() {
       payload: { enabled: false },
     });
     await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() });
-  }
-
-  async function refreshTab() {
-    const response = await sendRuntime({ type: 'GET_ACTIVE_TAB', requestId: createRequestId() });
-    if (response?.type === 'ACTIVE_TAB_INFO') {
-      useScanStore.getState().setTabInfo({
-        hostname: response.payload.hostname,
-        title: response.payload.title,
-        url: response.payload.url,
-        restricted: response.payload.restricted,
-      });
-    }
-  }
-
-  async function startScan() {
-    await refreshTab();
-    const scanId = createScanId();
-    useScanStore.getState().reset();
-    useScanStore.setState({ scanId, phase: 'preparing' });
-    const response = await sendRuntime({
-      type: 'START_SCAN',
-      requestId: createRequestId(),
-      scanId,
-      payload: options,
-    });
-    if (response?.type === 'SCAN_FAILED') {
-      useScanStore.getState().setFailed(userFacingError(response.payload));
-    }
-  }
-
-  async function cancelScan() {
-    const scanId = useScanStore.getState().scanId;
-    if (!scanId) return;
-    await sendRuntime({ type: 'CANCEL_SCAN', requestId: createRequestId(), scanId });
-    useScanStore.getState().setCancelled();
-  }
-
-  async function clearData() {
-    await sendRuntime({ type: 'CLEAR_SCANS', requestId: createRequestId() });
-    useScanStore.getState().reset();
-  }
-}
-
-async function loadScan(scanId: string) {
-  useScanStore.getState().setPhase('normalizing');
-  const response = await sendRuntime({ type: 'GET_SCAN', requestId: createRequestId(), scanId });
-  if (response?.type === 'SCAN_RECORD' && response.payload.raw && response.payload.normalized) {
-    useScanStore.getState().setReady(scanId, response.payload.raw, response.payload.normalized);
   }
 }
 

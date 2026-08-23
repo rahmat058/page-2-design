@@ -13,7 +13,7 @@ import type {
   ShadowUsage,
   TypographyUsage,
 } from '../shared/types';
-import { collectDocumentAssets, mergeAssets } from './asset-scanner';
+import { collectDocumentAssets, materializeBlobAssets, mergeAssets } from './asset-scanner';
 import { collectColors, collectCssVariableColors, colorUsages } from './color-scanner';
 import { scanPseudos } from './pseudo-scanner';
 import { orderContent } from './content-scanner';
@@ -112,6 +112,7 @@ export async function runPageScan(
   collectCssVariableColors(cssVariables, colorBucket);
 
   const assets = mergeAssets([...dom.assets.values(), ...collectDocumentAssets()]);
+  await materializeBlobAssets(assets);
   assignAssetPaths(assets);
 
   const sections = detectSections(dom.elements, dom.styleRegistry);

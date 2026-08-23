@@ -1,5 +1,5 @@
 const HOST_ID = 'page2design-overlay-root';
-const PANEL_WIDTH = 380;
+const PANEL_WIDTH = 336;
 const MARGIN = 12;
 
 export function isOverlayHost(node: EventTarget | null): boolean {
@@ -33,7 +33,7 @@ function mountOverlay(): void {
     top: `${MARGIN}px`,
     right: `${MARGIN}px`,
     width: `${PANEL_WIDTH}px`,
-    height: `calc(100vh - ${MARGIN * 2}px)`,
+    height: `min(560px, calc(100vh - ${MARGIN * 2}px))`,
     zIndex: '2147483646',
     pointerEvents: 'auto',
   } as CSSStyleDeclaration);

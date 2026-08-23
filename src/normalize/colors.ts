@@ -327,8 +327,17 @@ export function contrastRatio(foreground: string, background: string): number | 
 }
 
 export function isDarkHex(hex: string): boolean {
-  const luminance = relativeLuminance(hex);
-  return luminance != null && luminance < 0.45;
+  const parsed = parseColor(hex);
+  if (!parsed) return false;
+  const r = parsed.r * parsed.a + 255 * (1 - parsed.a);
+  const g = parsed.g * parsed.a + 255 * (1 - parsed.a);
+  const b = parsed.b * parsed.a + 255 * (1 - parsed.a);
+  const channel = (value: number) => {
+    const s = value / 255;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  return luminance < 0.45;
 }
 
 export function contrastGrade(ratio: number): { label: string; tone: 'ok' | 'warning' | 'error' } {

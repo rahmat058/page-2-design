@@ -4,7 +4,10 @@ export function extractCssUrls(value: string): string[] {
   let match: RegExpExecArray | null;
   while ((match = re.exec(value))) {
     const raw = (match[2] ?? '').trim();
-    if (!raw || raw.startsWith('data:') || raw.startsWith('#') || raw.toLowerCase() === 'none') {
+    if (!raw || raw.startsWith('#') || raw.toLowerCase() === 'none') {
+      continue;
+    }
+    if (raw.startsWith('data:') && !raw.startsWith('data:image')) {
       continue;
     }
     urls.push(raw);

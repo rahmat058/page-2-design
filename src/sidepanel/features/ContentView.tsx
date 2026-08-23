@@ -1,19 +1,31 @@
-import { CopyButton, EmptyState } from '../components/CopyButton';
+import { useEffect, useState } from 'react';
+import type { AssetRecord } from '../../shared/types';
+import { CopyButton, ScanPrompt } from '../components/CopyButton';
+import { DownloadIcon, GridViewIcon, ListViewIcon } from '../components/LucideIcons';
 import { VirtualList } from '../components/VirtualList';
+import {
+  assetDownloadName,
+  assetPreviewUrl,
+  downloadSingleAsset,
+  estimateAssetSize,
+  objectUrlForAsset,
+} from '../download-asset';
 import { useScanStore } from '../store/useScanStore';
 
 export function ContentView() {
   const blocks = useScanStore((s) => s.design?.content ?? []);
-  if (blocks.length === 0) return <EmptyState>No content blocks yet.</EmptyState>;
+  if (blocks.length === 0) {
+    return <ScanPrompt afterScan="No content blocks were captured." />;
+  }
   return (
     <section className="card">
       <div className="row">
         <h2>Content</h2>
-        <CopyButton value={blocks.map((b) => b.text).join('\n')} label="Copy all text" />
+        <CopyButton value={blocks.map((block) => block.text).join('\n')} label="Copy all text" />
       </div>
       <VirtualList
         count={blocks.length}
-        itemHeight={76}
+        itemHeight={64}
         renderItem={(index) => {
           const block = blocks[index];
           if (!block) return null;
@@ -35,87 +47,132 @@ export function ContentView() {
   );
 }
 
-export function ImagesView() {
-  return <AssetView types={['image', 'background', 'video-poster', 'other']} title="Images" />;
-}
-
-export function IconsView() {
-  return <AssetView types={['icon', 'svg', 'favicon']} title="Icons & SVG" />;
-}
-
 export function AssetsView() {
   const assets = useScanStore((s) => s.design?.assets ?? []);
-  const selected = useScanStore((s) => s.selectedAssetIds);
-  const toggle = useScanStore((s) => s.toggleAsset);
-  if (assets.length === 0) return <EmptyState>No assets captured.</EmptyState>;
+  const [mode, setMode] = useState<'grid' | 'list'>('grid');
+  if (assets.length === 0) return <ScanPrompt afterScan="No assets were captured." />;
   return (
-    <div className="asset-grid">
-      {assets.map((asset) => (
-        <label key={asset.id} className={selected.includes(asset.id) ? 'asset-tile on' : 'asset-tile'}>
-          <input
-            type="checkbox"
-            checked={selected.includes(asset.id)}
-            onChange={() => toggle(asset.id)}
-          />
-          {asset.inlineSvg ? (
-            <SafeSvg markup={asset.inlineSvg} />
-          ) : (
-            <img
-              alt=""
-              src={asset.resolvedUrl.startsWith('http') ? asset.resolvedUrl : undefined}
-            />
-          )}
-        </label>
-      ))}
+    <div className="assets-wrap">
+      <div className="view-toggle" role="group" aria-label="Asset layout">
+        <button
+          type="button"
+          className={mode === 'grid' ? 'on' : ''}
+          aria-pressed={mode === 'grid'}
+          aria-label="Grid view"
+          onClick={() => setMode('grid')}
+        >
+          <GridViewIcon />
+        </button>
+        <button
+          type="button"
+          className={mode === 'list' ? 'on' : ''}
+          aria-pressed={mode === 'list'}
+          aria-label="List view"
+          onClick={() => setMode('list')}
+        >
+          <ListViewIcon />
+        </button>
+      </div>
+      {mode === 'grid' ? (
+        <div className="asset-grid">
+          {assets.map((asset) => (
+            <AssetTile key={asset.id} asset={asset} />
+          ))}
+        </div>
+      ) : (
+        <div className="asset-list">
+          {assets.map((asset) => (
+            <AssetRow key={asset.id} asset={asset} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function AssetView({ types, title }: { types: string[]; title: string }) {
-  const assets = useScanStore((s) => s.design?.assets.filter((a) => types.includes(a.type)) ?? []);
-  const selected = useScanStore((s) => s.selectedAssetIds);
-  const toggle = useScanStore((s) => s.toggleAsset);
-  if (assets.length === 0) return <EmptyState>No {title.toLowerCase()} captured.</EmptyState>;
+function AssetTile({ asset }: { asset: AssetRecord }) {
+  const size = estimateAssetSize(asset);
+  const name = assetDownloadName(asset);
   return (
-    <section className="card">
-      <h2>{title}</h2>
-      <div className="list">
-        {assets.map((asset) => (
-          <label key={asset.id} className="row checkbox">
-            <input
-              type="checkbox"
-              checked={selected.includes(asset.id)}
-              onChange={() => toggle(asset.id)}
-            />
-            {asset.inlineSvg ? (
-              <SafeSvg markup={asset.inlineSvg} />
-            ) : (
-              <img
-                className="preview"
-                alt=""
-                src={asset.resolvedUrl.startsWith('http') ? asset.resolvedUrl : undefined}
-              />
-            )}
-            <div>
-              <div>
-                {asset.type} · {asset.renderedWidth ?? '?'}×{asset.renderedHeight ?? '?'}
-              </div>
-              <div className="mono">{asset.resolvedUrl}</div>
-              <span className="badge">{asset.downloadStatus}</span>
-            </div>
-          </label>
-        ))}
+    <div className="asset-tile">
+      <AssetPreview asset={asset} />
+      <div className="asset-hover">
+        <button
+          type="button"
+          className="icon-btn download"
+          aria-label={`Download ${name}`}
+          onClick={() => void downloadSingleAsset(asset)}
+        >
+          <DownloadIcon />
+        </button>
+        <span className="asset-meta">{name}</span>
+        {size ? <span className="asset-meta">{size}</span> : null}
       </div>
-    </section>
+    </div>
   );
 }
 
-function SafeSvg({ markup }: { markup: string }) {
+function AssetRow({ asset }: { asset: AssetRecord }) {
+  const size = estimateAssetSize(asset);
+  const name = assetDownloadName(asset);
+  return (
+    <div className="asset-row">
+      <AssetPreview asset={asset} />
+      <div className="asset-row-copy">
+        <strong>{name}</strong>
+        <span className="muted">{size ?? asset.type}</span>
+      </div>
+      <button
+        type="button"
+        className="icon-btn download"
+        aria-label={`Download ${name}`}
+        onClick={() => void downloadSingleAsset(asset)}
+      >
+        <DownloadIcon />
+      </button>
+    </div>
+  );
+}
+
+function AssetPreview({ asset }: { asset: AssetRecord }) {
+  const [src, setSrc] = useState<string | undefined>(() => assetPreviewUrl(asset));
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let revoked: string | null = null;
+    let cancelled = false;
+    setFailed(false);
+    const direct = assetPreviewUrl(asset);
+    if (direct && !asset.resolvedUrl.startsWith('blob:')) {
+      setSrc(direct);
+      return () => undefined;
+    }
+    void objectUrlForAsset(asset).then((url) => {
+      if (cancelled || !url) return;
+      revoked = url.startsWith('blob:') ? url : null;
+      setSrc(url);
+    });
+    return () => {
+      cancelled = true;
+      if (revoked) URL.revokeObjectURL(revoked);
+    };
+  }, [asset]);
+
+  if (!src) return <span className="thumb-empty" aria-hidden="true" />;
   return (
     <img
-      className="preview"
-      alt="Inline SVG preview"
-      src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`}
+      alt=""
+      src={src}
+      onError={() => {
+        if (failed) {
+          setSrc(undefined);
+          return;
+        }
+        setFailed(true);
+        void objectUrlForAsset(asset).then((url) => {
+          if (url) setSrc(url);
+        });
+      }}
     />
   );
 }

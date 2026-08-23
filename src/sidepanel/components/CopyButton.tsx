@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { startScan } from '../scan-flow';
+import { useScanStore } from '../store/useScanStore';
 
 interface Props {
   value: string;
@@ -19,4 +21,39 @@ export function CopyButton({ value, label }: Props) {
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return <div className="empty">{children}</div>;
+}
+
+export function ScanPrompt({ afterScan }: { afterScan: string }) {
+  const design = useScanStore((s) => s.design);
+  const phase = useScanStore((s) => s.phase);
+  const tabRestricted = useScanStore((s) => s.tabRestricted);
+  const busy = [
+    'preparing',
+    'lazy-loading',
+    'scanning',
+    'normalizing',
+    'validating',
+    'exporting',
+  ].includes(phase);
+  if (design) return <EmptyState>{afterScan}</EmptyState>;
+  return (
+    <div className="empty-scan">
+      <p>Scan this page to extract fonts, colors, and assets.</p>
+      <button
+        type="button"
+        className="btn compact"
+        disabled={busy || tabRestricted}
+        onClick={() => void startScan()}
+      >
+        {busy ? 'Scanning…' : 'Scan page'}
+      </button>
+      <button
+        type="button"
+        className="link"
+        onClick={() => useScanStore.getState().setView('overview')}
+      >
+        Back to Overview
+      </button>
+    </div>
+  );
 }

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import type { PanelView } from '../store/useScanStore';
+import { CloseIcon, DockIcon, GripIcon, MenuIcon } from './LucideIcons';
 
 interface Props {
   inspectOn: boolean;
@@ -35,11 +36,7 @@ export function PanelChrome(props: Props) {
       </button>
       <label className="inspect-toggle">
         <span>Inspect Mode</span>
-        <input
-          type="checkbox"
-          checked={props.inspectOn}
-          onChange={props.onToggleInspect}
-        />
+        <input type="checkbox" checked={props.inspectOn} onChange={props.onToggleInspect} />
         <span className="switch" />
       </label>
       <div className="chrome-spacer" />
@@ -54,7 +51,7 @@ export function PanelChrome(props: Props) {
           aria-expanded={props.menuOpen}
           onClick={props.onToggleMenu}
         >
-          <KebabIcon />
+          <MenuIcon />
         </button>
         {props.menuOpen ? (
           <div className="menu" role="menu">
@@ -116,44 +113,4 @@ function startDrag(event: React.PointerEvent<HTMLButtonElement>): void {
   };
   target.addEventListener('pointermove', move);
   target.addEventListener('pointerup', end);
-}
-
-function GripIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <circle cx="5" cy="4" r="1.2" fill="currentColor" />
-      <circle cx="11" cy="4" r="1.2" fill="currentColor" />
-      <circle cx="5" cy="8" r="1.2" fill="currentColor" />
-      <circle cx="11" cy="8" r="1.2" fill="currentColor" />
-      <circle cx="5" cy="12" r="1.2" fill="currentColor" />
-      <circle cx="11" cy="12" r="1.2" fill="currentColor" />
-    </svg>
-  );
-}
-
-function DockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" />
-      <rect x="9" y="2.5" width="5.5" height="11" fill="currentColor" opacity="0.35" />
-    </svg>
-  );
-}
-
-function KebabIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <circle cx="8" cy="3.5" r="1.2" fill="currentColor" />
-      <circle cx="8" cy="8" r="1.2" fill="currentColor" />
-      <circle cx="8" cy="12.5" r="1.2" fill="currentColor" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" fill="none" />
-    </svg>
-  );
 }

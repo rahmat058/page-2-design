@@ -21,7 +21,7 @@ describe('css url extraction', () => {
   it('extracts quoted and unquoted urls', () => {
     expect(extractCssUrls('url("https://a/x.png")')).toEqual(['https://a/x.png']);
     expect(extractCssUrls("url('/img.jpg'), linear-gradient(#000, #fff)")).toEqual(['/img.jpg']);
-    expect(extractCssUrls('url(data:image/png;base64,aaa)')).toEqual([]);
+    expect(extractCssUrls('url(data:image/png;base64,aaa)')).toEqual(['data:image/png;base64,aaa']);
   });
 });
 
@@ -181,5 +181,14 @@ describe('message validation', () => {
     expect(
       isMalformedMessage({ schemaVersion: MESSAGE_SCHEMA_VERSION, type: 'NOPE', requestId: 'x' }),
     ).toBe(true);
+  });
+});
+
+describe('swatch contrast', () => {
+  it('treats translucent black as light text-on-swatch', async () => {
+    const { isDarkHex } = await import('../normalize/colors');
+    expect(isDarkHex('#0000001A')).toBe(false);
+    expect(isDarkHex('#111111')).toBe(true);
+    expect(isDarkHex('#f5f5f5')).toBe(false);
   });
 });
