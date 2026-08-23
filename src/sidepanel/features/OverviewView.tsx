@@ -1,6 +1,6 @@
 import { coverageSummary } from '../../validation/coverage';
+import { contrastPairs } from '../../normalize/colors';
 import { CopyButton, EmptyState } from '../components/CopyButton';
-import { contrastItems } from './ColorsView';
 import { useScanStore } from '../store/useScanStore';
 
 export function OverviewView() {
@@ -94,10 +94,10 @@ export function OverviewView() {
           <section className="card">
             <div className="row">
               <h2>Contrast scanner</h2>
-              <span className="count-pill">{contrastItems(design.tokens.colors).length}</span>
+              <span className="count-pill">{contrastPairs(design.tokens.colors).length}</span>
             </div>
             <div className="list">
-              {contrastItems(design.tokens.colors).map((item) => (
+              {contrastPairs(design.tokens.colors).map((item) => (
                 <div key={`${item.fg}-${item.bg}`} className="contrast-row">
                   <span className="contrast-preview" style={{ color: item.fg, background: item.bg }}>
                     Aa

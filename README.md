@@ -34,7 +34,9 @@ npm run build
 5. Select the project **`dist`** folder, not the project root.
    - Example: `c:\Users\USER\Desktop\Page2Design\dist`
 6. Pin **Page2Design**.
-7. Click the toolbar icon to open the side panel.
+7. Click the toolbar icon. On a normal website this opens a **floating inspector** on the right (Overview, Colors, Typography, Assets). Chrome pages such as `chrome://` fall back to the side panel.
+
+The inspector does **not** shrink the browser window during a scan. Extra breakpoints are inferred from CSS media queries.
 
 Chrome will prompt for access to websites because the extension uses `http://*/*` and `https://*/*` host permissions. That lets it scan a tab, read extra frames, and download assets without an extra toolbar click on every page.
 
@@ -48,7 +50,7 @@ Do not test on `chrome://`, `edge://`, or the Chrome Web Store. Those pages cann
 2. Keep that tab selected.
 3. Open the Page2Design side panel and click **Identify tab**. You should see `Page2Design fixture`.
 4. Leave **Load lazy content** and **Capture desktop, tablet, and mobile viewports** on.
-5. Click **Scan page**. The window may briefly resize, then restore.
+5. Click **Scan page**. The browser window should stay the same size.
 
 Check these side-panel views:
 

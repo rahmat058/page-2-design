@@ -339,6 +339,34 @@ export function contrastGrade(ratio: number): { label: string; tone: 'ok' | 'war
   return { label: 'Very Poor', tone: 'error' };
 }
 
+export function contrastPairs(
+  colors: Array<{ hex: string; role: string }>,
+): Array<{ fg: string; bg: string; ratio: number; label: string; tone: 'ok' | 'warning' | 'error' }> {
+  const text = colors.filter((color) => color.role.startsWith('text'));
+  const surfaces = colors.filter(
+    (color) => color.role.includes('surface') || color.role.includes('background'),
+  );
+  const fgList = text.length ? text : colors.slice(0, 3);
+  const bgList = surfaces.length ? surfaces : colors.slice().reverse().slice(0, 3);
+  const items: Array<{
+    fg: string;
+    bg: string;
+    ratio: number;
+    label: string;
+    tone: 'ok' | 'warning' | 'error';
+  }> = [];
+  for (const fg of fgList.slice(0, 4)) {
+    for (const bg of bgList.slice(0, 3)) {
+      if (fg.hex === bg.hex) continue;
+      const ratio = contrastRatio(fg.hex, bg.hex);
+      if (!ratio) continue;
+      const grade = contrastGrade(ratio);
+      items.push({ fg: fg.hex, bg: bg.hex, ratio, label: grade.label, tone: grade.tone });
+    }
+  }
+  return items.slice(0, 8);
+}
+
 export function inferColorRole(hex: string, properties: string[]): string {
   const parsed = parseColor(hex);
   if (!parsed) return 'unknown';
