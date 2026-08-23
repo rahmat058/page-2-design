@@ -1,0 +1,4 @@
+dist
+node_modules
+public/icons
+package-lock.json

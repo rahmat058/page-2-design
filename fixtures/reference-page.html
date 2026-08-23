@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:image" content="./og.png" />
+    <title>Page2Design fixture</title>
+    <style>
+      :root {
+        --ink: #122033;
+        --paper: #f6f3ee;
+        --accent: #1d4ed8;
+        --card: #ffffff;
+      }
+      body {
+        margin: 0;
+        font-family: Georgia, 'Times New Roman', serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #f6f3ee 0%, #efe7d8 100%);
+      }
+      header,
+      footer,
+      main {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav a {
+        margin-left: 16px;
+        color: var(--accent);
+      }
+      h1 {
+        font-size: 42px;
+        line-height: 1.15;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 24px;
+        align-items: center;
+      }
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(18, 32, 51, 0.12);
+        padding: 20px;
+      }
+      .btn {
+        background: var(--accent);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .photo {
+        width: 100%;
+        border-radius: 12px;
+      }
+      .icon::before {
+        content: '★';
+        color: var(--accent);
+        margin-right: 6px;
+      }
+      .lazy {
+        min-height: 240px;
+      }
+      @media (max-width: 720px) {
+        .hero,
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Fixture Studio</strong>
+      <nav aria-label="Primary">
+        <a href="#work">Work</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <h1>Measured design, not guessed style</h1>
+          <p>
+            This controlled page exists so Page2Design can verify capture, redaction, and export.
+          </p>
+          <button class="btn" type="button">View the system</button>
+        </div>
+        <div class="card">
+          <img
+            class="photo"
+            src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'><rect fill='%231d4ed8' width='640' height='400'/><text x='40' y='210' fill='white' font-size='42'>Hero</text></svg>"
+            srcset="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='200'><rect fill='%231e3a8a' width='320' height='200'/></svg> 320w"
+            alt="Blue hero graphic"
+          />
+        </div>
+      </section>
+      <section id="work" class="cards">
+        <article class="card">
+          <h2 class="icon">Pattern one</h2>
+          <p>Card copy stays exact.</p>
+          <svg width="48" height="48" viewBox="0 0 48 48" aria-label="Diamond icon">
+            <polygon points="24,4 44,24 24,44 4,24" fill="#1d4ed8" />
+          </svg>
+        </article>
+        <article class="card">
+          <h2 class="icon">Pattern two</h2>
+          <p>A second repeated card.</p>
+        </article>
+      </section>
+      <section id="contact" class="card">
+        <h2>Sensitive form</h2>
+        <form>
+          <label>
+            Visible label
+            <input type="text" name="display-name" placeholder="Your name" />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" value="super-secret-password-123" />
+          </label>
+          <input type="hidden" name="token" value="hidden-auth-token" />
+        </form>
+      </section>
+      <section class="lazy">
+        <img
+          data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='80'><rect fill='%2394a3b8' width='200' height='80'/></svg>"
+          alt="Lazy placeholder"
+        />
+      </section>
+    </main>
+    <footer>
+      <p>Footer landmark</p>
+    </footer>
+  </body>
+</html>
