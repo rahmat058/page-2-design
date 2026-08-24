@@ -1,6 +1,17 @@
 import { useRef } from 'react'
 import type { PanelView } from '../store/useScanStore'
-import { CloseIcon, DockIcon, GripIcon, MenuIcon } from './LucideIcons'
+import {
+  CancelMenuIcon,
+  ClearMenuIcon,
+  CloseIcon,
+  DockIcon,
+  ExportMenuIcon,
+  GripIcon,
+  IdentifyMenuIcon,
+  LayoutMenuIcon,
+  MenuIcon,
+  ScanMenuIcon,
+} from './LucideIcons'
 
 interface Props {
   inspectOn: boolean
@@ -32,6 +43,7 @@ export function PanelChrome(props: Props) {
         aria-label="Move panel"
         onPointerDown={(event) => startDrag(event)}>
         <GripIcon />
+        <span className="tip tip-below tip-start">Move panel</span>
       </button>
       <label className="inspect-toggle">
         <span>Inspect Mode</span>
@@ -39,44 +51,55 @@ export function PanelChrome(props: Props) {
         <span className="switch" />
       </label>
       <div className="chrome-spacer" />
-      <button type="button" className="icon-btn" aria-label="Dock to side panel" onClick={props.onDock}>
-        <DockIcon />
-      </button>
-      <div className="menu-wrap">
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="More actions"
-          aria-expanded={props.menuOpen}
-          onClick={props.onToggleMenu}>
-          <MenuIcon />
+      <div className="chrome-actions">
+        <button type="button" className="icon-btn" aria-label="Open side panel" onClick={props.onDock}>
+          <DockIcon />
+          <span className="tip tip-below">Open side panel</span>
         </button>
-        {props.menuOpen ? (
-          <div className="menu" role="menu">
-            <button type="button" onClick={props.onIdentify}>
-              Identify tab
-            </button>
-            <button type="button" onClick={props.onScan} disabled={props.busy}>
-              Scan page
-            </button>
-            <button type="button" onClick={props.onCancel} disabled={!props.busy}>
-              Cancel scan
-            </button>
-            <button type="button" onClick={props.onExport} disabled={!props.canExport}>
-              Export ZIP
-            </button>
-            <button type="button" onClick={() => props.onOpen('layout')}>
-              Layout
-            </button>
-            <button type="button" onClick={props.onClear}>
-              Clear local scan data
-            </button>
-          </div>
-        ) : null}
+        <div className="menu-wrap">
+          <button
+            type="button"
+            className={props.menuOpen ? 'icon-btn on' : 'icon-btn'}
+            aria-label="More Options"
+            aria-expanded={props.menuOpen}
+            onClick={props.onToggleMenu}>
+            <MenuIcon />
+            <span className="tip tip-below">More Options</span>
+          </button>
+          {props.menuOpen ? (
+            <div className="menu" role="menu">
+              <button type="button" onClick={props.onIdentify}>
+                <IdentifyMenuIcon />
+                Identify tab
+              </button>
+              <button type="button" onClick={props.onScan} disabled={props.busy}>
+                <ScanMenuIcon />
+                Scan page
+              </button>
+              <button type="button" onClick={props.onCancel} disabled={!props.busy}>
+                <CancelMenuIcon />
+                Cancel scan
+              </button>
+              <button type="button" onClick={props.onExport} disabled={!props.canExport}>
+                <ExportMenuIcon />
+                Export ZIP
+              </button>
+              <button type="button" onClick={() => props.onOpen('layout')}>
+                <LayoutMenuIcon />
+                Layout
+              </button>
+              <button type="button" onClick={props.onClear}>
+                <ClearMenuIcon />
+                Clear local scan data
+              </button>
+            </div>
+          ) : null}
+        </div>
+        <button type="button" className="icon-btn" aria-label="Close" onClick={props.onClose}>
+          <CloseIcon />
+          <span className="tip tip-below tip-end">Close</span>
+        </button>
       </div>
-      <button type="button" className="icon-btn" aria-label="Close" onClick={props.onClose}>
-        <CloseIcon />
-      </button>
     </div>
   )
 }

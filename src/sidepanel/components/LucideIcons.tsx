@@ -1,23 +1,30 @@
 import {
   Accessibility,
   AlignLeft,
+  Archive,
+  Ban,
   Copy,
   Crosshair,
   Download,
   Droplet,
+  FolderInput,
   GripVertical,
   Heading,
   Image as ImageIcon,
   LayoutGrid,
   LayoutPanelLeft,
+  LayoutTemplate,
   Link,
   List,
   Menu,
   MoreVertical,
   MousePointerClick,
+  RefreshCw,
+  ScanSearch,
   Table2,
   Tag,
   TextCursorInput,
+  Trash2,
   Type,
   User,
   X,
@@ -105,6 +112,10 @@ export function ProfileIcon() {
   return <User size={18} {...STROKE} aria-hidden="true" />
 }
 
+export function ExportNavIcon() {
+  return <FolderInput size={18} {...STROKE} aria-hidden="true" />
+}
+
 export function DownloadIcon() {
   return <Download size={14} {...STROKE} aria-hidden="true" />
 }
@@ -123,4 +134,28 @@ export function GridViewIcon() {
 
 export function ListViewIcon() {
   return <List size={14} {...STROKE} aria-hidden="true" />
+}
+
+export function IdentifyMenuIcon() {
+  return <ScanSearch size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function ScanMenuIcon() {
+  return <RefreshCw size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function CancelMenuIcon() {
+  return <Ban size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function ExportMenuIcon() {
+  return <Archive size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function LayoutMenuIcon() {
+  return <LayoutTemplate size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function ClearMenuIcon() {
+  return <Trash2 size={16} {...STROKE} aria-hidden="true" />
 }
