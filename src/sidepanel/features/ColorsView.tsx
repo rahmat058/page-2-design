@@ -181,39 +181,62 @@ export function TypographyView() {
   if (tokens.length === 0) return <ScanPrompt afterScan="No typography was captured." />;
   return (
     <div className="type-list">
-      {tokens.map((token) => (
-        <article key={token.id} className="type-card">
-          <div className="row">
-            <h3>{prettyTypeName(token.name)}</h3>
-            <span className="muted">
-              {token.count} {token.count === 1 ? 'instance' : 'instances'}
-            </span>
-          </div>
-          <p
-            className="type-preview"
-            style={{
-              fontFamily: token.fontFamily,
-              fontSize: token.fontSize,
-              fontWeight: token.fontWeight as never,
-              lineHeight: token.lineHeight,
-            }}
-          >
-            AaBbCc
-          </p>
-          <p className="muted">
-            {primaryFont(token.fontFamily)} · {token.fontSize} / {token.lineHeight} · {token.fontWeight}
-          </p>
-          {token.licenseReviewRequired ? (
-            <span className="badge warning">Font license review</span>
-          ) : null}
-          <CopyButton
-            value={`${token.fontFamily}; ${token.fontSize}; ${token.fontWeight}; ${token.lineHeight}`}
-            label="Copy values"
-          />
-        </article>
-      ))}
+      {tokens.map((token) => {
+        const values = `${token.fontFamily}; ${token.fontSize}; ${token.fontWeight}; ${token.lineHeight}`;
+        return (
+          <article key={token.id} className="type-card">
+            <div className="type-card-head">
+              <h3>{prettyTypeName(token.name)}</h3>
+              <span className="muted">
+                {token.count} {token.count === 1 ? 'instance' : 'instances'}
+              </span>
+            </div>
+            <p
+              className="type-preview"
+              style={{
+                fontFamily: token.fontFamily,
+                fontSize: previewSize(token.fontSize),
+                fontWeight: token.fontWeight as never,
+                lineHeight: 1.35,
+              }}
+            >
+              AaBbCc
+            </p>
+            <div className="type-specs">
+              <span>{primaryFont(token.fontFamily)}</span>
+              <span>{token.fontSize}</span>
+              <span>{token.lineHeight}</span>
+              <span>{token.fontWeight}</span>
+            </div>
+            <div className="type-card-actions">
+              {token.licenseReviewRequired ? (
+                <span className="badge warning">Font license review</span>
+              ) : null}
+              <button
+                type="button"
+                className="copy-values"
+                onClick={() => void copyTypeValues(values, prettyTypeName(token.name))}
+              >
+                <CopyIcon />
+                Copy values
+              </button>
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
+}
+
+function previewSize(size: string): string {
+  const n = Number.parseFloat(size);
+  if (!Number.isFinite(n)) return '22px';
+  return `${Math.min(Math.max(n, 16), 28)}px`;
+}
+
+async function copyTypeValues(value: string, name: string): Promise<void> {
+  await navigator.clipboard.writeText(value);
+  useToastStore.getState().showToast(`${name} values copied`);
 }
 
 export function LayoutView() {

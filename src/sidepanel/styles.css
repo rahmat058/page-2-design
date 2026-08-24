@@ -694,8 +694,7 @@ body,
   gap: 12px;
 }
 
-.font-pair strong,
-.type-card h3 {
+.font-pair strong {
   display: block;
   margin: 4px 0 0;
 }
@@ -1125,15 +1124,104 @@ body,
   color: var(--muted);
 }
 
+.type-list {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.type-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  display: grid;
+  gap: 12px;
+  padding: 14px 12px;
+  border: 1px solid #e7eaef;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 18, 27, 0.04);
+}
+
+.type-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 22px;
+}
+
 .type-card h3,
 .type-list h3 {
   margin: 0;
+  padding: 2px 0;
+  min-width: 0;
   font-size: 13px;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .type-preview {
-  margin: 4px 0;
-  font-size: 22px;
+  margin: 0;
+  padding: 6px 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  line-height: 1.35;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+.type-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.type-specs span {
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f4f5f8;
+  color: #5b6472;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.copy-values {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-left: auto;
+  min-width: 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.copy-values:hover {
+  background: #1f2937;
 }
 
 html,
@@ -1474,7 +1562,8 @@ body,
 .main > .fade-pane {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
