@@ -2097,6 +2097,13 @@ body,
 }
 
 /* Scan options: single column with card-style rows and micro-interactions. */
+.more-details > summary {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+}
+
 .more-details .scan-options {
   display: flex;
   flex-direction: column;

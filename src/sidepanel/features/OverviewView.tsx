@@ -1,9 +1,12 @@
+import { Copy } from 'lucide-react'
+import { Button } from '../components/Button'
 import { Checkbox } from '../components/Checkbox'
 import { useScanStore } from '../store/useScanStore'
+import { useToastStore } from '../toast'
 import type { ColorToken } from '../../shared/types'
 import { CountBadge } from '../components/CountBadge'
 import { coverageSummary } from '../../validation/coverage'
-import { CopyButton, EmptyState } from '../components/CopyButton'
+import { EmptyState } from '../components/CopyButton'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
 
 export function OverviewView() {
@@ -126,7 +129,16 @@ export function OverviewView() {
         {design ? (
           <div className="scan-coverage">
             <p>{coverageSummary(design.coverage)}</p>
-            <CopyButton value={JSON.stringify(design.coverage, null, 2)} label="Copy coverage JSON" />
+            <Button
+              variant="primary"
+              size="sm"
+              icon={Copy}
+              onClick={() => {
+                void navigator.clipboard.writeText(JSON.stringify(design.coverage, null, 2))
+                useToastStore.getState().showToast('Coverage JSON copied')
+              }}>
+              Copy coverage JSON
+            </Button>
           </div>
         ) : null}
       </details>
