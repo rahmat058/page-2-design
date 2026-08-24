@@ -1,5 +1,4 @@
 import { useScanStore, type PanelView } from '../store/useScanStore'
-import { useToastStore } from '../toast'
 import { AssetsIcon, ColorsIcon, ContentIcon, OverviewIcon, ProfileIcon, TypeIcon } from './LucideIcons'
 
 const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
@@ -30,9 +29,9 @@ export function BottomNav() {
             onClick={() => {
               if (active === item.id) return
               setView(item.id)
-              useToastStore.getState().showToast(item.label)
             }}>
             <Icon />
+            <span className="nav-tip">{item.label}</span>
           </button>
         )
       })}

@@ -512,10 +512,14 @@ body,
   cursor: grabbing;
 }
 
-.icon-btn:hover,
-.nav-btn:hover {
+.icon-btn:hover {
   background: #f3f0ff;
   color: #6d5efc;
+}
+
+.nav-btn:hover:not(.on) {
+  background: #eceff3;
+  color: #5b6472;
 }
 
 .inspect-toggle {
@@ -995,6 +999,58 @@ body,
   border-radius: 8px;
 }
 
+.nav-btn {
+  position: relative;
+}
+
+.nav-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 12;
+  transform: translateX(-50%) translateY(4px);
+  opacity: 0;
+  pointer-events: none;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.nav-btn:hover .nav-tip,
+.nav-btn:focus-visible .nav-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-btn:first-child .nav-tip {
+  left: 0;
+  transform: translateX(0) translateY(4px);
+}
+
+.nav-btn:first-child:hover .nav-tip,
+.nav-btn:first-child:focus-visible .nav-tip {
+  transform: translateX(0) translateY(0);
+}
+
+.nav-btn:last-child .nav-tip {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(4px);
+}
+
+.nav-btn:last-child:hover .nav-tip,
+.nav-btn:last-child:focus-visible .nav-tip {
+  transform: translateX(0) translateY(0);
+}
+
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1325,7 +1381,9 @@ body,
 
 .bottom-nav {
   position: static;
+  z-index: 10;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .option-grid {
