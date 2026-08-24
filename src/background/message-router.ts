@@ -157,7 +157,12 @@ export function routeMessage(
       case 'SET_INSPECT_MODE': {
         const tab = await identifyActiveTab()
         if (tab.tabId) {
-          await chrome.tabs.sendMessage(tab.tabId, message)
+          try {
+            await ensureContentScript(tab.tabId)
+            await chrome.tabs.sendMessage(tab.tabId, message)
+          } catch {
+            /* tab may not allow content scripts */
+          }
         }
         sendResponse({ ok: true })
         return

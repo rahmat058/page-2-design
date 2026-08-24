@@ -23,10 +23,16 @@ export function InspectorView() {
 
   const toggleContextMenu = (next: boolean) => {
     setContextMenu(next)
+    const requestId = createRequestId()
     void sendRuntime({
       type: 'SET_INSPECT_CONTEXT_MENU',
-      requestId: createRequestId(),
+      requestId,
       payload: { enabled: next },
+    })
+    void sendRuntime({
+      type: 'SET_INSPECT_MODE',
+      requestId: createRequestId(),
+      payload: { enabled: true, contextMenu: next },
     })
   }
 

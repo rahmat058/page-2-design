@@ -42,7 +42,7 @@ function init(): void {
     }
 
     if (message.type === 'SET_INSPECT_MODE') {
-      setInspectMode(Boolean(message.payload.enabled))
+      setInspectMode(Boolean(message.payload.enabled), message.payload.contextMenu)
       sendResponse({ ok: true })
       return false
     }

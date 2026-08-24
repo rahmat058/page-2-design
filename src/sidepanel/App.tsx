@@ -153,7 +153,7 @@ export function App() {
     await sendRuntime({
       type: 'SET_INSPECT_MODE',
       requestId: createRequestId(),
-      payload: { enabled: next },
+      payload: { enabled: next, contextMenu: useScanStore.getState().inspectContextMenu },
     })
   }
 

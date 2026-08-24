@@ -2,6 +2,7 @@ import { colorIsExact, isFullyTransparent, parseColor } from '../normalize/color
 import { createMessage, createRequestId, type InspectedElement } from '../shared/messages'
 
 const BOX_ID = 'page2design-inspect-box'
+const CARD_ID = 'page2design-inspect-card'
 const HIT_ID = 'page2design-color-hit'
 
 let enabled = false
@@ -13,24 +14,34 @@ let inspectRaf = 0
 let pendingEl: Element | null = null
 let lastEl: Element | null = null
 let lockedEl: Element | null = null
+let cardHost: HTMLDivElement | null = null
+let lastCardKey: string | null = null
+let lastHoverEl: Element | null = null
 
 export function isInspectEnabled(): boolean {
   return enabled
 }
 
-export function setInspectMode(next: boolean): void {
+export function setInspectMode(next: boolean, contextMenu?: boolean): void {
+  if (typeof contextMenu === 'boolean') allowContextMenu = contextMenu
+  if (next === enabled) {
+    if (enabled) refreshHoverCard()
+    return
+  }
   enabled = next
   if (!enabled) {
     window.removeEventListener('mousemove', onMove, true)
     window.removeEventListener('click', onClick, true)
     box?.remove()
     box = null
+    hideHoverCard(true)
     clearColorHit()
     activeKey = null
     hitIndex = -1
     pendingEl = null
     lastEl = null
     lockedEl = null
+    lastHoverEl = null
     if (inspectRaf) {
       cancelAnimationFrame(inspectRaf)
       inspectRaf = 0
@@ -40,10 +51,16 @@ export function setInspectMode(next: boolean): void {
   ensureBox()
   window.addEventListener('mousemove', onMove, true)
   window.addEventListener('click', onClick, true)
+  refreshHoverCard()
 }
 
 export function setInspectContextMenu(next: boolean): void {
   allowContextMenu = next
+  if (!next) {
+    hideHoverCard(false)
+    return
+  }
+  refreshHoverCard()
 }
 
 function ensureBox(): HTMLDivElement {
@@ -54,8 +71,8 @@ function ensureBox(): HTMLDivElement {
     position: 'fixed',
     pointerEvents: 'none',
     zIndex: '2147483645',
-    border: '2px solid #7c5cfc',
-    background: 'rgba(124, 92, 252, 0.12)',
+    border: '2px solid #ff93ab',
+    background: 'rgba(255, 147, 171, 0.12)',
     borderRadius: '4px',
     display: 'none',
   } as CSSStyleDeclaration)
@@ -69,15 +86,26 @@ function onMove(event: MouseEvent): void {
   if (!(target instanceof Element)) return
   if (isOverlay(target)) {
     if (box) box.style.display = 'none'
+    hideHoverCard(false)
     return
   }
   const rect = target.getBoundingClientRect()
+  lastHoverEl = target
   const highlight = ensureBox()
   highlight.style.display = 'block'
   highlight.style.left = `${rect.left}px`
   highlight.style.top = `${rect.top}px`
   highlight.style.width = `${rect.width}px`
   highlight.style.height = `${rect.height}px`
+  if (allowContextMenu) {
+    try {
+      showHoverCard(target, rect)
+    } catch {
+      /* page CSS or CSP should not break inspect */
+    }
+  } else {
+    hideHoverCard(false)
+  }
   if (lockedEl) return
   scheduleInspect(target, false)
 }
@@ -382,5 +410,189 @@ function clearColorHit(): void {
 }
 
 function isOverlay(el: Element): boolean {
-  return Boolean(el.closest?.('#page2design-overlay-root') || el.id === 'page2design-overlay-root')
+  return Boolean(
+    el.closest?.('#page2design-overlay-root') ||
+      el.id === 'page2design-overlay-root' ||
+      el.id === BOX_ID ||
+      el.id === CARD_ID ||
+      el.id === HIT_ID,
+  )
+}
+
+function hideHoverCard(remove: boolean): void {
+  lastCardKey = null
+  if (remove) {
+    cardHost?.remove()
+    cardHost = null
+    return
+  }
+  if (cardHost) cardHost.style.setProperty('display', 'none', 'important')
+}
+
+function refreshHoverCard(): void {
+  if (!enabled || !allowContextMenu || !lastHoverEl?.isConnected) return
+  try {
+    showHoverCard(lastHoverEl, lastHoverEl.getBoundingClientRect())
+  } catch {
+    /* ignore */
+  }
+}
+
+function showHoverCard(el: Element, rect: DOMRect): void {
+  const host = ensureCard()
+  const style = getComputedStyle(el)
+  const color = rgbToHex(style.color)
+  const background = effectiveBackground(el) || 'transparent'
+  const family = primaryFont(style.fontFamily)
+  const width = Math.round(rect.width * 10) / 10
+  const height = Math.round(rect.height * 10) / 10
+  const label = elementLabel(el)
+  const key = `${label}|${width}|${height}|${color}|${background}|${family}|${style.fontSize}`
+  if (key !== lastCardKey) {
+    lastCardKey = key
+    setText(host, 'p2d-label', label)
+    setText(host, 'p2d-size', `${formatPx(width)} × ${formatPx(height)}`)
+    setText(host, 'p2d-text-hex', color)
+    setText(host, 'p2d-bg-hex', background)
+    setText(host, 'p2d-font', family)
+    setText(host, 'p2d-font-size', style.fontSize)
+    const textSwatch = host.querySelector('[data-p2d="text-swatch"]') as HTMLElement | null
+    const bgSwatch = host.querySelector('[data-p2d="bg-swatch"]') as HTMLElement | null
+    if (textSwatch) textSwatch.style.setProperty('background', color, 'important')
+    if (bgSwatch) bgSwatch.style.setProperty('background', background === 'transparent' ? '#ffffff' : background, 'important')
+  }
+  host.style.setProperty('display', 'block', 'important')
+  const cardW = host.offsetWidth || 268
+  const cardH = host.offsetHeight || 156
+  const gap = 10
+  let left = rect.left
+  let top = rect.bottom + gap
+  if (top + cardH > window.innerHeight - 8) top = rect.top - cardH - gap
+  if (top < 8) top = 8
+  if (left + cardW > window.innerWidth - 8) left = window.innerWidth - cardW - 8
+  if (left < 8) left = 8
+  host.style.setProperty('left', `${Math.round(left)}px`, 'important')
+  host.style.setProperty('top', `${Math.round(top)}px`, 'important')
+}
+
+function setText(host: HTMLElement, key: string, value: string): void {
+  const node = host.querySelector(`[data-p2d="${key}"]`)
+  if (node) node.textContent = value
+}
+
+function important(el: HTMLElement, styles: Record<string, string>): void {
+  for (const [name, value] of Object.entries(styles)) {
+    el.style.setProperty(name, value, 'important')
+  }
+}
+
+function ensureCard(): HTMLDivElement {
+  if (cardHost?.isConnected) return cardHost
+  cardHost = document.createElement('div')
+  cardHost.id = CARD_ID
+  cardHost.setAttribute('data-page2design', 'inspect-card')
+  important(cardHost, {
+    position: 'fixed',
+    left: '0px',
+    top: '0px',
+    'z-index': '2147483647',
+    'pointer-events': 'none',
+    display: 'none',
+    width: '268px',
+    'box-sizing': 'border-box',
+    margin: '0',
+    padding: '10px 12px 8px',
+    border: '1px solid #edf0f3',
+    'border-radius': '12px',
+    background: '#ffffff',
+    'box-shadow': '0 12px 32px rgb(10 10 10 / 0.16)',
+    color: '#0a0a0a',
+    font: '12px/1.35 "Segoe UI", system-ui, sans-serif',
+  })
+
+  const head = row()
+  important(head, { 'padding-bottom': '8px', 'border-bottom': '1px solid #edf0f3', 'margin-bottom': '2px' })
+  const label = text('p2d-label', { flex: '1', 'min-width': '0', 'font-weight': '700', 'font-size': '12px' })
+  const size = text('p2d-size', { 'flex-shrink': '0', color: '#2e2a42', 'font-size': '11px' })
+  head.append(label, size)
+
+  const colorRow = propRow()
+  const textSwatch = swatch('text-swatch')
+  colorRow.append(textSwatch, text('p2d-text-hex', { 'font-weight': '650' }), keyLabel('Text color'))
+
+  const bgRow = propRow()
+  const bgSwatch = swatch('bg-swatch')
+  bgRow.append(bgSwatch, text('p2d-bg-hex', { 'font-weight': '650' }), keyLabel('Background'))
+
+  const fontRow = propRow()
+  fontRow.append(text('p2d-font', { 'font-weight': '650' }), keyLabel('Font family'))
+
+  const sizeRow = propRow()
+  important(sizeRow, { 'border-bottom': '0' })
+  sizeRow.append(text('p2d-font-size', { 'font-weight': '650' }), keyLabel('Font size'))
+
+  cardHost.append(head, colorRow, bgRow, fontRow, sizeRow)
+  document.documentElement.appendChild(cardHost)
+  return cardHost
+}
+
+function row(): HTMLDivElement {
+  const el = document.createElement('div')
+  important(el, { display: 'flex', 'align-items': 'baseline', gap: '10px' })
+  return el
+}
+
+function propRow(): HTMLDivElement {
+  const el = document.createElement('div')
+  important(el, {
+    display: 'flex',
+    'align-items': 'center',
+    gap: '8px',
+    padding: '7px 0',
+    'border-bottom': '1px solid #edf0f3',
+  })
+  return el
+}
+
+function text(key: string, extra: Record<string, string> = {}): HTMLSpanElement {
+  const el = document.createElement('span')
+  el.dataset.p2d = key
+  important(el, {
+    flex: '1',
+    'min-width': '0',
+    overflow: 'hidden',
+    'text-overflow': 'ellipsis',
+    'white-space': 'nowrap',
+    ...extra,
+  })
+  return el
+}
+
+function keyLabel(label: string): HTMLSpanElement {
+  const el = document.createElement('span')
+  el.textContent = label
+  important(el, { 'flex-shrink': '0', color: '#2e2a42', 'font-size': '11px' })
+  return el
+}
+
+function swatch(key: string): HTMLSpanElement {
+  const el = document.createElement('span')
+  el.dataset.p2d = key
+  important(el, {
+    'flex-shrink': '0',
+    width: '14px',
+    height: '14px',
+    border: '1px solid rgb(10 10 10 / 0.12)',
+    'border-radius': '3px',
+    background: '#ffffff',
+  })
+  return el
+}
+
+function primaryFont(stack: string): string {
+  return stack.split(',')[0]?.replace(/['"]/g, '').trim() || stack
+}
+
+function formatPx(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(value)
 }

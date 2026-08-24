@@ -222,7 +222,7 @@ export interface DockSidePanelMessage extends MessageBase {
 
 export interface SetInspectModeMessage extends MessageBase {
   type: 'SET_INSPECT_MODE'
-  payload: { enabled: boolean }
+  payload: { enabled: boolean; contextMenu?: boolean }
 }
 
 export interface SetInspectContextMenuMessage extends MessageBase {
