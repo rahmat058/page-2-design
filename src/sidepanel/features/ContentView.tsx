@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Copy } from 'lucide-react'
 import type { AssetRecord, ContentBlock } from '../../shared/types'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
-import { Button } from '../components/Button'
+import { CountBadge } from '../components/CountBadge'
 import { ScanPrompt } from '../components/CopyButton'
 import {
   AriaBlockIcon,
@@ -20,7 +19,7 @@ import {
   PlaceholderBlockIcon,
   TableBlockIcon,
 } from '../components/LucideIcons'
-import { contentKindLabel, copyContentPlain, groupContentBySection, panelContentBlocks } from '../content-groups'
+import { contentKindLabel, groupContentBySection, panelContentBlocks } from '../content-groups'
 import {
   assetDownloadName,
   assetPreviewUrl,
@@ -41,17 +40,12 @@ export function ContentView() {
   }
   return (
     <div className="content-wrap">
-      <div className="content-toolbar">
-        <Button size="sm" icon={Copy} onClick={() => void copyAllContent(copyContentPlain(groups))}>
-          Copy all
-        </Button>
-      </div>
       <div className="content-scroll">
         {groups.map((group) => (
           <section key={group.id} className="content-section">
             <div className="content-section-head">
               <h2>{group.name}</h2>
-              <span className="count-pill">{group.blocks.length}</span>
+              <CountBadge value={group.blocks.length} />
             </div>
             <div className="content-list">
               {group.blocks.map((block) => (
@@ -106,11 +100,6 @@ async function copyBlock(block: ContentBlock): Promise<void> {
   const value = block.href ? `${block.text}\n${block.href}` : block.text
   await navigator.clipboard.writeText(value)
   useToastStore.getState().showToast(`${contentKindLabel(block)} copied`)
-}
-
-async function copyAllContent(value: string): Promise<void> {
-  await navigator.clipboard.writeText(value)
-  useToastStore.getState().showToast('All content copied')
 }
 
 export function AssetsView() {

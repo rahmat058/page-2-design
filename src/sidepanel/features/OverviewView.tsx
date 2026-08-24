@@ -1,9 +1,10 @@
-import { coverageSummary } from '../../validation/coverage'
-import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
-import type { ColorToken } from '../../shared/types'
-import { CopyButton, EmptyState } from '../components/CopyButton'
 import { Checkbox } from '../components/Checkbox'
 import { useScanStore } from '../store/useScanStore'
+import type { ColorToken } from '../../shared/types'
+import { CountBadge } from '../components/CountBadge'
+import { coverageSummary } from '../../validation/coverage'
+import { CopyButton, EmptyState } from '../components/CopyButton'
+import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
 
 export function OverviewView() {
   const design = useScanStore((s) => s.design)
@@ -75,7 +76,7 @@ export function OverviewView() {
           <section className="overview-block">
             <div className="row">
               <h2>Contrast Scanner</h2>
-              <span className="count-pill">{contrastPairs(design.tokens.colors).length}</span>
+              <CountBadge value={contrastPairs(design.tokens.colors).length} />
             </div>
             <div className="list compact contrast-list">
               {contrastPairs(design.tokens.colors)

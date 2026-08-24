@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { createRequestId } from '../shared/messages'
 import { userFacingError } from '../shared/errors'
 import { sendRuntime, onRuntimeMessage } from './chrome-api'
+import { Copy, Download, RefreshCw } from 'lucide-react'
 import { Button } from './components/Button'
+import { CountBadge } from './components/CountBadge'
 import { BottomNav } from './components/BottomNav'
 import { PanelChrome } from './components/PanelChrome'
 import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
@@ -13,9 +15,9 @@ import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
 import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow'
 import { useScanStore } from './store/useScanStore'
+import { useToastStore } from './toast'
 import { uniqueVisualAssets } from '../content/asset-scanner'
-import { Download, RefreshCw } from 'lucide-react'
-import { panelContentBlocks } from './content-groups'
+import { copyContentPlain, groupContentBySection, panelContentBlocks } from './content-groups'
 import type { NormalizedDesign } from '../shared/types'
 
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting']
@@ -80,7 +82,7 @@ export function App() {
         <div className="head-row">
           <h1>
             {headingFor(view)}
-            {view !== 'overview' ? <span className="count-pill">{countFor(view, counts, design)}</span> : null}
+            {view !== 'overview' ? <CountBadge value={countFor(view, counts, design)} /> : null}
           </h1>
           {view === 'overview' && design ? (
             <Button
@@ -89,6 +91,10 @@ export function App() {
               disabled={busy || tabRestricted}
               onClick={() => void startScan()}>
               {busy ? 'Scanning…' : 'Rescan'}
+            </Button>
+          ) : view === 'content' ? (
+            <Button size="sm" icon={Copy} onClick={() => void copyAllContent()}>
+              Copy all
             </Button>
           ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
             <Button
@@ -167,6 +173,14 @@ async function boot(): Promise<void> {
   if (tabRestricted || design || phase !== 'idle') return
   autoScanStarted = true
   await startScan()
+}
+
+async function copyAllContent(): Promise<void> {
+  const design = useScanStore.getState().design
+  if (!design) return
+  const groups = groupContentBySection(panelContentBlocks(design.content), design.sections)
+  await navigator.clipboard.writeText(copyContentPlain(groups))
+  useToastStore.getState().showToast('All content copied')
 }
 
 function headingFor(view: string): string {

@@ -5,6 +5,7 @@ import type { ColorToken, TypographyToken } from '../../shared/types'
 import { sendRuntime } from '../chrome-api'
 import { Copy } from 'lucide-react'
 import { Button } from '../components/Button'
+import { CountBadge } from '../components/CountBadge'
 import { CopyButton, ScanPrompt } from '../components/CopyButton'
 import { InspectIcon, CopyIcon } from '../components/LucideIcons'
 import { useScanStore } from '../store/useScanStore'
@@ -183,7 +184,7 @@ export function TypographyView() {
         <section key={section.key} className="type-section">
           <div className="type-section-head">
             <h2>{section.title}</h2>
-            <span className="count-pill">{section.tokens.length}</span>
+            <CountBadge value={section.tokens.length} />
           </div>
           {section.tokens.map((token) => {
             const values = `${token.fontFamily}; ${token.fontSize}; ${token.fontWeight}; ${token.lineHeight}`

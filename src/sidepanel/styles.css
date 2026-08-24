@@ -248,10 +248,18 @@ a:focus-visible,
 }
 
 .card {
+  transition:
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   padding: 12px;
+}
+
+.card:hover {
+  box-shadow: 0 10px 28px rgb(215 190 252 / 0.28);
+  border-color: var(--lavender);
 }
 
 .card h2,
@@ -789,17 +797,22 @@ body,
   word-break: break-all;
 }
 
-.count-pill,
 .count-badge {
   display: inline-flex;
   justify-content: center;
-  margin-top: 6px;
-  border-radius: 99px;
-  background: var(--accent-soft);
-  padding: 1px 8px;
-  min-width: 22px;
-  color: var(--muted);
-  font-size: 0.75rem;
+  align-items: center;
+  margin-top: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--btn-radius);
+  background: var(--paper);
+  padding: 0 8px;
+  min-width: 24px;
+  height: 22px;
+  color: var(--plum);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 .banner {
@@ -1016,9 +1029,8 @@ body,
   font-size: 11px;
 }
 
-.count-pill {
+.count-badge {
   margin-top: 0;
-  font-size: 11px;
 }
 
 .main {
@@ -1389,14 +1401,22 @@ body,
 .type-card {
   display: grid;
   gap: 12px;
-  box-shadow: 0 1px 2px rgba(16, 18, 27, 0.04);
-  border: 1px solid #e7eaef;
-  border-radius: 14px;
-  background: #fff;
+  transition:
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+  box-shadow: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
   padding: 14px 12px;
   min-width: 0;
   max-width: 100%;
   overflow: visible;
+}
+
+.type-card:hover {
+  box-shadow: 0 10px 28px rgb(215 190 252 / 0.28);
+  border-color: var(--lavender);
 }
 
 .type-card-head {
@@ -1466,7 +1486,6 @@ body,
   min-width: 0;
 }
 
-.content-toolbar .ui-btn,
 .type-card-actions .ui-btn {
   margin-left: auto;
 }
@@ -1775,12 +1794,6 @@ body,
   overflow: hidden;
 }
 
-.content-toolbar {
-  display: flex;
-  flex-shrink: 0;
-  justify-content: flex-end;
-}
-
 .content-scroll {
   display: grid;
   flex: 1;
@@ -1811,10 +1824,6 @@ body,
   gap: 8px;
 }
 
-.content-section-head .count-pill {
-  margin-top: 0;
-}
-
 .content-section-head h2 {
   margin: 0;
   font-weight: 700;
@@ -1830,11 +1839,19 @@ body,
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  border: 1px solid #e7eaef;
-  border-radius: 14px;
-  background: #fff;
+  transition:
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
   padding: 10px 10px 10px 12px;
   min-width: 0;
+}
+
+.content-row:hover {
+  box-shadow: 0 10px 28px rgb(215 190 252 / 0.28);
+  border-color: var(--lavender);
 }
 
 .content-kind {
