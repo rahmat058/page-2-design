@@ -101,7 +101,7 @@ export function OverviewView() {
 
       <details className="more-details">
         <summary>Scan options</summary>
-        <div className="option-grid">
+        <div className="scan-options">
           <Checkbox
             checked={options.loadLazyContent}
             onChange={(e) => setOptions({ loadLazyContent: e.target.checked })}
@@ -118,17 +118,16 @@ export function OverviewView() {
             label="Include hidden structure"
           />
           <Checkbox
-            wide
             checked={options.captureExtraViewports}
             onChange={(e) => setOptions({ captureExtraViewports: e.target.checked })}
             label="Record tablet and mobile breakpoints without resizing"
           />
         </div>
         {design ? (
-          <>
+          <div className="scan-coverage">
             <p>{coverageSummary(design.coverage)}</p>
             <CopyButton value={JSON.stringify(design.coverage, null, 2)} label="Copy coverage JSON" />
-          </>
+          </div>
         ) : null}
       </details>
     </>

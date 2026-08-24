@@ -2071,3 +2071,81 @@ body,
     opacity: 1;
   }
 }
+
+/* Authoritative layout: keep the app a fixed-height flex column so the
+   bottom nav is always pinned and no gap can appear below it. */
+.app.inspector {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.app.inspector > .main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app.inspector > .bottom-nav {
+  position: static;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Scan options: single column with card-style rows and micro-interactions. */
+.more-details .scan-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.more-details .scan-options .ui-check {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 9px 11px;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+.more-details .scan-options .ui-check:hover {
+  transform: translateX(2px);
+  border-color: var(--accent);
+  background: rgb(255 147 171 / 0.1);
+  box-shadow: 0 2px 8px rgb(255 147 171 / 0.18);
+}
+
+.more-details .scan-options .ui-check:active {
+  transform: translateX(1px) scale(0.99);
+}
+
+.more-details .scan-options .ui-check:has(.ui-check-input:checked) {
+  border-color: var(--accent);
+  background: rgb(255 147 171 / 0.16);
+}
+
+.more-details .scan-options .ui-check-label {
+  line-height: 1.35;
+}
+
+.scan-coverage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.scan-coverage p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
