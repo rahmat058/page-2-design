@@ -5,6 +5,7 @@ const HITS_ID = 'page2design-color-hits';
 
 let enabled = false;
 let box: HTMLDivElement | null = null;
+let activeKey: string | null = null;
 
 export function isInspectEnabled(): boolean {
   return enabled;
@@ -18,6 +19,7 @@ export function setInspectMode(next: boolean): void {
     box?.remove();
     box = null;
     clearColorHits();
+    activeKey = null;
     return;
   }
   ensureBox();
@@ -68,9 +70,16 @@ function onClick(event: MouseEvent): void {
   event.stopPropagation();
 }
 
-export function highlightColorOnPage(hex: string | null): void {
+export function highlightColorOnPage(payload: { hex: string | null; css?: string | null }): void {
+  const key = (payload.css || payload.hex || '').replace(/\s+/g, ' ').trim();
+  if (!key || activeKey === key) {
+    clearColorHits();
+    activeKey = null;
+    return;
+  }
+
   clearColorHits();
-  if (!hex) return;
+  activeKey = key;
   const layer = document.createElement('div');
   layer.id = HITS_ID;
   Object.assign(layer.style, {
@@ -81,6 +90,7 @@ export function highlightColorOnPage(hex: string | null): void {
   } as CSSStyleDeclaration);
   document.documentElement.appendChild(layer);
 
+  const gradient = payload.css && /gradient\(/i.test(payload.css) ? payload.css.replace(/\s+/g, ' ').trim() : null;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
   let marked = 0;
   while (walker.nextNode() && marked < 80) {
@@ -89,14 +99,16 @@ export function highlightColorOnPage(hex: string | null): void {
     if (el.closest?.('#page2design-overlay-root')) continue;
     const style = getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
-    const hits = [
-      style.color,
-      style.backgroundColor,
-      style.borderTopColor,
-      style.fill,
-      style.stroke,
-    ];
-    if (!hits.some((value) => colorLooksLike(value, hex))) continue;
+    const match = gradient
+      ? style.backgroundImage.replace(/\s+/g, ' ').trim() === gradient
+      : [
+          style.color,
+          style.backgroundColor,
+          style.borderTopColor,
+          style.fill,
+          style.stroke,
+        ].some((value) => payload.hex && colorLooksLike(value, payload.hex));
+    if (!match) continue;
     const rect = el.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) continue;
     const mark = document.createElement('div');

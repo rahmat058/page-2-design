@@ -301,6 +301,8 @@ export interface ColorToken {
   role: string;
   roleInferred: boolean;
   nearDuplicates: string[];
+  kind: 'solid' | 'gradient';
+  css: string;
 }
 
 export interface TypographyToken {

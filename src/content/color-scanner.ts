@@ -4,7 +4,6 @@ import type { ColorUsage } from '../shared/types';
 const COLOR_PROPS = [
   ['color', 'text'],
   ['background-color', 'background'],
-  ['border-top-color', 'border'],
   ['fill', 'svg'],
   ['stroke', 'svg'],
 ] as const;
@@ -15,9 +14,9 @@ export function collectColors(
   bucket: Map<string, ColorUsage>,
 ): void {
   for (const [prop, source] of COLOR_PROPS) {
-    addColor(bucket, style[prop], prop, source, elementId);
+    addSolid(bucket, style[prop], prop, source, elementId);
   }
-  addGradientColors(bucket, style['background-image'], elementId);
+  addGradient(bucket, style['background-image'], elementId);
 }
 
 export function collectSvgColors(
@@ -32,18 +31,18 @@ export function collectSvgColors(
   const stroke =
     el.getAttribute('stroke') ||
     (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).stroke : '');
-  addColor(bucket, fill, 'fill', 'svg', elementId);
-  addColor(bucket, stroke, 'stroke', 'svg', elementId);
+  addSolid(bucket, fill, 'fill', 'svg', elementId);
+  addSolid(bucket, stroke, 'stroke', 'svg', elementId);
 }
 
 export function collectCssVariableColors(
   _vars: { name: string; value: string }[],
   _bucket: Map<string, ColorUsage>,
 ): void {
-  /* Unused design-token variables inflate the palette. Visual colors come from computed styles. */
+  /* Visual colors come from computed styles, not unused tokens. */
 }
 
-function addColor(
+function addSolid(
   bucket: Map<string, ColorUsage>,
   raw: string | undefined,
   property: string,
@@ -52,10 +51,8 @@ function addColor(
 ): void {
   if (!raw) return;
   const parsed = parseColor(raw);
-  if (!parsed) return;
-  if (parsed.a < 0.08) return;
-  if (source === 'border' && parsed.a < 0.2) return;
-  const key = paletteKey(parsed);
+  if (!parsed || parsed.a < 0.08) return;
+  const key = `solid:${parsed.r},${parsed.g},${parsed.b},${parsed.a >= 0.96 ? 1 : Math.round(parsed.a * 20) / 20}`;
   const existing = bucket.get(key);
   if (existing) {
     existing.count += 1;
@@ -67,7 +64,7 @@ function addColor(
   bucket.set(key, {
     original: [raw],
     canonicalRgba: parsed.rgba,
-    canonicalHex: parsed.hex,
+    canonicalHex: displayHex(parsed.hex),
     properties: [property],
     count: 1,
     elementIds: [elementId],
@@ -75,22 +72,39 @@ function addColor(
   });
 }
 
-function addGradientColors(
+function addGradient(
   bucket: Map<string, ColorUsage>,
   value: string | undefined,
   elementId: string,
 ): void {
-  if (!value || value === 'none' || !value.includes('gradient')) return;
-  const colorLikes =
-    value.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)/gi) ?? [];
-  for (const token of colorLikes) {
-    addColor(bucket, token, 'background-image', 'gradient', elementId);
+  if (!value || value === 'none' || !/gradient\(/i.test(value)) return;
+  const css = value.trim();
+  const key = `gradient:${css}`;
+  const stops =
+    css.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)/gi) ?? [];
+  const first = stops.map((stop) => parseColor(stop)).find((color) => color && color.a >= 0.08);
+  const existing = bucket.get(key);
+  if (existing) {
+    existing.count += 1;
+    if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId);
+    return;
   }
+  bucket.set(key, {
+    original: [css],
+    canonicalRgba: first?.rgba ?? 'rgba(0, 0, 0, 1)',
+    canonicalHex: displayHex(first?.hex ?? '#000000'),
+    properties: ['background-image'],
+    count: 1,
+    elementIds: [elementId],
+    source: 'gradient',
+  });
 }
 
-function paletteKey(parsed: NonNullable<ReturnType<typeof parseColor>>): string {
-  const alpha = parsed.a >= 0.92 ? 1 : Math.round(parsed.a * 10) / 10;
-  return `${parsed.r},${parsed.g},${parsed.b},${alpha}`;
+function displayHex(hex: string): string {
+  if (/^#[0-9a-f]{8}$/i.test(hex) && hex.slice(7).toUpperCase() === 'FF') {
+    return hex.slice(0, 7).toUpperCase();
+  }
+  return hex.toUpperCase();
 }
 
 export function colorUsages(bucket: Map<string, ColorUsage>): ColorUsage[] {

@@ -211,6 +211,8 @@ export function sampleDesign(): NormalizedDesign {
           role: 'background',
           roleInferred: true,
           nearDuplicates: [],
+          kind: 'solid',
+          css: '#1D4ED8',
         },
       ],
       typography: [

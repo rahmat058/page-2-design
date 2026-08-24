@@ -48,7 +48,7 @@ function init(): void {
     }
 
     if (message.type === 'HIGHLIGHT_COLOR') {
-      highlightColorOnPage(message.payload.hex);
+      highlightColorOnPage(message.payload);
       sendResponse({ ok: true });
       return false;
     }

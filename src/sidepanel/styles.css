@@ -316,7 +316,9 @@ body,
 .main {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   padding: 8px 12px 12px;
   gap: 8px;
 }
@@ -377,10 +379,9 @@ body,
 }
 
 .segmented {
-  position: sticky;
-  top: 0;
+  position: static;
   z-index: 1;
-  background: #fff;
+  background: #eceff3;
 }
 
 .view-toggle {
@@ -1078,7 +1079,7 @@ body,
 .main {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .bottom-nav {
@@ -1244,11 +1245,12 @@ body,
 }
 
 .peeper-card.checker {
-  background-image: linear-gradient(45deg, #d9d9d9 25%, transparent 25%),
+  background-image: linear-gradient(var(--swatch, transparent), var(--swatch, transparent)),
+    linear-gradient(45deg, #d9d9d9 25%, transparent 25%),
     linear-gradient(-45deg, #d9d9d9 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #d9d9d9 75%),
     linear-gradient(-45deg, transparent 75%, #d9d9d9 75%);
-  background-size: 12px 12px;
+  background-size: auto, 12px 12px, 12px 12px, 12px 12px, 12px 12px;
 }
 
 .peeper-copy {
@@ -1322,7 +1324,9 @@ body,
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .asset-tabs {
@@ -1338,11 +1342,59 @@ body,
 }
 
 .asset-scroll {
+  flex: 1;
   min-height: 0;
+  overflow: auto;
 }
 
 .fade-pane {
   animation: fade-up 0.22s ease;
+}
+
+.main > .fade-pane {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.colors-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.colors-wrap .segmented {
+  flex-shrink: 0;
+  position: static;
+}
+
+.colors-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.peeper-card.light-swatch {
+  border: 1px solid #e5e7eb;
+}
+
+.peeper-card.inspecting .peeper-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.swatch-action.on {
+  background: #efeaff;
+  color: #6d5efc;
+}
+
+.swatch.light {
+  border: 1px solid #e5e7eb;
 }
 
 .toast {

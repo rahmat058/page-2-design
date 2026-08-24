@@ -114,6 +114,35 @@ describe('palette clustering', () => {
     expect(design.tokens.colors.length).toBeLessThanOrEqual(3);
     expect(design.tokens.colors.some((color) => color.hex === '#111111')).toBe(true);
   });
+
+  it('keeps computed gradients as gradient tokens', () => {
+    const scan = sampleScan();
+    scan.colors = [
+      {
+        original: ['radial-gradient(circle, rgb(255, 145, 77) 0%, rgb(255, 255, 255) 70%)'],
+        canonicalRgba: 'rgba(255, 145, 77, 1)',
+        canonicalHex: '#FF914D',
+        properties: ['background-image'],
+        count: 2,
+        elementIds: ['el_1'],
+        source: 'gradient',
+      },
+      {
+        original: ['#101828'],
+        canonicalRgba: 'rgba(16, 24, 40, 1)',
+        canonicalHex: '#101828',
+        properties: ['color'],
+        count: 12,
+        elementIds: ['el_2'],
+        source: 'text',
+      },
+    ];
+    const design = normalizeScan(scan);
+    expect(design.tokens.colors.some((color) => color.kind === 'gradient')).toBe(true);
+    expect(design.tokens.colors.find((color) => color.kind === 'gradient')?.css).toContain(
+      'radial-gradient',
+    );
+  });
 });
 
 describe('normalization and privacy', () => {

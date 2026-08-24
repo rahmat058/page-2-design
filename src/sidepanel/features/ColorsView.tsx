@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isDarkHex } from '../../normalize/colors';
+import { isDarkHex, parseColor } from '../../normalize/colors';
 import { createRequestId } from '../../shared/messages';
 import type { ColorToken } from '../../shared/types';
 import { sendRuntime } from '../chrome-api';
@@ -11,6 +11,7 @@ import { useToastStore } from '../toast';
 export function ColorsView() {
   const colors = useScanStore((s) => s.design?.tokens.colors ?? []);
   const [tab, setTab] = useState<'palette' | 'categories'>('palette');
+  const [inspectingId, setInspectingId] = useState<string | null>(null);
   if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />;
   const grouped = groupByRole(colors);
   return (
@@ -43,11 +44,16 @@ export function ColorsView() {
           Categories
         </button>
       </div>
-      <div key={tab} className="fade-pane">
+      <div key={tab} className="fade-pane colors-scroll">
         {tab === 'palette' ? (
           <div className="palette peeper-palette">
             {colors.map((color) => (
-              <ColorCard key={color.id} color={color} />
+              <ColorCard
+                key={color.id}
+                color={color}
+                inspecting={inspectingId === color.id}
+                onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
+              />
             ))}
           </div>
         ) : (
@@ -57,7 +63,12 @@ export function ColorsView() {
                 <h3>{role}</h3>
                 <div className="peeper-palette">
                   {items.map((color) => (
-                    <ColorCard key={color.id} color={color} />
+                    <ColorCard
+                      key={color.id}
+                      color={color}
+                      inspecting={inspectingId === color.id}
+                      onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
+                    />
                   ))}
                 </div>
               </section>
@@ -69,16 +80,36 @@ export function ColorsView() {
   );
 }
 
-function ColorCard({ color }: { color: ColorToken }) {
+function ColorCard({
+  color,
+  inspecting,
+  onInspect,
+}: {
+  color: ColorToken;
+  inspecting: boolean;
+  onInspect: () => void;
+}) {
+  const gradient = color.kind === 'gradient';
+  const fill = color.css || color.rgba || color.hex;
   const ink = isDarkHex(color.hex) ? '#fff' : '#111';
-  const translucent = color.hex.length > 7;
+  const parsed = parseColor(color.hex);
+  const translucent = !gradient && Boolean(parsed && parsed.a < 0.96);
+  const copyValue = gradient ? color.css : color.hex;
+  const label = gradient ? color.name : color.hex;
   return (
     <div
-      className={translucent ? 'palette-card peeper-card checker' : 'palette-card peeper-card'}
-      style={{ background: color.hex, color: ink }}
+      className={[
+        'palette-card peeper-card',
+        translucent ? 'checker' : '',
+        isLightSwatch(color.hex) ? 'light-swatch' : '',
+        inspecting ? 'inspecting' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      style={{ background: fill, color: ink, ['--swatch' as string]: color.rgba }}
     >
       <div className="peeper-copy">
-        <strong>{color.hex}</strong>
+        <strong>{label}</strong>
         <span>
           {color.count} {color.count === 1 ? 'instance' : 'instances'}
         </span>
@@ -86,17 +117,18 @@ function ColorCard({ color }: { color: ColorToken }) {
       <div className="peeper-actions">
         <button
           type="button"
-          className="swatch-action"
-          aria-label={`Inspect ${color.hex} on the page`}
-          onClick={() => void inspectColor(color.hex)}
+          className={inspecting ? 'swatch-action on' : 'swatch-action'}
+          aria-label={`Inspect ${label} on the page`}
+          aria-pressed={inspecting}
+          onClick={onInspect}
         >
           <InspectIcon />
         </button>
         <button
           type="button"
           className="swatch-action"
-          aria-label={`Copy ${color.hex}`}
-          onClick={() => void copyColor(color.hex)}
+          aria-label={`Copy ${label}`}
+          onClick={() => void copyColor(copyValue, label)}
         >
           <CopyIcon />
         </button>
@@ -105,23 +137,41 @@ function ColorCard({ color }: { color: ColorToken }) {
   );
 }
 
-async function copyColor(hex: string): Promise<void> {
-  await navigator.clipboard.writeText(hex);
-  useToastStore.getState().showToast(`${hex} copied`);
+function isLightSwatch(hex: string): boolean {
+  const parsed = parseColor(hex);
+  if (!parsed) return false;
+  const luminance = (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255;
+  return luminance > 0.9;
 }
 
-async function inspectColor(hex: string): Promise<void> {
-  useToastStore.getState().showToast(`Inspecting ${hex}`);
-  await sendRuntime({
-    type: 'SET_INSPECT_MODE',
-    requestId: createRequestId(),
-    payload: { enabled: true },
-  });
+async function copyColor(value: string, label: string): Promise<void> {
+  await navigator.clipboard.writeText(value);
+  useToastStore.getState().showToast(`${label} copied`);
+}
+
+async function toggleInspectColor(
+  color: ColorToken,
+  inspectingId: string | null,
+  setInspectingId: (id: string | null) => void,
+): Promise<void> {
+  const turningOff = inspectingId === color.id;
+  if (turningOff) {
+    await sendRuntime({
+      type: 'HIGHLIGHT_COLOR',
+      requestId: createRequestId(),
+      payload: { hex: null },
+    });
+    setInspectingId(null);
+    useToastStore.getState().showToast('Inspect off');
+    return;
+  }
   await sendRuntime({
     type: 'HIGHLIGHT_COLOR',
     requestId: createRequestId(),
-    payload: { hex },
+    payload: { hex: color.hex, css: color.css ?? color.hex },
   });
+  setInspectingId(color.id);
+  useToastStore.getState().showToast(`Inspecting ${color.kind === 'gradient' ? color.name : color.hex}`);
 }
 
 export function TypographyView() {

@@ -114,12 +114,14 @@ function groupColors(raw: PageScan): ColorToken[] {
     const parsed = parseColor(usage.canonicalHex) ?? parseColor(usage.canonicalRgba);
     if (!parsed) continue;
     if (isFullyTransparent(parsed) || parsed.a < 0.08) continue;
-    const role = inferColorRole(parsed.hex, usage.properties);
+    const gradient = usage.source === 'gradient';
+    const css = gradient ? (usage.original[0] ?? parsed.rgba) : parsed.rgba;
+    const role = gradient ? 'gradient' : inferColorRole(parsed.hex, usage.properties);
     tokens.push({
       id: `color_${tokens.length + 1}`,
       name: `${role}-${tokens.length + 1}`,
       nameInferred: true,
-      hex: parsed.hex,
+      hex: opaqueHex(parsed.hex),
       rgba: parsed.rgba,
       hsl: parsed.hsl,
       oklch: parsed.oklch,
@@ -130,13 +132,17 @@ function groupColors(raw: PageScan): ColorToken[] {
       role,
       roleInferred: true,
       nearDuplicates: [],
+      kind: gradient ? 'gradient' : 'solid',
+      css,
     });
   }
   return finalizePalette(tokens);
 }
 
 function finalizePalette(tokens: ColorToken[]): ColorToken[] {
-  const sorted = [...tokens].sort((a, b) => b.count - a.count);
+  const solids = tokens.filter((token) => token.kind !== 'gradient');
+  const gradients = uniqueGradients(tokens.filter((token) => token.kind === 'gradient'));
+  const sorted = [...solids].sort((a, b) => b.count - a.count);
   const clustered: ColorToken[] = [];
   for (const token of sorted) {
     const parsed = parseColor(token.hex);
@@ -155,35 +161,45 @@ function finalizePalette(tokens: ColorToken[]): ColorToken[] {
     clustered.push({ ...token, elementIds: [...token.elementIds] });
   }
 
-  const ranked = clustered.sort((a, b) => b.count - a.count);
-  const floor = Math.max(2, Math.floor((ranked[0]?.count ?? 2) * 0.015));
-  const kept = ranked.filter((token, index) => {
-    if (index < 10) return true;
-    if (token.role === 'border' || token.role === 'shadow' || token.role === 'transparent') {
-      return token.count >= Math.max(4, floor);
-    }
-    return token.count >= floor;
-  });
-
-  return kept.slice(0, 28).map((token, index) => {
-    const nearDuplicates = kept
-      .filter((other) => other !== token)
-      .filter((other) => {
-        const a = parseColor(token.hex);
-        const b = parseColor(other.hex);
-        return a && b ? colorDistance(a, b) < 18 : false;
-      })
-      .map((other) => other.id);
-    return {
-      ...token,
-      id: `color_${index + 1}`,
-      name: `${token.role}-${index + 1}`,
-      nearDuplicates,
-    };
-  });
+  const ranked = [...gradients, ...clustered].sort((a, b) => b.count - a.count || a.hex.localeCompare(b.hex));
+  return ranked.slice(0, 32).map((token, index) => ({
+    ...token,
+    id: `color_${index + 1}`,
+    name: token.kind === 'gradient' ? gradientLabel(token.css) : `${token.role}-${index + 1}`,
+    nearDuplicates: [],
+  }));
 }
 
-function sameSwatch(a: NonNullable<ReturnType<typeof parseColor>>, b: NonNullable<ReturnType<typeof parseColor>>): boolean {
-  if (Math.abs(a.a - b.a) > 0.18) return false;
-  return colorDistance(a, b) < 22;
+function uniqueGradients(tokens: ColorToken[]): ColorToken[] {
+  const map = new Map<string, ColorToken>();
+  for (const token of tokens) {
+    const key = token.css.replace(/\s+/g, ' ');
+    const existing = map.get(key);
+    if (existing) {
+      existing.count += token.count;
+      existing.elementIds = [...new Set([...existing.elementIds, ...token.elementIds])];
+      continue;
+    }
+    map.set(key, { ...token, css: key });
+  }
+  return [...map.values()];
+}
+
+function gradientLabel(css: string): string {
+  if (/radial-gradient/i.test(css)) return 'Radial gradient';
+  if (/conic-gradient/i.test(css)) return 'Conic gradient';
+  return 'Linear gradient';
+}
+
+function opaqueHex(hex: string): string {
+  if (/^#[0-9a-f]{8}$/i.test(hex) && hex.slice(7).toUpperCase() === 'FF') return hex.slice(0, 7).toUpperCase();
+  return hex.toUpperCase();
+}
+
+function sameSwatch(
+  a: NonNullable<ReturnType<typeof parseColor>>,
+  b: NonNullable<ReturnType<typeof parseColor>>,
+): boolean {
+  if (Math.abs(a.a - b.a) > 0.08) return false;
+  return colorDistance(a, b) < 6;
 }

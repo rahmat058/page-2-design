@@ -404,5 +404,5 @@ export function colorLooksLike(value: string, targetHex: string): boolean {
   const b = parseColor(targetHex);
   if (!a || !b) return false;
   if (Math.abs(a.a - b.a) > 0.2) return false;
-  return colorDistance(a, b) < 18;
+  return colorDistance(a, b) < 8;
 }

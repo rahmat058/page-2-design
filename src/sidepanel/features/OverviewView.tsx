@@ -68,9 +68,9 @@ export function OverviewView() {
               {design.tokens.colors.slice(0, 10).map((color) => (
                 <span
                   key={color.id}
-                  className="swatch"
-                  style={{ background: color.hex }}
-                  title={color.hex}
+                  className={color.hex.toUpperCase() === '#FFFFFF' ? 'swatch light' : 'swatch'}
+                  style={{ background: color.css || color.hex }}
+                  title={color.kind === 'gradient' ? color.name : color.hex}
                 />
               ))}
             </div>
