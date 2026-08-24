@@ -1128,6 +1128,34 @@ body,
   min-width: 0;
   max-width: 100%;
   overflow-x: hidden;
+  display: grid;
+  gap: 18px;
+}
+
+.type-section {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eceff2;
+}
+
+.type-section:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.type-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.type-section-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .type-card {
@@ -1222,6 +1250,27 @@ body,
 
 .copy-values:hover {
   background: #1f2937;
+}
+
+.type-inspect {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #d7dde5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.type-inspect.on {
+  border-color: #c4b5fd;
+  background: #efeaff;
+  color: #6d5efc;
 }
 
 html,

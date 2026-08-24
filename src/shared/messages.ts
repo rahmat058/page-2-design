@@ -225,7 +225,16 @@ export interface SetInspectModeMessage extends MessageBase {
 
 export interface HighlightColorMessage extends MessageBase {
   type: 'HIGHLIGHT_COLOR';
-  payload: { hex: string | null; css?: string | null };
+  payload: {
+    hex?: string | null;
+    css?: string | null;
+    typography?: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: string;
+      lineHeight: string;
+    } | null;
+  };
 }
 
 export interface HighlightColorResultMessage extends MessageBase {

@@ -73,10 +73,18 @@ function onClick(event: MouseEvent): void {
 }
 
 export function highlightColorOnPage(payload: {
-  hex: string | null;
+  hex?: string | null;
   css?: string | null;
+  typography?: {
+    fontFamily: string;
+    fontSize: string;
+    fontWeight: string;
+    lineHeight: string;
+  } | null;
 }): { index: number; total: number; done: boolean } {
-  const key = (payload.css || payload.hex || '').replace(/\s+/g, ' ').trim();
+  const key = payload.typography
+    ? `type:${payload.typography.fontFamily}|${payload.typography.fontSize}|${payload.typography.fontWeight}|${payload.typography.lineHeight}`
+    : (payload.css || payload.hex || '').replace(/\s+/g, ' ').trim();
   if (!key) {
     clearColorHit();
     activeKey = null;
@@ -84,7 +92,9 @@ export function highlightColorOnPage(payload: {
     return { index: 0, total: 0, done: true };
   }
 
-  const hits = collectExactHits(payload);
+  const hits = payload.typography
+    ? collectTypeHits(payload.typography)
+    : collectExactHits(payload);
   if (hits.length === 0) {
     clearColorHit();
     activeKey = null;
@@ -109,7 +119,57 @@ export function highlightColorOnPage(payload: {
   return { index: hitIndex, total: hits.length, done: false };
 }
 
-function collectExactHits(payload: { hex: string | null; css?: string | null }): Element[] {
+function collectTypeHits(token: {
+  fontFamily: string;
+  fontSize: string;
+  fontWeight: string;
+  lineHeight: string;
+}): Element[] {
+  const hits: Element[] = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  while (walker.nextNode() && hits.length < 200) {
+    const el = walker.currentNode as Element;
+    if (el.id?.startsWith('page2design-')) continue;
+    if (isOverlay(el)) continue;
+    if (!el.textContent?.trim()) continue;
+    const style = getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
+    if (!typeMatches(style, token)) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 2 && rect.height < 2) continue;
+    hits.push(el);
+  }
+  return hits;
+}
+
+function typeMatches(
+  style: CSSStyleDeclaration,
+  token: { fontFamily: string; fontSize: string; fontWeight: string; lineHeight: string },
+): boolean {
+  if (normalizeFamily(style.fontFamily) !== normalizeFamily(token.fontFamily)) return false;
+  if (normalizePx(style.fontSize) !== normalizePx(token.fontSize)) return false;
+  if (normalizeWeight(style.fontWeight) !== normalizeWeight(token.fontWeight)) return false;
+  if (normalizePx(style.lineHeight) !== normalizePx(token.lineHeight)) return false;
+  return true;
+}
+
+function normalizeFamily(stack: string): string {
+  return stack.split(',')[0]?.replace(/['"]/g, '').trim().toLowerCase() || stack.toLowerCase();
+}
+
+function normalizePx(value: string): string {
+  const n = Number.parseFloat(value);
+  if (!Number.isFinite(n)) return value.trim().toLowerCase();
+  return `${Math.round(n * 10) / 10}`;
+}
+
+function normalizeWeight(value: string): string {
+  if (value === 'normal') return '400';
+  if (value === 'bold') return '700';
+  return value.trim();
+}
+
+function collectExactHits(payload: { hex?: string | null; css?: string | null }): Element[] {
   const gradient =
     payload.css && /gradient\(/i.test(payload.css) ? payload.css.replace(/\s+/g, ' ').trim() : null;
   const hits: Element[] = [];
