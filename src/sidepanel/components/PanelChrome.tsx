@@ -89,28 +89,45 @@ export function PanelChrome(props: Props) {
 function startDrag(event: React.PointerEvent<HTMLButtonElement>): void {
   if (window === window.top) return;
   event.preventDefault();
+  event.stopPropagation();
   const target = event.currentTarget;
   target.setPointerCapture(event.pointerId);
-  let lastX = event.clientX;
-  let lastY = event.clientY;
-  const move = (next: PointerEvent) => {
-    window.parent.postMessage(
-      {
-        source: 'page2design',
-        type: 'move',
-        dx: next.clientX - lastX,
-        dy: next.clientY - lastY,
-      },
-      '*',
-    );
-    lastX = next.clientX;
-    lastY = next.clientY;
+  postOverlay({ type: 'dragstart', screenX: event.screenX, screenY: event.screenY });
+
+  let latestX = event.screenX;
+  let latestY = event.screenY;
+  let frame = 0;
+
+  const flush = () => {
+    frame = 0;
+    postOverlay({ type: 'move', screenX: latestX, screenY: latestY });
   };
+
+  const move = (next: PointerEvent) => {
+    latestX = next.screenX;
+    latestY = next.screenY;
+    if (!frame) frame = requestAnimationFrame(flush);
+  };
+
   const end = () => {
-    target.releasePointerCapture(event.pointerId);
+    if (frame) cancelAnimationFrame(frame);
+    flush();
+    postOverlay({ type: 'dragend' });
+    try {
+      target.releasePointerCapture(event.pointerId);
+    } catch {
+      /* already released */
+    }
     target.removeEventListener('pointermove', move);
     target.removeEventListener('pointerup', end);
+    target.removeEventListener('pointercancel', end);
   };
+
   target.addEventListener('pointermove', move);
   target.addEventListener('pointerup', end);
+  target.addEventListener('pointercancel', end);
+}
+
+function postOverlay(payload: { type: string; screenX?: number; screenY?: number }): void {
+  window.parent.postMessage({ source: 'page2design', ...payload }, '*');
 }

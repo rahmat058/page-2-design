@@ -1,4 +1,5 @@
 import { SCHEMA_VERSION } from '../shared/constants';
+import { mergeAssets } from '../content/asset-scanner';
 import type { ColorToken, NormalizedDesign, PageScan } from '../shared/types';
 import { parseColor, inferColorRole, colorDistance, isFullyTransparent, pagePaletteGroups } from './colors';
 import { inferComponents } from './components';
@@ -25,7 +26,7 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
   }));
 
   const usedPaths = new Set<string>();
-  const assets = raw.assets.map((asset) => ({
+  const assets = mergeAssets(raw.assets).map((asset) => ({
     ...asset,
     localPath:
       asset.localPath ||

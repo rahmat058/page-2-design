@@ -113,7 +113,17 @@ export function base64ToBytes(base64: string): Uint8Array {
 }
 
 export function dataUrlToBytes(dataUrl: string): Uint8Array | null {
-  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
-  if (!match?.[2]) return null;
-  return base64ToBytes(match[2]);
+  const comma = dataUrl.indexOf(',');
+  if (comma < 0) return null;
+  const header = dataUrl.slice(0, comma);
+  const body = dataUrl.slice(comma + 1);
+  try {
+    if (/;base64/i.test(header)) return base64ToBytes(body);
+    const decoded = decodeURIComponent(body);
+    const bytes = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i += 1) bytes[i] = decoded.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
 }

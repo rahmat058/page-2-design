@@ -502,6 +502,16 @@ body,
   cursor: pointer;
 }
 
+.icon-btn.grip {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.icon-btn.grip:active {
+  cursor: grabbing;
+}
+
 .icon-btn:hover,
 .nav-btn:hover {
   background: #f3f0ff;

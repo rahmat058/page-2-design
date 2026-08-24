@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import type { AssetRecord } from '../shared/types';
+import { uniqueVisualAssets } from '../content/asset-scanner';
 import { downloadAssets } from '../export/asset-downloader';
 import { extensionFromMimeOrUrl, sanitizeFilename } from '../export/filename';
 import { createRequestId } from '../shared/messages';
@@ -108,7 +109,7 @@ export async function downloadAllImagesZip(
   assets: AssetRecord[],
   hostname: string | null,
 ): Promise<void> {
-  const visual = assets.filter(isVisualAsset);
+  const visual = uniqueVisualAssets(assets);
   const { files } = await downloadAssets(
     visual,
     new Set(visual.map((asset) => asset.id)),

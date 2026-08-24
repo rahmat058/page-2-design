@@ -58,16 +58,41 @@ function mountOverlay(): void {
   wrap.appendChild(frame);
   shadow.appendChild(wrap);
 
+  let drag: { left: number; top: number; screenX: number; screenY: number } | null = null;
+
   const onMessage = (event: MessageEvent) => {
-    const data = event.data as { source?: string; type?: string; dx?: number; dy?: number };
+    const data = event.data as {
+      source?: string;
+      type?: string;
+      screenX?: number;
+      screenY?: number;
+    };
     if (data?.source !== 'page2design') return;
     if (data.type === 'close') {
       window.removeEventListener('message', onMessage);
       closeOverlay();
       return;
     }
-    if (data.type === 'move') {
-      moveHost(host, Number(data.dx) || 0, Number(data.dy) || 0);
+    if (data.type === 'dragstart') {
+      const rect = host.getBoundingClientRect();
+      drag = {
+        left: rect.left,
+        top: rect.top,
+        screenX: Number(data.screenX) || 0,
+        screenY: Number(data.screenY) || 0,
+      };
+      host.style.willChange = 'left, top';
+      return;
+    }
+    if (data.type === 'move' && drag) {
+      const left = drag.left + ((Number(data.screenX) || 0) - drag.screenX);
+      const top = drag.top + ((Number(data.screenY) || 0) - drag.screenY);
+      placeHost(host, left, top);
+      return;
+    }
+    if (data.type === 'dragend') {
+      host.style.willChange = 'auto';
+      drag = null;
     }
   };
   window.addEventListener('message', onMessage);
@@ -75,15 +100,12 @@ function mountOverlay(): void {
   document.documentElement.appendChild(host);
 }
 
-function moveHost(host: HTMLElement, dx: number, dy: number): void {
-  const rect = host.getBoundingClientRect();
-  let left = rect.left + dx;
-  let top = rect.top + dy;
+function placeHost(host: HTMLElement, nextLeft: number, nextTop: number): void {
   const maxLeft = Math.max(MARGIN, window.innerWidth - PANEL_WIDTH - MARGIN);
   const maxTop = Math.max(MARGIN, window.innerHeight - 120);
-  left = Math.min(Math.max(MARGIN, left), maxLeft);
-  top = Math.min(Math.max(MARGIN, top), maxTop);
+  const left = Math.min(Math.max(MARGIN, nextLeft), maxLeft);
+  const top = Math.min(Math.max(MARGIN, nextTop), maxTop);
   host.style.right = 'auto';
-  host.style.left = `${left}px`;
-  host.style.top = `${top}px`;
+  host.style.left = `${Math.round(left)}px`;
+  host.style.top = `${Math.round(top)}px`;
 }

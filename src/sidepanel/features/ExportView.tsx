@@ -5,6 +5,7 @@ import { downloadAssets, dataUrlToBytes } from '../../export/asset-downloader';
 import { buildExportZip } from '../../export/zip-exporter';
 import { calculateCoverage } from '../../validation/coverage';
 import { useScanStore } from '../store/useScanStore';
+import { uniqueVisualAssets } from '../../content/asset-scanner';
 import { EmptyState } from '../components/CopyButton';
 
 export function ExportView() {
@@ -18,6 +19,8 @@ export function ExportView() {
   const [includeFailed, setIncludeFailed] = useState(true);
 
   if (!design || !raw) return <EmptyState>Export is available after a usable scan.</EmptyState>;
+
+  const uniqueAssets = uniqueVisualAssets(design.assets);
 
   const exportZip = async () => {
     setPhase('exporting');
@@ -37,9 +40,11 @@ export function ExportView() {
         : null;
 
     setStatus('Downloading selected assets…');
+    const chosen = uniqueAssets.filter((asset) => selectedAssetIds.includes(asset.id));
+    const toExport = chosen.length > 0 ? chosen : uniqueAssets;
     const { assets, files } = await downloadAssets(
-      design.assets,
-      new Set(selectedAssetIds),
+      toExport,
+      new Set(toExport.map((asset) => asset.id)),
       async (url) => {
         try {
           const response = await fetch(url, { credentials: 'include' });
@@ -134,7 +139,7 @@ export function ExportView() {
     <section className="card">
       <h2>Export</h2>
       <p>
-        {design.assets.length} assets discovered. {selectedAssetIds.length} selected.
+        {uniqueAssets.length} unique images ready to export. {selectedAssetIds.length} selected.
       </p>
       <label className="checkbox">
         <input
@@ -148,7 +153,7 @@ export function ExportView() {
         <button
           type="button"
           className="btn secondary"
-          onClick={() => setSelectedAssets(design.assets.map((a) => a.id))}
+          onClick={() => setSelectedAssets(uniqueAssets.map((asset) => asset.id))}
         >
           Select all assets
         </button>

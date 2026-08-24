@@ -3,6 +3,7 @@ import { extractCssUrls } from '../content/css-urls';
 import { parseSrcset, pickBestSrcsetUrl } from '../content/srcset';
 import { mergeAssets } from '../content/asset-scanner';
 import { orderContent } from '../content/content-scanner';
+import type { AssetRecord } from '../shared/types';
 import {
   sanitizeFilename,
   buildAssetPath,
@@ -96,6 +97,42 @@ describe('asset deduplication', () => {
     expect(merged).toHaveLength(1);
     expect(merged[0]?.elementIds).toEqual(['el_1', 'el_2']);
     expect(merged[0]?.alt).toBe('Hero');
+  });
+
+  it('keeps one tile when urls differ only by query, hash, or id', () => {
+    const merged = mergeAssets([
+      sampleAsset({
+        id: 'asset_a',
+        resolvedUrl: 'https://cdn.example/riley.png?w=200',
+        elementIds: ['el_1'],
+      }),
+      sampleAsset({
+        id: 'asset_b',
+        resolvedUrl: 'https://cdn.example/riley.png?w=800#hero',
+        elementIds: ['el_2'],
+        intrinsicWidth: 800,
+        intrinsicHeight: 200,
+      }),
+    ]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0]?.elementIds).toEqual(['el_1', 'el_2']);
+    expect(merged[0]?.intrinsicWidth).toBe(800);
+  });
+
+  it('keeps optimizer urls that point at different files', () => {
+    const merged = mergeAssets([
+      sampleAsset({
+        id: 'asset_a',
+        resolvedUrl: 'https://site.example/_next/image?url=%2Fhero.png&w=640',
+        elementIds: ['el_1'],
+      }),
+      sampleAsset({
+        id: 'asset_b',
+        resolvedUrl: 'https://site.example/_next/image?url=%2Flogo.png&w=640',
+        elementIds: ['el_2'],
+      }),
+    ]);
+    expect(merged).toHaveLength(2);
   });
 });
 
@@ -192,3 +229,24 @@ describe('swatch contrast', () => {
     expect(isDarkHex('#f5f5f5')).toBe(false);
   });
 });
+
+function sampleAsset(partial: Partial<AssetRecord> & Pick<AssetRecord, 'id' | 'resolvedUrl'>): AssetRecord {
+  return {
+    type: 'image',
+    sourceUrl: partial.resolvedUrl,
+    localPath: '',
+    mimeType: null,
+    intrinsicWidth: null,
+    intrinsicHeight: null,
+    renderedWidth: null,
+    renderedHeight: null,
+    elementIds: ['el_1'],
+    sectionIds: [],
+    downloadStatus: 'pending',
+    failureReason: null,
+    licenseReviewRequired: false,
+    inlineSvg: null,
+    alt: null,
+    ...partial,
+  };
+}

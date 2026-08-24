@@ -8,6 +8,7 @@ import type {
   ScanPhase,
 } from '../../shared/types';
 import { DEFAULT_SCAN_OPTIONS, emptyCounts } from '../../shared/types';
+import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner';
 
 export type PanelView =
   | 'overview'
@@ -96,23 +97,26 @@ export const useScanStore = create<ScanStore>((set) => ({
       counts: payload.counts,
       error: null,
     }),
-  setReady: (scanId, raw, design) =>
+  setReady: (scanId, raw, design) => {
+    const assets = mergeAssets(design.assets);
+    const next = { ...design, assets };
     set({
       scanId,
       raw,
-      design,
+      design: next,
       phase: 'ready',
-      limitations: design.limitations,
+      limitations: next.limitations,
       counts: {
-        elements: design.coverage.relevantElements,
-        textBlocks: design.coverage.visibleTextBlocks,
-        images: design.assets.length,
-        colors: design.tokens.colors.length,
-        typography: design.tokens.typography.length,
+        elements: next.coverage.relevantElements,
+        textBlocks: next.coverage.visibleTextBlocks,
+        images: uniqueVisualAssets(assets).length,
+        colors: next.tokens.colors.length,
+        typography: next.tokens.typography.length,
       },
-      selectedAssetIds: design.assets.map((asset) => asset.id),
+      selectedAssetIds: assets.map((asset) => asset.id),
       error: null,
-    }),
+    });
+  },
   setFailed: (message) => set({ phase: 'failed', error: message }),
   setCancelled: () => set({ phase: 'cancelled', progressMessage: 'Scan cancelled.' }),
   setPhase: (phase) => set({ phase }),

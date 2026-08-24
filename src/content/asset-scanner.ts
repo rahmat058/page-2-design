@@ -14,31 +14,26 @@ export function collectAssetsFromElement(
 
   if (tag === 'img') {
     const img = el as HTMLImageElement;
-    const resolved =
-      img.currentSrc || img.src || el.getAttribute('src') || el.getAttribute('data-src');
-    if (resolved) {
-      found.push(
-        makeAsset('image', resolved, elementId, {
-          intrinsicWidth: img.naturalWidth || null,
-          intrinsicHeight: img.naturalHeight || null,
-          renderedWidth: img.clientWidth || null,
-          renderedHeight: img.clientHeight || null,
-          alt: img.alt || el.getAttribute('alt'),
-        }),
-      );
-    }
-    const srcset = el.getAttribute('srcset');
-    if (srcset) {
-      for (const candidate of parseSrcset(srcset)) {
-        found.push(makeAsset('image', candidate.url, elementId, { alt: img.alt || null }));
-      }
-    }
+    const extra = {
+      intrinsicWidth: img.naturalWidth || null,
+      intrinsicHeight: img.naturalHeight || null,
+      renderedWidth: img.clientWidth || null,
+      renderedHeight: img.clientHeight || null,
+      alt: img.alt || el.getAttribute('alt'),
+    };
+    const urls = imageUrlsFromElement(el, img);
+    for (const url of urls) found.push(makeAsset('image', url, elementId, extra));
   }
 
   if (tag === 'source') {
     const srcset = el.getAttribute('srcset');
-    const best = srcset ? pickBestSrcsetUrl(srcset) : el.getAttribute('src');
-    if (best) found.push(makeAsset('image', best, elementId, {}));
+    const urls = srcset
+      ? parseSrcset(srcset).map((candidate) => candidate.url)
+      : [el.getAttribute('src')];
+    const best = srcset ? pickBestSrcsetUrl(srcset) : null;
+    for (const url of [best, ...urls]) {
+      if (url) found.push(makeAsset('image', url, elementId, {}));
+    }
   }
 
   if (tag === 'video') {
@@ -238,6 +233,23 @@ function inlineSvgAsset(markup: string, elementId: string, el: Element): AssetRe
   };
 }
 
+function imageUrlsFromElement(el: Element, img: HTMLImageElement): string[] {
+  const urls: string[] = [];
+  const push = (value: string | null | undefined) => {
+    if (value) urls.push(value);
+  };
+  push(img.currentSrc);
+  push(img.src);
+  push(el.getAttribute('src'));
+  push(el.getAttribute('data-src'));
+  const srcset = el.getAttribute('srcset') || el.getAttribute('data-srcset');
+  if (srcset) {
+    push(pickBestSrcsetUrl(srcset));
+    for (const candidate of parseSrcset(srcset)) push(candidate.url);
+  }
+  return [...new Set(urls)];
+}
+
 function guessType(url: string, fallback: AssetType): AssetType {
   const lower = url.toLowerCase();
   if (lower.includes('.svg') || lower.startsWith('data:image/svg')) return 'svg';
@@ -255,7 +267,7 @@ function makeAsset(
   extra: Partial<AssetRecord>,
 ): AssetRecord {
   const resolved = resolveUrl(rawUrl);
-  const id = `asset_${hashString(resolved)}`;
+  const id = `asset_${hashString(canonicalizeAssetUrl(resolved))}`;
   return {
     id,
     type,
@@ -282,6 +294,71 @@ export function resolveUrl(url: string): string {
     return new URL(url, document.baseURI).toString();
   } catch {
     return url;
+  }
+}
+
+/** Same visual file even when cache-busters or srcset widths differ. Distinct optimizer `url=` targets stay separate. */
+export function assetIdentityKey(asset: AssetRecord): string {
+  if (asset.inlineSvg) return `svg:${hashString(asset.inlineSvg.replace(/\s+/g, ' ').trim())}`;
+  return `url:${canonicalizeAssetUrl(asset.resolvedUrl || asset.sourceUrl)}`;
+}
+
+const SIZE_QUERY_KEYS = new Set([
+  'w',
+  'h',
+  'width',
+  'height',
+  'dpr',
+  'q',
+  'quality',
+  'fit',
+  'crop',
+  'auto',
+  'format',
+  'fm',
+  'cs',
+  'ixlib',
+  'ixid',
+]);
+const CACHE_QUERY_KEYS = new Set(['v', 'ver', 'version', 't', 'ts', '_', 'cb', 'cache', 'hash', 'rev']);
+
+export function canonicalizeAssetUrl(url: string, depth = 0): string {
+  const raw = url.trim();
+  if (!raw) return '';
+  if (raw.startsWith('data:')) return raw.replace(/\s+/g, '');
+  if (raw.startsWith('blob:') || raw.startsWith('inline:')) return raw;
+  try {
+    const parsed = new URL(raw);
+    parsed.hash = '';
+    const nested =
+      parsed.searchParams.get('url') ||
+      parsed.searchParams.get('src') ||
+      parsed.searchParams.get('image');
+    const optimizer = /\/_next\/image|\/cdn-cgi\/image|\/image\/fetch/i.test(parsed.pathname);
+    if (nested && depth < 3 && (optimizer || parsed.searchParams.has('url'))) {
+      try {
+        const decoded = decodeURIComponent(nested);
+        const inner =
+          decoded.startsWith('http') || decoded.startsWith('data:') || decoded.startsWith('blob:')
+            ? decoded
+            : new URL(decoded, parsed.origin).toString();
+        if (inner !== raw) return canonicalizeAssetUrl(inner, depth + 1);
+      } catch {
+        /* keep the outer URL */
+      }
+    }
+    const kept: Array<[string, string]> = [];
+    parsed.searchParams.forEach((value, key) => {
+      const lower = key.toLowerCase();
+      if (SIZE_QUERY_KEYS.has(lower) || CACHE_QUERY_KEYS.has(lower)) return;
+      kept.push([key, value]);
+    });
+    kept.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+    const path = parsed.pathname.replace(/\/+$/, '') || '/';
+    const query = kept.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+    return `${parsed.protocol}//${parsed.host.toLowerCase()}${path}${query ? `?${query}` : ''}`;
+  } catch {
+    return raw.split('#')[0] ?? raw;
   }
 }
 
@@ -349,18 +426,62 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 export function mergeAssets(list: AssetRecord[]): AssetRecord[] {
   const map = new Map<string, AssetRecord>();
   for (const asset of list) {
-    const existing = map.get(asset.id);
+    const key = assetIdentityKey(asset);
+    const incoming = { ...asset, elementIds: [...asset.elementIds] };
+    const existing = map.get(key);
     if (!existing) {
-      map.set(asset.id, { ...asset, elementIds: [...asset.elementIds] });
+      map.set(key, incoming);
       continue;
     }
-    existing.elementIds = [...new Set([...existing.elementIds, ...asset.elementIds])];
-    if (!existing.inlineSvg && asset.inlineSvg) existing.inlineSvg = asset.inlineSvg;
-    if (!existing.alt && asset.alt) existing.alt = asset.alt;
-    if (!existing.intrinsicWidth && asset.intrinsicWidth) {
-      existing.intrinsicWidth = asset.intrinsicWidth;
-      existing.intrinsicHeight = asset.intrinsicHeight;
-    }
+    map.set(key, mergeAssetPair(existing, incoming));
   }
   return [...map.values()];
+}
+
+function mergeAssetPair(a: AssetRecord, b: AssetRecord): AssetRecord {
+  const takeB = assetRank(b) > assetRank(a);
+  const keep = { ...(takeB ? b : a) };
+  const drop = takeB ? a : b;
+  keep.elementIds = [...new Set([...a.elementIds, ...b.elementIds])];
+  keep.sectionIds = [...new Set([...a.sectionIds, ...b.sectionIds])];
+  if (!keep.inlineSvg) keep.inlineSvg = drop.inlineSvg;
+  if (!keep.alt) keep.alt = drop.alt;
+  if ((drop.intrinsicWidth ?? 0) > (keep.intrinsicWidth ?? 0)) {
+    keep.intrinsicWidth = drop.intrinsicWidth;
+    keep.intrinsicHeight = drop.intrinsicHeight;
+  }
+  if (!keep.mimeType) keep.mimeType = drop.mimeType;
+  if (widthHint(drop.resolvedUrl) > widthHint(keep.resolvedUrl)) {
+    keep.sourceUrl = drop.sourceUrl;
+    keep.resolvedUrl = drop.resolvedUrl;
+  }
+  if (keep.downloadStatus !== 'downloaded' && drop.downloadStatus === 'downloaded') {
+    keep.sourceUrl = drop.sourceUrl;
+    keep.resolvedUrl = drop.resolvedUrl;
+    keep.mimeType = drop.mimeType || keep.mimeType;
+    keep.downloadStatus = drop.downloadStatus;
+  }
+  return keep;
+}
+
+function assetRank(asset: AssetRecord): number {
+  const area =
+    (asset.intrinsicWidth ?? 0) * (asset.intrinsicHeight ?? 0) ||
+    (asset.renderedWidth ?? 0) * (asset.renderedHeight ?? 0);
+  const downloaded = asset.downloadStatus === 'downloaded' ? 1_000_000_000 : 0;
+  return area + downloaded + widthHint(asset.resolvedUrl);
+}
+
+function widthHint(url: string): number {
+  try {
+    const parsed = new URL(url);
+    const value = Number(parsed.searchParams.get('w') || parsed.searchParams.get('width') || 0);
+    return Number.isFinite(value) ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function uniqueVisualAssets(list: AssetRecord[]): AssetRecord[] {
+  return mergeAssets(list).filter((asset) => asset.type !== 'font');
 }

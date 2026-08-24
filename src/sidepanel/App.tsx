@@ -12,6 +12,8 @@ import { Toast } from './components/Toast';
 import { downloadAllImagesZip } from './download-asset';
 import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow';
 import { useScanStore } from './store/useScanStore';
+import { uniqueVisualAssets } from '../content/asset-scanner';
+import type { NormalizedDesign } from '../shared/types';
 
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting'];
 const OVERLAY = typeof window !== 'undefined' && window !== window.top;
@@ -75,7 +77,9 @@ export function App() {
         <div className="head-row">
           <h1>
             {headingFor(view)}
-            {view !== 'overview' ? <span className="count-pill">{countFor(view, counts)}</span> : null}
+            {view !== 'overview' ? (
+              <span className="count-pill">{countFor(view, counts, design)}</span>
+            ) : null}
           </h1>
           {view === 'overview' && design ? (
             <button
@@ -93,7 +97,7 @@ export function App() {
               disabled={!canExport}
               onClick={() => {
                 if (view === 'assets' || view === 'images' || view === 'icons') {
-                  const assets = useScanStore.getState().design?.assets ?? [];
+                  const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? []);
                   void downloadAllImagesZip(assets, hostname);
                   return;
                 }
@@ -181,10 +185,13 @@ function headingFor(view: string): string {
 function countFor(
   view: string,
   counts: { colors: number; typography: number; images: number; textBlocks: number },
+  design: NormalizedDesign | null,
 ): number {
   if (view === 'colors') return counts.colors;
   if (view === 'typography') return counts.typography;
-  if (view === 'assets' || view === 'images' || view === 'icons') return counts.images;
+  if (view === 'assets' || view === 'images' || view === 'icons') {
+    return design ? uniqueVisualAssets(design.assets).length : counts.images;
+  }
   if (view === 'content') return counts.textBlocks;
   return 0;
 }

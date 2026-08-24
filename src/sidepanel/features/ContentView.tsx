@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AssetRecord } from '../../shared/types';
+import { uniqueVisualAssets } from '../../content/asset-scanner';
 import { CopyButton, ScanPrompt } from '../components/CopyButton';
 import { DownloadIcon, GridViewIcon, ListViewIcon } from '../components/LucideIcons';
 import { VirtualList } from '../components/VirtualList';
@@ -50,8 +51,9 @@ export function ContentView() {
 
 export function AssetsView() {
   const assets = useScanStore((s) => s.design?.assets ?? []);
+  const unique = useMemo(() => uniqueVisualAssets(assets), [assets]);
   const [mode, setMode] = useState<'grid' | 'list'>('grid');
-  if (assets.length === 0) return <ScanPrompt afterScan="No assets were captured." />;
+  if (unique.length === 0) return <ScanPrompt afterScan="No assets were captured." />;
   return (
     <div className="assets-wrap">
       <div className="segmented pill-tabs asset-tabs" role="tablist" aria-label="Asset layout">
@@ -87,13 +89,13 @@ export function AssetsView() {
       <div key={mode} className="fade-pane asset-scroll">
         {mode === 'grid' ? (
           <div className="asset-grid">
-            {assets.map((asset) => (
+            {unique.map((asset) => (
               <AssetTile key={asset.id} asset={asset} />
             ))}
           </div>
         ) : (
           <div className="asset-list">
-            {assets.map((asset) => (
+            {unique.map((asset) => (
               <AssetRow key={asset.id} asset={asset} />
             ))}
           </div>
