@@ -67,9 +67,6 @@ export function PanelChrome(props: Props) {
             <button type="button" onClick={props.onExport} disabled={!props.canExport}>
               Export ZIP
             </button>
-            <button type="button" onClick={() => props.onOpen('content')}>
-              Content
-            </button>
             <button type="button" onClick={() => props.onOpen('layout')}>
               Layout
             </button>

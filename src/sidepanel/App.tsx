@@ -13,6 +13,7 @@ import { downloadAllImagesZip } from './download-asset';
 import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow';
 import { useScanStore } from './store/useScanStore';
 import { uniqueVisualAssets } from '../content/asset-scanner';
+import { panelContentBlocks } from './content-groups';
 import type { NormalizedDesign } from '../shared/types';
 
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting'];
@@ -192,6 +193,6 @@ function countFor(
   if (view === 'assets' || view === 'images' || view === 'icons') {
     return design ? uniqueVisualAssets(design.assets).length : counts.images;
   }
-  if (view === 'content') return counts.textBlocks;
+  if (view === 'content') return design ? panelContentBlocks(design.content).length : counts.textBlocks;
   return 0;
 }

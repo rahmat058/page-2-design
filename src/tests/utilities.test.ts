@@ -3,6 +3,12 @@ import { extractCssUrls } from '../content/css-urls';
 import { parseSrcset, pickBestSrcsetUrl } from '../content/srcset';
 import { mergeAssets } from '../content/asset-scanner';
 import { orderContent } from '../content/content-scanner';
+import {
+  contentKindLabel,
+  copyContentPlain,
+  groupContentBySection,
+  panelContentBlocks,
+} from '../sidepanel/content-groups';
 import type { AssetRecord } from '../shared/types';
 import {
   sanitizeFilename,
@@ -158,6 +164,81 @@ describe('spacing frequency', () => {
     );
     expect(tokens[0]?.value).toBe('24px');
     expect(tokens.every((token) => token.nameInferred)).toBe(true);
+  });
+});
+
+describe('content section grouping', () => {
+  it('groups blocks under named sections and keeps leftovers last', () => {
+    const groups = groupContentBySection(
+      [
+        {
+          id: 'c2',
+          kind: 'paragraph',
+          level: null,
+          text: 'Body',
+          href: null,
+          elementId: 'el_2',
+          sectionId: 'sec_main',
+          order: 2,
+        },
+        {
+          id: 'c1',
+          kind: 'heading',
+          level: 1,
+          text: 'Hello',
+          href: null,
+          elementId: 'el_1',
+          sectionId: 'sec_header',
+          order: 1,
+        },
+        {
+          id: 'c3',
+          kind: 'link',
+          level: null,
+          text: 'Orphan',
+          href: 'https://example.com',
+          elementId: 'el_3',
+          sectionId: null,
+          order: 3,
+        },
+      ],
+      [
+        { id: 'sec_header', name: 'Header' },
+        { id: 'sec_main', name: 'Main' },
+      ],
+    );
+    expect(groups.map((group) => group.name)).toEqual(['Header', 'Main', 'Other']);
+    expect(groups[0]?.blocks[0]?.text).toBe('Hello');
+    expect(copyContentPlain(groups)).toContain('# Header');
+    expect(contentKindLabel(groups[0]!.blocks[0]!)).toBe('Heading 1');
+  });
+
+  it('omits image alt from the content tab', () => {
+    const visible = panelContentBlocks([
+      {
+        id: 'c1',
+        kind: 'heading',
+        level: 1,
+        text: 'Hello',
+        href: null,
+        elementId: 'el_1',
+        sectionId: 'sec_header',
+        order: 1,
+      },
+      {
+        id: 'c2',
+        kind: 'image-alt',
+        level: null,
+        text: 'Hero photo',
+        href: null,
+        elementId: 'el_2',
+        sectionId: 'sec_header',
+        order: 2,
+      },
+    ]);
+    expect(visible).toHaveLength(1);
+    expect(visible[0]?.kind).toBe('heading');
+    expect(groupContentBySection(visible, [{ id: 'sec_header', name: 'Header' }])[0]?.blocks).toHaveLength(1);
   });
 });
 

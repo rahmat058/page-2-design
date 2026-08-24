@@ -1,9 +1,17 @@
 import { useScanStore, type PanelView } from '../store/useScanStore';
 import { useToastStore } from '../toast';
-import { AssetsIcon, ColorsIcon, OverviewIcon, ProfileIcon, TypeIcon } from './LucideIcons';
+import {
+  AssetsIcon,
+  ColorsIcon,
+  ContentIcon,
+  OverviewIcon,
+  ProfileIcon,
+  TypeIcon,
+} from './LucideIcons';
 
 const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'overview', label: 'Overview', icon: OverviewIcon },
+  { id: 'content', label: 'Content', icon: ContentIcon },
   { id: 'colors', label: 'Colors', icon: ColorsIcon },
   { id: 'typography', label: 'Typography', icon: TypeIcon },
   { id: 'assets', label: 'Assets', icon: AssetsIcon },
@@ -14,11 +22,7 @@ export function BottomNav() {
   const view = useScanStore((s) => s.view);
   const setView = useScanStore((s) => s.setView);
   const active =
-    view === 'images' || view === 'icons'
-      ? 'assets'
-      : view === 'content' || view === 'layout'
-        ? 'overview'
-        : view;
+    view === 'images' || view === 'icons' ? 'assets' : view === 'layout' ? 'overview' : view;
 
   return (
     <nav className="bottom-nav" aria-label="Primary">

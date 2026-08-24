@@ -1,9 +1,29 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { AssetRecord } from '../../shared/types';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { AssetRecord, ContentBlock } from '../../shared/types';
 import { uniqueVisualAssets } from '../../content/asset-scanner';
-import { CopyButton, ScanPrompt } from '../components/CopyButton';
-import { DownloadIcon, GridViewIcon, ListViewIcon } from '../components/LucideIcons';
-import { VirtualList } from '../components/VirtualList';
+import { ScanPrompt } from '../components/CopyButton';
+import {
+  AriaBlockIcon,
+  ButtonBlockIcon,
+  CopyIcon,
+  DownloadIcon,
+  GridViewIcon,
+  HeadingBlockIcon,
+  LabelBlockIcon,
+  LinkBlockIcon,
+  ListBlockIcon,
+  ListViewIcon,
+  NavBlockIcon,
+  ParagraphBlockIcon,
+  PlaceholderBlockIcon,
+  TableBlockIcon,
+} from '../components/LucideIcons';
+import {
+  contentKindLabel,
+  copyContentPlain,
+  groupContentBySection,
+  panelContentBlocks,
+} from '../content-groups';
 import {
   assetDownloadName,
   assetPreviewUrl,
@@ -16,37 +36,90 @@ import { useToastStore } from '../toast';
 
 export function ContentView() {
   const blocks = useScanStore((s) => s.design?.content ?? []);
-  if (blocks.length === 0) {
+  const sections = useScanStore((s) => s.design?.sections ?? []);
+  const visible = useMemo(() => panelContentBlocks(blocks), [blocks]);
+  const groups = useMemo(() => groupContentBySection(visible, sections), [visible, sections]);
+  if (visible.length === 0) {
     return <ScanPrompt afterScan="No content blocks were captured." />;
   }
   return (
-    <section className="card">
-      <div className="row">
-        <h2>Content</h2>
-        <CopyButton value={blocks.map((block) => block.text).join('\n')} label="Copy all text" />
+    <div className="content-wrap">
+      <div className="content-toolbar">
+        <button
+          type="button"
+          className="copy-values"
+          onClick={() => void copyAllContent(copyContentPlain(groups))}
+        >
+          <CopyIcon />
+          Copy all
+        </button>
       </div>
-      <VirtualList
-        count={blocks.length}
-        itemHeight={64}
-        renderItem={(index) => {
-          const block = blocks[index];
-          if (!block) return null;
-          return (
-            <div>
-              <div className="row">
-                <strong>
-                  {block.kind}
-                  {block.level ? ` h${block.level}` : ''}
-                </strong>
-                <CopyButton value={block.text} label="Copy" />
-              </div>
-              <div>{block.text}</div>
+      <div className="content-scroll">
+        {groups.map((group) => (
+          <section key={group.id} className="content-section">
+            <div className="content-section-head">
+              <h2>{group.name}</h2>
+              <span className="count-pill">{group.blocks.length}</span>
             </div>
-          );
-        }}
-      />
-    </section>
+            <div className="content-list">
+              {group.blocks.map((block) => (
+                <ContentRow key={block.id} block={block} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
   );
+}
+
+function ContentRow({ block }: { block: ContentBlock }) {
+  const label = contentKindLabel(block);
+  return (
+    <article className="content-row">
+      <span className="content-kind" title={label} aria-hidden="true">
+        {kindIcon(block.kind)}
+      </span>
+      <div className="content-copy">
+        <span className="muted">{label}</span>
+        <strong>{block.text}</strong>
+        {block.href ? <span className="content-href">{block.href}</span> : null}
+      </div>
+      <button
+        type="button"
+        className="icon-btn download"
+        aria-label={`Copy ${label}`}
+        onClick={() => void copyBlock(block)}
+      >
+        <CopyIcon />
+      </button>
+    </article>
+  );
+}
+
+function kindIcon(kind: ContentBlock['kind']): ReactNode {
+  if (kind === 'heading') return <HeadingBlockIcon />;
+  if (kind === 'paragraph') return <ParagraphBlockIcon />;
+  if (kind === 'list' || kind === 'list-item') return <ListBlockIcon />;
+  if (kind === 'link') return <LinkBlockIcon />;
+  if (kind === 'button') return <ButtonBlockIcon />;
+  if (kind === 'navigation') return <NavBlockIcon />;
+  if (kind === 'label') return <LabelBlockIcon />;
+  if (kind === 'placeholder') return <PlaceholderBlockIcon />;
+  if (kind === 'table') return <TableBlockIcon />;
+  if (kind === 'aria') return <AriaBlockIcon />;
+  return <ParagraphBlockIcon />;
+}
+
+async function copyBlock(block: ContentBlock): Promise<void> {
+  const value = block.href ? `${block.text}\n${block.href}` : block.text;
+  await navigator.clipboard.writeText(value);
+  useToastStore.getState().showToast(`${contentKindLabel(block)} copied`);
+}
+
+async function copyAllContent(value: string): Promise<void> {
+  await navigator.clipboard.writeText(value);
+  useToastStore.getState().showToast('All content copied');
 }
 
 export function AssetsView() {
