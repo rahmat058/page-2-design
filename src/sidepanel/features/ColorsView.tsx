@@ -196,9 +196,21 @@ export function TypographyView() {
               <article key={token.id} className="type-card">
                 <div className="type-card-head">
                   <h3>{title}</h3>
-                  <span className="muted">
-                    {token.count} {token.count === 1 ? 'instance' : 'instances'}
-                  </span>
+                  <div className="type-card-meta">
+                    <span className="muted">
+                      {token.count} {token.count === 1 ? 'instance' : 'instances'}
+                    </span>
+                    <button
+                      type="button"
+                      className={inspectingId === token.id ? 'type-inspect on' : 'type-inspect'}
+                      aria-label={`Inspect ${title} on the page`}
+                      aria-pressed={inspectingId === token.id}
+                      onClick={() => void cycleInspectType(token, title, setInspectingId)}
+                    >
+                      <InspectIcon />
+                      Inspect
+                    </button>
+                  </div>
                 </div>
                 <p
                   className="type-preview"
@@ -221,16 +233,6 @@ export function TypographyView() {
                   {token.licenseReviewRequired ? (
                     <span className="badge warning">Font license review</span>
                   ) : null}
-                  <button
-                    type="button"
-                    className={inspectingId === token.id ? 'type-inspect on' : 'type-inspect'}
-                    aria-label={`Inspect ${title} on the page`}
-                    aria-pressed={inspectingId === token.id}
-                    onClick={() => void cycleInspectType(token, title, setInspectingId)}
-                  >
-                    <InspectIcon />
-                    Inspect
-                  </button>
                   <button
                     type="button"
                     className="copy-values"
