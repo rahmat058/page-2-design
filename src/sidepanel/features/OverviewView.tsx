@@ -1,5 +1,6 @@
 import { coverageSummary } from '../../validation/coverage';
-import { contrastPairs } from '../../normalize/colors';
+import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors';
+import type { ColorToken } from '../../shared/types';
 import { CopyButton, EmptyState } from '../components/CopyButton';
 import { useScanStore } from '../store/useScanStore';
 
@@ -43,14 +44,17 @@ export function OverviewView() {
 
       {design ? (
         <>
-          <section className="type-pair">
-            <div>
-              <span className="muted">Headings</span>
-              <strong>{headingFont}</strong>
-            </div>
-            <div>
-              <span className="muted">Body</span>
-              <strong>{bodyFont}</strong>
+          <section>
+            <h2>Typography</h2>
+            <div className="type-pair stacked">
+              <div>
+                <span className="muted">Headings</span>
+                <strong>{headingFont}</strong>
+              </div>
+              <div>
+                <span className="muted">Body</span>
+                <strong>{bodyFont}</strong>
+              </div>
             </div>
           </section>
           <section>
@@ -65,11 +69,11 @@ export function OverviewView() {
               </button>
             </div>
             <div className="swatch-row">
-              {design.tokens.colors.slice(0, 10).map((color) => (
+              {overviewSwatches(design.tokens.colors).map((color) => (
                 <span
                   key={color.id}
-                  className={color.hex.toUpperCase() === '#FFFFFF' ? 'swatch light' : 'swatch'}
-                  style={{ background: color.css || color.hex }}
+                  className={isLightHex(color.hex) ? 'swatch light' : 'swatch'}
+                  style={{ background: color.kind === 'gradient' ? color.css : color.hex }}
                   title={color.kind === 'gradient' ? color.name : color.hex}
                 />
               ))}
@@ -80,15 +84,13 @@ export function OverviewView() {
               <h2>Contrast Scanner</h2>
               <span className="count-pill">{contrastPairs(design.tokens.colors).length}</span>
             </div>
-            <div className="list compact">
-              {contrastPairs(design.tokens.colors).map((item) => (
-                <div key={`${item.fg}-${item.bg}`} className="contrast-row">
+            <div className="list compact contrast-list">
+              {contrastPairs(design.tokens.colors).slice(0, 6).map((item) => (
+                <div key={`${item.fg}-${item.bg}`} className="contrast-row card-row">
                   <span className="contrast-preview" style={{ color: item.fg, background: item.bg }}>
                     Aa
                   </span>
-                  <span>
-                    {item.ratio.toFixed(2)} : 1
-                  </span>
+                  <span className="contrast-ratio">{item.ratio.toFixed(2)} : 1</span>
                   <span className={`badge ${item.tone}`}>{item.label}</span>
                 </div>
               ))}
@@ -151,4 +153,26 @@ export function OverviewView() {
 function primaryFont(stack: string | undefined): string {
   if (!stack) return '—';
   return stack.split(',')[0]?.replace(/['"]/g, '').trim() || stack;
+}
+
+function overviewSwatches(colors: ColorToken[]): ColorToken[] {
+  const picked: ColorToken[] = [];
+  for (const color of colors.filter((item) => item.kind !== 'gradient')) {
+    if (picked.length >= 9) break;
+    const parsed = parseColor(color.hex);
+    if (!parsed) continue;
+    const duplicate = picked.some((item) => {
+      const other = parseColor(item.hex);
+      return other ? colorDistance(parsed, other) < 24 : false;
+    });
+    if (duplicate) continue;
+    picked.push(color);
+  }
+  return picked;
+}
+
+function isLightHex(hex: string): boolean {
+  const parsed = parseColor(hex);
+  if (!parsed) return false;
+  return (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255 > 0.9;
 }

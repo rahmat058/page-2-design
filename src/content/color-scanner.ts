@@ -2,21 +2,24 @@ import { parseColor } from '../normalize/colors';
 import type { ColorUsage } from '../shared/types';
 
 const COLOR_PROPS = [
-  ['color', 'text'],
-  ['background-color', 'background'],
-  ['fill', 'svg'],
-  ['stroke', 'svg'],
+  ['color', 'text', 0.28],
+  ['background-color', 'background', 1],
+  ['fill', 'svg', 0.7],
+  ['stroke', 'svg', 0.2],
+  ['border-color', 'border', 0.08],
 ] as const;
 
 export function collectColors(
   elementId: string,
   style: Record<string, string>,
   bucket: Map<string, ColorUsage>,
+  area = 1,
 ): void {
-  for (const [prop, source] of COLOR_PROPS) {
-    addSolid(bucket, style[prop], prop, source, elementId);
+  const px = Math.max(1, Math.round(area));
+  for (const [prop, source, weight] of COLOR_PROPS) {
+    addSolid(bucket, style[prop], prop, source, elementId, px * weight);
   }
-  addGradient(bucket, style['background-image'], elementId);
+  addGradient(bucket, style['background-image'], elementId, px);
 }
 
 export function collectSvgColors(
@@ -31,8 +34,8 @@ export function collectSvgColors(
   const stroke =
     el.getAttribute('stroke') ||
     (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).stroke : '');
-  addSolid(bucket, fill, 'fill', 'svg', elementId);
-  addSolid(bucket, stroke, 'stroke', 'svg', elementId);
+  addSolid(bucket, fill, 'fill', 'svg', elementId, 4);
+  addSolid(bucket, stroke, 'stroke', 'svg', elementId, 2);
 }
 
 export function collectCssVariableColors(
@@ -48,14 +51,17 @@ function addSolid(
   property: string,
   source: ColorUsage['source'],
   elementId: string,
+  area: number,
 ): void {
   if (!raw) return;
   const parsed = parseColor(raw);
   if (!parsed || parsed.a < 0.08) return;
   const key = `solid:${parsed.r},${parsed.g},${parsed.b},${parsed.a >= 0.96 ? 1 : Math.round(parsed.a * 20) / 20}`;
+  const painted = Math.max(1, Math.round(area));
   const existing = bucket.get(key);
   if (existing) {
     existing.count += 1;
+    existing.area = (existing.area ?? 0) + painted;
     if (!existing.properties.includes(property)) existing.properties.push(property);
     if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId);
     if (!existing.original.includes(raw)) existing.original.push(raw);
@@ -67,6 +73,7 @@ function addSolid(
     canonicalHex: displayHex(parsed.hex),
     properties: [property],
     count: 1,
+    area: painted,
     elementIds: [elementId],
     source,
   });
@@ -76,6 +83,7 @@ function addGradient(
   bucket: Map<string, ColorUsage>,
   value: string | undefined,
   elementId: string,
+  area: number,
 ): void {
   if (!value || value === 'none' || !/gradient\(/i.test(value)) return;
   const css = value.trim();
@@ -83,21 +91,27 @@ function addGradient(
   const stops =
     css.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)/gi) ?? [];
   const first = stops.map((stop) => parseColor(stop)).find((color) => color && color.a >= 0.08);
+  const painted = Math.max(1, Math.round(area));
   const existing = bucket.get(key);
   if (existing) {
     existing.count += 1;
+    existing.area = (existing.area ?? 0) + painted;
     if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId);
-    return;
+  } else {
+    bucket.set(key, {
+      original: [css],
+      canonicalRgba: first?.rgba ?? 'rgba(0, 0, 0, 1)',
+      canonicalHex: displayHex(first?.hex ?? '#000000'),
+      properties: ['background-image'],
+      count: 1,
+      area: painted,
+      elementIds: [elementId],
+      source: 'gradient',
+    });
   }
-  bucket.set(key, {
-    original: [css],
-    canonicalRgba: first?.rgba ?? 'rgba(0, 0, 0, 1)',
-    canonicalHex: displayHex(first?.hex ?? '#000000'),
-    properties: ['background-image'],
-    count: 1,
-    elementIds: [elementId],
-    source: 'gradient',
-  });
+  for (const stop of stops) {
+    addSolid(bucket, stop, 'background-image', 'background', elementId, painted * 0.9);
+  }
 }
 
 function displayHex(hex: string): string {
@@ -109,6 +123,6 @@ function displayHex(hex: string): string {
 
 export function colorUsages(bucket: Map<string, ColorUsage>): ColorUsage[] {
   return [...bucket.values()].sort(
-    (a, b) => b.count - a.count || a.canonicalHex.localeCompare(b.canonicalHex),
+    (a, b) => (b.area || b.count) - (a.area || a.count) || a.canonicalHex.localeCompare(b.canonicalHex),
   );
 }

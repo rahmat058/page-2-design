@@ -137,6 +137,7 @@ export interface ColorUsage {
   canonicalHex: string;
   properties: string[];
   count: number;
+  area?: number;
   elementIds: string[];
   source:
     | 'text'
@@ -296,6 +297,7 @@ export interface ColorToken {
   oklch: string;
   original: string[];
   count: number;
+  area?: number;
   properties: string[];
   elementIds: string[];
   role: string;

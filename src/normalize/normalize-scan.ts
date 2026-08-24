@@ -127,6 +127,7 @@ function groupColors(raw: PageScan): ColorToken[] {
       oklch: parsed.oklch,
       original: usage.original,
       count: usage.count,
+      area: usage.area || usage.count,
       properties: usage.properties,
       elementIds: usage.elementIds,
       role,
@@ -142,7 +143,7 @@ function groupColors(raw: PageScan): ColorToken[] {
 function finalizePalette(tokens: ColorToken[]): ColorToken[] {
   const solids = tokens.filter((token) => token.kind !== 'gradient');
   const gradients = uniqueGradients(tokens.filter((token) => token.kind === 'gradient'));
-  const sorted = [...solids].sort((a, b) => b.count - a.count);
+  const sorted = [...solids].sort((a, b) => (b.area || b.count) - (a.area || a.count) || b.count - a.count);
   const clustered: ColorToken[] = [];
   for (const token of sorted) {
     const parsed = parseColor(token.hex);
@@ -153,6 +154,7 @@ function finalizePalette(tokens: ColorToken[]): ColorToken[] {
     });
     if (host) {
       host.count += token.count;
+      host.area = (host.area || 0) + (token.area || 0);
       host.elementIds = [...new Set([...host.elementIds, ...token.elementIds])];
       host.properties = [...new Set([...host.properties, ...token.properties])];
       host.original = [...new Set([...host.original, ...token.original])];
@@ -161,7 +163,9 @@ function finalizePalette(tokens: ColorToken[]): ColorToken[] {
     clustered.push({ ...token, elementIds: [...token.elementIds] });
   }
 
-  const ranked = [...gradients, ...clustered].sort((a, b) => b.count - a.count || a.hex.localeCompare(b.hex));
+  const ranked = [...gradients, ...clustered].sort(
+    (a, b) => (b.area || b.count) - (a.area || a.count) || b.count - a.count || a.hex.localeCompare(b.hex),
+  );
   return ranked.slice(0, 32).map((token, index) => ({
     ...token,
     id: `color_${index + 1}`,
@@ -177,6 +181,7 @@ function uniqueGradients(tokens: ColorToken[]): ColorToken[] {
     const existing = map.get(key);
     if (existing) {
       existing.count += token.count;
+      existing.area = (existing.area || 0) + (token.area || 0);
       existing.elementIds = [...new Set([...existing.elementIds, ...token.elementIds])];
       continue;
     }

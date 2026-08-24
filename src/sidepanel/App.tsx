@@ -71,44 +71,44 @@ export function App() {
           useScanStore.getState().setView(next);
         }}
       />
-      <div className="page-head">
-        <div>
+      <div className={view === 'overview' ? 'page-head overview-head' : 'page-head'}>
+        <div className="head-row">
           <h1>
             {headingFor(view)}
             {view !== 'overview' ? <span className="count-pill">{countFor(view, counts)}</span> : null}
           </h1>
-          {view === 'overview' ? (
-            <>
-              <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
-              {url ? <p className="page-url">{url}</p> : null}
-            </>
+          {view === 'overview' && design ? (
+            <button
+              type="button"
+              className="btn rescan"
+              disabled={busy || tabRestricted}
+              onClick={() => void startScan()}
+            >
+              {busy ? 'Scanning…' : 'Rescan'}
+            </button>
+          ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
+            <button
+              type="button"
+              className="btn ghost compact"
+              disabled={!canExport}
+              onClick={() => {
+                if (view === 'assets' || view === 'images' || view === 'icons') {
+                  const assets = useScanStore.getState().design?.assets ?? [];
+                  void downloadAllImagesZip(assets, hostname);
+                  return;
+                }
+                useScanStore.getState().setView('export');
+              }}
+            >
+              Export All
+            </button>
           ) : null}
         </div>
-        {view === 'overview' && design ? (
-          <button
-            type="button"
-            className="btn compact"
-            disabled={busy || tabRestricted}
-            onClick={() => void startScan()}
-          >
-            {busy ? 'Scanning…' : 'Rescan'}
-          </button>
-        ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
-          <button
-            type="button"
-            className="btn ghost compact"
-            disabled={!canExport}
-            onClick={() => {
-              if (view === 'assets' || view === 'images' || view === 'icons') {
-                const assets = useScanStore.getState().design?.assets ?? [];
-                void downloadAllImagesZip(assets, hostname);
-                return;
-              }
-              useScanStore.getState().setView('export');
-            }}
-          >
-            Export All
-          </button>
+        {view === 'overview' ? (
+          <>
+            <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
+            {url ? <p className="page-url">{url}</p> : null}
+          </>
         ) : null}
       </div>
       {tabRestricted ? (

@@ -103,7 +103,7 @@ export async function runPageScan(
 
   for (const el of dom.elements) {
     const style = dom.styleRegistry[el.styleSignature] ?? {};
-    collectColors(el.id, style, colorBucket);
+    collectColors(el.id, style, colorBucket, Math.max(1, el.bounds.width * el.bounds.height));
     collectTypography(el.id, style, el.directText, el.classNames, el.tagName, typeBucket);
     collectNumeric(el.id, style, spacingBucket, radiusBucket, shadowBucket);
   }
@@ -366,7 +366,7 @@ export function runFrameScan(): CompactFrameScan {
   const typeBucket = new Map<string, TypographyUsage>();
   for (const el of dom.elements) {
     const style = dom.styleRegistry[el.styleSignature] ?? {};
-    collectColors(el.id, style, colorBucket);
+    collectColors(el.id, style, colorBucket, Math.max(1, el.bounds.width * el.bounds.height));
     collectTypography(el.id, style, el.directText, el.classNames, el.tagName, typeBucket);
   }
   return {
