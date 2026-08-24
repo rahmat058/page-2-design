@@ -44,7 +44,7 @@ export function OverviewView() {
 
       {design ? (
         <>
-          <section>
+          <section className="overview-block">
             <h2>Typography</h2>
             <div className="type-pair stacked">
               <div>
@@ -57,7 +57,7 @@ export function OverviewView() {
               </div>
             </div>
           </section>
-          <section>
+          <section className="overview-block">
             <div className="row">
               <h2>Color Palette</h2>
               <button
@@ -79,7 +79,7 @@ export function OverviewView() {
               ))}
             </div>
           </section>
-          <section>
+          <section className="overview-block">
             <div className="row">
               <h2>Contrast Scanner</h2>
               <span className="count-pill">{contrastPairs(design.tokens.colors).length}</span>

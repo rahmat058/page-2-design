@@ -407,11 +407,23 @@ body,
   gap: 12px;
 }
 
+.category-block {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eceff2;
+}
+
+.category-block:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
 .category-block h3 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-size: 11px;
-  text-transform: capitalize;
-  color: var(--muted);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b93a0;
 }
 
 .swatch-grid {
@@ -855,7 +867,23 @@ body,
 
 .main {
   padding: 8px 12px 12px;
-  gap: 8px;
+  gap: 0;
+}
+
+.overview-block {
+  padding: 4px 0 16px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #eceff2;
+}
+
+.overview-block:last-of-type {
+  margin-bottom: 8px;
+}
+
+.overview-block h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .card {
@@ -1207,11 +1235,23 @@ body,
   gap: 12px;
 }
 
+.category-block {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eceff2;
+}
+
+.category-block:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
 .category-block h3 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-size: 11px;
-  text-transform: capitalize;
-  color: var(--muted);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b93a0;
 }
 
 .swatch-grid {
@@ -1283,6 +1323,29 @@ body,
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
+}
+
+.palette-group {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eceff2;
+}
+
+.palette-group:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.palette-group h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b93a0;
 }
 
 .peeper-card {

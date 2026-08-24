@@ -1,6 +1,6 @@
 import { SCHEMA_VERSION } from '../shared/constants';
 import type { ColorToken, NormalizedDesign, PageScan } from '../shared/types';
-import { parseColor, inferColorRole, colorDistance, isFullyTransparent } from './colors';
+import { parseColor, inferColorRole, colorDistance, isFullyTransparent, pagePaletteGroups } from './colors';
 import { inferComponents } from './components';
 import { normalizeSections } from './sections';
 import { frequencyTokens } from './spacing';
@@ -166,12 +166,21 @@ function finalizePalette(tokens: ColorToken[]): ColorToken[] {
   const ranked = [...gradients, ...clustered].sort(
     (a, b) => (b.area || b.count) - (a.area || a.count) || b.count - a.count || a.hex.localeCompare(b.hex),
   );
-  return ranked.slice(0, 32).map((token, index) => ({
+  const limited = ranked.slice(0, 32).map((token, index) => ({
     ...token,
     id: `color_${index + 1}`,
     name: token.kind === 'gradient' ? gradientLabel(token.css) : `${token.role}-${index + 1}`,
     nearDuplicates: [],
   }));
+  const order = new Map<string, number>();
+  let rank = 0;
+  for (const group of pagePaletteGroups(limited)) {
+    for (const id of group.ids) {
+      order.set(id, rank);
+      rank += 1;
+    }
+  }
+  return [...limited].sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99));
 }
 
 function uniqueGradients(tokens: ColorToken[]): ColorToken[] {

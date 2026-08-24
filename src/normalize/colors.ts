@@ -406,3 +406,59 @@ export function colorLooksLike(value: string, targetHex: string): boolean {
   if (Math.abs(a.a - b.a) > 0.2) return false;
   return colorDistance(a, b) < 8;
 }
+
+export function pagePaletteGroups(
+  colors: Array<{
+    id: string;
+    hex: string;
+    kind: 'solid' | 'gradient';
+    area?: number;
+    count: number;
+  }>,
+): Array<{ key: 'gradient' | 'primary' | 'secondary'; title: string; ids: string[] }> {
+  const byWeight = (
+    a: { area?: number; count: number },
+    b: { area?: number; count: number },
+  ) => (b.area || b.count) - (a.area || a.count);
+  const gradients = colors.filter((color) => color.kind === 'gradient').sort(byWeight);
+  const solids = colors.filter((color) => color.kind !== 'gradient').sort(byWeight);
+  const maxArea = Math.max(1, ...solids.map((color) => color.area || color.count));
+  const primary: typeof solids = [];
+  const secondary: typeof solids = [];
+
+  for (const color of solids) {
+    if (primary.length >= 8 || !isPrimarySwatch(color, primary, maxArea)) {
+      secondary.push(color);
+      continue;
+    }
+    primary.push(color);
+  }
+
+  return (
+    [
+      { key: 'gradient' as const, title: 'Gradients', ids: gradients.map((color) => color.id) },
+      { key: 'primary' as const, title: 'Primary', ids: primary.map((color) => color.id) },
+      { key: 'secondary' as const, title: 'Secondary', ids: secondary.map((color) => color.id) },
+    ] as const
+  ).filter((group) => group.ids.length > 0);
+}
+
+function isPrimarySwatch(
+  color: { hex: string; area?: number; count: number },
+  already: Array<{ hex: string; area?: number; count: number }>,
+  maxArea: number,
+): boolean {
+  const parsed = parseColor(color.hex);
+  if (!parsed) return false;
+  const share = (color.area || color.count) / maxArea;
+  const chroma =
+    (Math.max(parsed.r, parsed.g, parsed.b) - Math.min(parsed.r, parsed.g, parsed.b)) / 255;
+  const close = already.some((item) => {
+    const other = parseColor(item.hex);
+    return other ? colorDistance(parsed, other) < 26 : false;
+  });
+  if (close && share < 0.4) return false;
+  if (already.length < 2) return true;
+  if (share >= 0.08) return true;
+  return chroma >= 0.2 && share >= 0.015;
+}

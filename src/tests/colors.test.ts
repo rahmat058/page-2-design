@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseColor, inferColorRole } from '../normalize/colors';
+import { parseColor, inferColorRole, pagePaletteGroups } from '../normalize/colors';
 
 describe('color parsing', () => {
   it('parses hex, rgb, hsl, and named colors', () => {
@@ -26,5 +26,21 @@ describe('color parsing', () => {
   it('infers roles without claiming certainty', () => {
     expect(inferColorRole('#111111', ['color'])).toBe('text');
     expect(inferColorRole('#FFFFFF', ['background-color'])).toBe('surface');
+  });
+
+  it('groups page colors as gradients, then primary, then secondary', () => {
+    const groups = pagePaletteGroups([
+      { id: 'g1', hex: '#FF914D', kind: 'gradient', area: 400, count: 2 },
+      { id: 'p1', hex: '#111111', kind: 'solid', area: 8000, count: 40 },
+      { id: 'p2', hex: '#FFFFFF', kind: 'solid', area: 9000, count: 20 },
+      { id: 'a1', hex: '#7A55FD', kind: 'solid', area: 600, count: 8 },
+      { id: 's1', hex: '#E5E7EB', kind: 'solid', area: 80, count: 3 },
+    ]);
+    expect(groups.map((group) => group.key)).toEqual(['gradient', 'primary', 'secondary']);
+    expect(groups[0]?.ids).toEqual(['g1']);
+    expect(groups[1]?.ids[0]).toBe('p2');
+    expect(groups[1]?.ids).toContain('p1');
+    expect(groups[1]?.ids).toContain('a1');
+    expect(groups[2]?.ids).toEqual(['s1']);
   });
 });

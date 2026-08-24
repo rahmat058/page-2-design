@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isDarkHex, parseColor } from '../../normalize/colors';
+import { isDarkHex, parseColor, pagePaletteGroups } from '../../normalize/colors';
 import { createRequestId } from '../../shared/messages';
 import type { ColorToken } from '../../shared/types';
 import { sendRuntime } from '../chrome-api';
@@ -13,7 +13,7 @@ export function ColorsView() {
   const [tab, setTab] = useState<'palette' | 'categories'>('palette');
   const [inspectingId, setInspectingId] = useState<string | null>(null);
   if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />;
-  const grouped = groupByRole(colors);
+  const grouped = pagePaletteGroups(colors);
   return (
     <div className="colors-wrap">
       <div className="segmented pill-tabs" role="tablist" aria-label="Color views">
@@ -47,29 +47,42 @@ export function ColorsView() {
       <div key={tab} className="fade-pane colors-scroll">
         {tab === 'palette' ? (
           <div className="palette peeper-palette">
-            {colors.map((color) => (
-              <ColorCard
-                key={color.id}
-                color={color}
-                inspecting={inspectingId === color.id}
-                onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="category-list">
-            {Object.entries(grouped).map(([role, items]) => (
-              <section key={role} className="category-block">
-                <h3>{role}</h3>
-                <div className="peeper-palette">
-                  {items.map((color) => (
+            {grouped.map((group) => (
+              <section key={group.key} className="palette-group">
+                <h3>{group.title}</h3>
+                {group.ids.map((id) => {
+                  const color = colors.find((item) => item.id === id);
+                  if (!color) return null;
+                  return (
                     <ColorCard
                       key={color.id}
                       color={color}
                       inspecting={inspectingId === color.id}
                       onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
                     />
-                  ))}
+                  );
+                })}
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="category-list">
+            {grouped.map((group) => (
+              <section key={group.key} className="category-block">
+                <h3>{group.title}</h3>
+                <div className="peeper-palette">
+                  {group.ids.map((id) => {
+                    const color = colors.find((item) => item.id === id);
+                    if (!color) return null;
+                    return (
+                      <ColorCard
+                        key={color.id}
+                        color={color}
+                        inspecting={inspectingId === color.id}
+                        onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
+                      />
+                    );
+                  })}
                 </div>
               </section>
             ))}
@@ -258,14 +271,4 @@ function prettyTypeName(name: string): string {
 
 function primaryFont(stack: string): string {
   return stack.split(',')[0]?.replace(/['"]/g, '').trim() || stack;
-}
-
-function groupByRole(colors: ColorToken[]) {
-  const groups: Record<string, ColorToken[]> = {};
-  for (const color of colors) {
-    const key = color.role || 'other';
-    groups[key] ??= [];
-    groups[key].push(color);
-  }
-  return groups;
 }
