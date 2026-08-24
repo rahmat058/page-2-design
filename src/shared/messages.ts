@@ -43,6 +43,8 @@ export type MessageType =
   | 'CLOSE_OVERLAY'
   | 'DOCK_SIDE_PANEL'
   | 'SET_INSPECT_MODE'
+  | 'SET_INSPECT_CONTEXT_MENU'
+  | 'INSPECT_ELEMENT'
   | 'HIGHLIGHT_COLOR'
   | 'HIGHLIGHT_COLOR_RESULT'
 
@@ -223,6 +225,48 @@ export interface SetInspectModeMessage extends MessageBase {
   payload: { enabled: boolean }
 }
 
+export interface SetInspectContextMenuMessage extends MessageBase {
+  type: 'SET_INSPECT_CONTEXT_MENU'
+  payload: { enabled: boolean }
+}
+
+export interface BoxSides {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+export interface InspectedElement {
+  label: string
+  kind: string
+  text: string
+  width: number
+  height: number
+  locked: boolean
+  box: {
+    margin: BoxSides
+    border: BoxSides
+    padding: BoxSides
+  }
+  typography: {
+    fontFamily: string
+    fontSize: string
+    lineHeight: string
+    fontWeight: string
+    letterSpacing: string
+    color: string
+  }
+  background: string | null
+  borderRadius: string
+  code: string
+}
+
+export interface InspectElementMessage extends MessageBase {
+  type: 'INSPECT_ELEMENT'
+  payload: InspectedElement | null
+}
+
 export interface HighlightColorMessage extends MessageBase {
   type: 'HIGHLIGHT_COLOR'
   payload: {
@@ -272,6 +316,8 @@ export type ExtensionMessage =
   | CloseOverlayMessage
   | DockSidePanelMessage
   | SetInspectModeMessage
+  | SetInspectContextMenuMessage
+  | InspectElementMessage
   | HighlightColorMessage
   | HighlightColorResultMessage
 
@@ -305,6 +351,8 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'CLOSE_OVERLAY',
   'DOCK_SIDE_PANEL',
   'SET_INSPECT_MODE',
+  'SET_INSPECT_CONTEXT_MENU',
+  'INSPECT_ELEMENT',
   'HIGHLIGHT_COLOR',
   'HIGHLIGHT_COLOR_RESULT',
 ])

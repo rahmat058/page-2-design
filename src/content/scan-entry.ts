@@ -6,7 +6,7 @@ import { captureLayoutSnapshot } from './layout-snapshot'
 import { runFrameScan, runPageScan } from './scan-page'
 import { resolveUrl } from './asset-scanner'
 import { closeOverlay, toggleOverlay } from './overlay-host'
-import { highlightColorOnPage, setInspectMode } from './inspect-mode'
+import { highlightColorOnPage, setInspectContextMenu, setInspectMode } from './inspect-mode'
 
 declare const self: Window & typeof globalThis & { __PAGE2DESIGN_INJECTED__?: boolean }
 
@@ -43,6 +43,12 @@ function init(): void {
 
     if (message.type === 'SET_INSPECT_MODE') {
       setInspectMode(Boolean(message.payload.enabled))
+      sendResponse({ ok: true })
+      return false
+    }
+
+    if (message.type === 'SET_INSPECT_CONTEXT_MENU') {
+      setInspectContextMenu(Boolean(message.payload.enabled))
       sendResponse({ ok: true })
       return false
     }

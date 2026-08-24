@@ -153,6 +153,7 @@ export function routeMessage(
         return
       }
       case 'CLOSE_OVERLAY':
+      case 'SET_INSPECT_CONTEXT_MENU':
       case 'SET_INSPECT_MODE': {
         const tab = await identifyActiveTab()
         if (tab.tabId) {

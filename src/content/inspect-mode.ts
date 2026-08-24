@@ -1,12 +1,18 @@
-import { colorIsExact } from '../normalize/colors'
+import { colorIsExact, isFullyTransparent, parseColor } from '../normalize/colors'
+import { createMessage, createRequestId, type InspectedElement } from '../shared/messages'
 
 const BOX_ID = 'page2design-inspect-box'
 const HIT_ID = 'page2design-color-hit'
 
 let enabled = false
+let allowContextMenu = false
 let box: HTMLDivElement | null = null
 let activeKey: string | null = null
 let hitIndex = -1
+let inspectRaf = 0
+let pendingEl: Element | null = null
+let lastEl: Element | null = null
+let lockedEl: Element | null = null
 
 export function isInspectEnabled(): boolean {
   return enabled
@@ -22,11 +28,22 @@ export function setInspectMode(next: boolean): void {
     clearColorHit()
     activeKey = null
     hitIndex = -1
+    pendingEl = null
+    lastEl = null
+    lockedEl = null
+    if (inspectRaf) {
+      cancelAnimationFrame(inspectRaf)
+      inspectRaf = 0
+    }
     return
   }
   ensureBox()
   window.addEventListener('mousemove', onMove, true)
   window.addEventListener('click', onClick, true)
+}
+
+export function setInspectContextMenu(next: boolean): void {
+  allowContextMenu = next
 }
 
 function ensureBox(): HTMLDivElement {
@@ -61,6 +78,8 @@ function onMove(event: MouseEvent): void {
   highlight.style.top = `${rect.top}px`
   highlight.style.width = `${rect.width}px`
   highlight.style.height = `${rect.height}px`
+  if (lockedEl) return
+  scheduleInspect(target, false)
 }
 
 function onClick(event: MouseEvent): void {
@@ -68,8 +87,149 @@ function onClick(event: MouseEvent): void {
   const target = event.target
   if (!(target instanceof Element)) return
   if (isOverlay(target)) return
-  event.preventDefault()
-  event.stopPropagation()
+  if (!allowContextMenu) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  if (lockedEl === target) {
+    lockedEl = null
+    emitInspect(target, false)
+    return
+  }
+  lockedEl = target
+  emitInspect(target, true)
+}
+
+function scheduleInspect(el: Element, locked: boolean): void {
+  pendingEl = el
+  if (inspectRaf) return
+  inspectRaf = requestAnimationFrame(() => {
+    inspectRaf = 0
+    if (pendingEl) emitInspect(pendingEl, locked)
+  })
+}
+
+function emitInspect(el: Element, locked: boolean): void {
+  if (!locked && (lockedEl || el === lastEl)) return
+  lastEl = el
+  try {
+    const sending = chrome.runtime.sendMessage(
+      createMessage({
+        type: 'INSPECT_ELEMENT',
+        requestId: createRequestId(),
+        payload: describeElement(el, locked),
+      }),
+    )
+    if (sending && typeof sending.catch === 'function') sending.catch(() => {})
+  } catch {
+    /* panel may be closed */
+  }
+}
+
+function describeElement(el: Element, locked: boolean): InspectedElement {
+  const style = getComputedStyle(el)
+  const rect = el.getBoundingClientRect()
+  const tag = el.tagName.toLowerCase()
+  const color = rgbToHex(style.color)
+  const html = el.outerHTML
+  return {
+    label: elementLabel(el),
+    kind: classifyKind(el, tag),
+    text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 140),
+    width: Math.round(rect.width * 10) / 10,
+    height: Math.round(rect.height * 10) / 10,
+    locked,
+    box: {
+      margin: readSides(style, 'margin'),
+      border: readSides(style, 'border', 'Width'),
+      padding: readSides(style, 'padding'),
+    },
+    typography: {
+      fontFamily: style.fontFamily || '—',
+      fontSize: style.fontSize || '—',
+      lineHeight: style.lineHeight || 'normal',
+      fontWeight: weightLabel(style.fontWeight),
+      letterSpacing: style.letterSpacing === 'normal' ? 'normal' : style.letterSpacing,
+      color,
+    },
+    background: effectiveBackground(el),
+    borderRadius: style.borderTopLeftRadius || '0px',
+    code: html.length > 4000 ? `${html.slice(0, 4000)}…` : html,
+  }
+}
+
+function readSides(
+  style: CSSStyleDeclaration,
+  prefix: 'margin' | 'border' | 'padding',
+  suffix = '',
+): { top: number; right: number; bottom: number; left: number } {
+  const read = (side: string) => {
+    const raw = style.getPropertyValue(`${prefix}-${side}${suffix ? `-${suffix.toLowerCase()}` : ''}`)
+    const n = Number.parseFloat(raw)
+    return Number.isFinite(n) ? Math.round(n * 10) / 10 : 0
+  }
+  return { top: read('top'), right: read('right'), bottom: read('bottom'), left: read('left') }
+}
+
+function elementLabel(el: Element): string {
+  const tag = el.tagName.toLowerCase()
+  const className = typeof el.className === 'string' ? el.className.trim() : ''
+  if (!className) return tag
+  const classes = className
+    .split(/\s+/)
+    .filter((c) => !c.startsWith('page2design-'))
+    .slice(0, 2)
+    .map((c) => `.${c}`)
+    .join('')
+  return `${tag}${classes}`
+}
+
+function classifyKind(el: Element, tag: string): string {
+  if (['img', 'svg', 'picture', 'video', 'canvas'].includes(tag)) return 'Image'
+  if (tag === 'a') return 'Link'
+  if (tag === 'button' || (tag === 'input' && ['button', 'submit', 'reset'].includes((el as HTMLInputElement).type)))
+    return 'Button'
+  if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) return 'Heading'
+  if (['input', 'textarea', 'select'].includes(tag)) return 'Input'
+  if (['p', 'span', 'strong', 'em', 'li', 'label', 'small', 'blockquote', 'b', 'i', 'code'].includes(tag)) return 'Text'
+  return 'Container'
+}
+
+function weightLabel(value: string): string {
+  const n = value === 'normal' ? '400' : value === 'bold' ? '700' : value.trim()
+  const names: Record<string, string> = {
+    '100': 'Thin',
+    '200': 'Extra Light',
+    '300': 'Light',
+    '400': 'Regular',
+    '500': 'Medium',
+    '600': 'Semi Bold',
+    '700': 'Bold',
+    '800': 'Extra Bold',
+    '900': 'Black',
+  }
+  return names[n] ? `${names[n]} (${n})` : n
+}
+
+function rgbToHex(value: string): string {
+  const parsed = parseColor(value)
+  if (!parsed) return value
+  const hex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
+  return `#${hex(parsed.r)}${hex(parsed.g)}${hex(parsed.b)}`.toUpperCase()
+}
+
+function effectiveBackground(el: Element): string | null {
+  let node: Element | null = el
+  let depth = 0
+  while (node && depth < 30) {
+    const style = getComputedStyle(node)
+    if (/gradient\(/i.test(style.backgroundImage)) return null
+    const parsed = parseColor(style.backgroundColor)
+    if (parsed && !isFullyTransparent(parsed)) return rgbToHex(style.backgroundColor)
+    node = node.parentElement
+    depth += 1
+  }
+  return null
 }
 
 export function highlightColorOnPage(payload: {

@@ -10,6 +10,7 @@ import { PanelChrome } from './components/PanelChrome'
 import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
 import { AssetsView, ContentView } from './features/ContentView'
 import { ExportView } from './features/ExportView'
+import { InspectorView } from './features/InspectorView'
 import { OverviewView } from './features/OverviewView'
 import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
@@ -32,7 +33,7 @@ export function App() {
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const design = useScanStore((s) => s.design)
   const counts = useScanStore((s) => s.counts)
-  const [inspectOn, setInspectOn] = useState(false)
+  const inspectOn = useScanStore((s) => s.inspectOn)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -46,6 +47,9 @@ export function App() {
       }
       if (message.type === 'SCAN_COMPLETE' && message.payload.assembled) {
         void loadScan(message.scanId)
+      }
+      if (message.type === 'INSPECT_ELEMENT') {
+        useScanStore.getState().setInspected(message.payload)
       }
     })
   }, [])
@@ -78,6 +82,10 @@ export function App() {
           useScanStore.getState().setView(next)
         }}
       />
+      {inspectOn ? (
+        <InspectorView />
+      ) : (
+        <>
       <div className={view === 'overview' ? 'page-head overview-head' : 'page-head'}>
         <div className="head-row">
           <h1>
@@ -133,13 +141,15 @@ export function App() {
         </div>
       </main>
       <BottomNav />
+        </>
+      )}
       <Toast />
     </div>
   )
 
   async function toggleInspect() {
-    const next = !inspectOn
-    setInspectOn(next)
+    const next = !useScanStore.getState().inspectOn
+    useScanStore.getState().setInspectOn(next)
     await sendRuntime({
       type: 'SET_INSPECT_MODE',
       requestId: createRequestId(),
@@ -155,6 +165,7 @@ export function App() {
     if (OVERLAY) {
       window.parent.postMessage({ source: 'page2design', type: 'close' }, '*')
     }
+    useScanStore.getState().setInspectOn(false)
     await sendRuntime({
       type: 'SET_INSPECT_MODE',
       requestId: createRequestId(),

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { NormalizedDesign, PageScan, ScanCounts, ScanLimitation, ScanOptions, ScanPhase } from '../../shared/types'
 import { DEFAULT_SCAN_OPTIONS, emptyCounts } from '../../shared/types'
+import type { InspectedElement } from '../../shared/messages'
 import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner'
 
 export type PanelView =
@@ -24,6 +25,9 @@ interface ScanStore {
   selectedAssetIds: string[]
   raw: PageScan | null
   design: NormalizedDesign | null
+  inspectOn: boolean
+  inspectContextMenu: boolean
+  inspected: InspectedElement | null
   setTabInfo: (info: { hostname: string | null; title: string | null; url: string | null; restricted: boolean }) => void
   setProgress: (payload: {
     phase: ScanPhase
@@ -40,6 +44,9 @@ interface ScanStore {
   setOptions: (options: Partial<ScanOptions>) => void
   toggleAsset: (id: string) => void
   setSelectedAssets: (ids: string[]) => void
+  setInspectOn: (on: boolean) => void
+  setInspectContextMenu: (on: boolean) => void
+  setInspected: (inspected: InspectedElement | null) => void
   reset: () => void
 }
 
@@ -61,6 +68,9 @@ export const useScanStore = create<ScanStore>((set) => ({
   selectedAssetIds: [],
   raw: null,
   design: null,
+  inspectOn: false,
+  inspectContextMenu: false,
+  inspected: null,
   setTabInfo: (info) =>
     set({
       hostname: info.hostname,
@@ -109,6 +119,9 @@ export const useScanStore = create<ScanStore>((set) => ({
         : [...state.selectedAssetIds, id],
     })),
   setSelectedAssets: (ids) => set({ selectedAssetIds: ids }),
+  setInspectOn: (on) => set(on ? { inspectOn: true } : { inspectOn: false, inspected: null }),
+  setInspectContextMenu: (on) => set({ inspectContextMenu: on }),
+  setInspected: (inspected) => set({ inspected }),
   reset: () =>
     set({
       phase: 'idle',
