@@ -6,6 +6,9 @@ import { buildExportZip } from '../../export/zip-exporter'
 import { calculateCoverage } from '../../validation/coverage'
 import { useScanStore } from '../store/useScanStore'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
+import { Archive, Ban, ListChecks } from 'lucide-react'
+import { Button } from '../components/Button'
+import { Checkbox } from '../components/Checkbox'
 import { EmptyState } from '../components/CopyButton'
 
 export function ExportView() {
@@ -139,23 +142,24 @@ export function ExportView() {
       <p>
         {uniqueAssets.length} unique images ready to export. {selectedAssetIds.length} selected.
       </p>
-      <label className="checkbox">
-        <input type="checkbox" checked={includeFailed} onChange={(e) => setIncludeFailed(e.target.checked)} />
-        Allow export if some assets failed
-      </label>
+      <Checkbox
+        checked={includeFailed}
+        onChange={(e) => setIncludeFailed(e.target.checked)}
+        label="Allow export if some assets failed"
+      />
       <div className="actions">
-        <button
-          type="button"
-          className="btn secondary"
+        <Button
+          variant="secondary"
+          icon={ListChecks}
           onClick={() => setSelectedAssets(uniqueAssets.map((asset) => asset.id))}>
           Select all assets
-        </button>
-        <button type="button" className="btn secondary" onClick={() => setSelectedAssets([])}>
+        </Button>
+        <Button variant="secondary" icon={Ban} onClick={() => setSelectedAssets([])}>
           Select none
-        </button>
-        <button type="button" className="btn" disabled={phase === 'exporting'} onClick={() => void exportZip()}>
+        </Button>
+        <Button icon={Archive} disabled={phase === 'exporting'} onClick={() => void exportZip()}>
           Download ZIP
-        </button>
+        </Button>
       </div>
       {status ? <p className="muted">{status}</p> : null}
     </section>

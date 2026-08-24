@@ -3,8 +3,10 @@ import { isDarkHex, parseColor, pagePaletteGroups } from '../../normalize/colors
 import { createRequestId } from '../../shared/messages'
 import type { ColorToken, TypographyToken } from '../../shared/types'
 import { sendRuntime } from '../chrome-api'
+import { Copy } from 'lucide-react'
+import { Button } from '../components/Button'
 import { CopyButton, ScanPrompt } from '../components/CopyButton'
-import { CopyIcon, InspectIcon } from '../components/LucideIcons'
+import { InspectIcon, CopyIcon } from '../components/LucideIcons'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
 
@@ -223,10 +225,9 @@ export function TypographyView() {
                 </div>
                 <div className="type-card-actions">
                   {token.licenseReviewRequired ? <span className="badge warning">Font license review</span> : null}
-                  <button type="button" className="copy-values" onClick={() => void copyTypeValues(values, title)}>
-                    <CopyIcon />
+                  <Button size="sm" icon={Copy} onClick={() => void copyTypeValues(values, title)}>
                     Copy values
-                  </button>
+                  </Button>
                 </div>
               </article>
             )

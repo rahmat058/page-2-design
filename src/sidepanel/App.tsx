@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createRequestId } from '../shared/messages'
 import { userFacingError } from '../shared/errors'
 import { sendRuntime, onRuntimeMessage } from './chrome-api'
+import { Button } from './components/Button'
 import { BottomNav } from './components/BottomNav'
 import { PanelChrome } from './components/PanelChrome'
 import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
@@ -13,6 +14,7 @@ import { downloadAllImagesZip } from './download-asset'
 import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow'
 import { useScanStore } from './store/useScanStore'
 import { uniqueVisualAssets } from '../content/asset-scanner'
+import { Download, RefreshCw } from 'lucide-react'
 import { panelContentBlocks } from './content-groups'
 import type { NormalizedDesign } from '../shared/types'
 
@@ -81,17 +83,17 @@ export function App() {
             {view !== 'overview' ? <span className="count-pill">{countFor(view, counts, design)}</span> : null}
           </h1>
           {view === 'overview' && design ? (
-            <button
-              type="button"
-              className="btn rescan"
+            <Button
+              size="sm"
+              icon={RefreshCw}
               disabled={busy || tabRestricted}
               onClick={() => void startScan()}>
               {busy ? 'Scanning…' : 'Rescan'}
-            </button>
+            </Button>
           ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
-            <button
-              type="button"
-              className="btn ghost compact"
+            <Button
+              size="sm"
+              icon={Download}
               disabled={!canExport}
               onClick={() => {
                 if (view === 'assets' || view === 'images' || view === 'icons') {
@@ -102,7 +104,7 @@ export function App() {
                 useScanStore.getState().setView('export')
               }}>
               Export All
-            </button>
+            </Button>
           ) : null}
         </div>
         {view === 'overview' ? (

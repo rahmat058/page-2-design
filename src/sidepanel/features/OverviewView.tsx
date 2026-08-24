@@ -2,6 +2,7 @@ import { coverageSummary } from '../../validation/coverage'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
 import type { ColorToken } from '../../shared/types'
 import { CopyButton, EmptyState } from '../components/CopyButton'
+import { Checkbox } from '../components/Checkbox'
 import { useScanStore } from '../store/useScanStore'
 
 export function OverviewView() {
@@ -100,38 +101,27 @@ export function OverviewView() {
       <details className="more-details">
         <summary>Scan options</summary>
         <div className="option-grid">
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={options.loadLazyContent}
-              onChange={(e) => setOptions({ loadLazyContent: e.target.checked })}
-            />
-            <span>Load lazy content</span>
-          </label>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={options.includeNavigationAndFooter}
-              onChange={(e) => setOptions({ includeNavigationAndFooter: e.target.checked })}
-            />
-            <span>Include nav and footer</span>
-          </label>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={options.includeHiddenStructural}
-              onChange={(e) => setOptions({ includeHiddenStructural: e.target.checked })}
-            />
-            <span>Include hidden structure</span>
-          </label>
-          <label className="check wide">
-            <input
-              type="checkbox"
-              checked={options.captureExtraViewports}
-              onChange={(e) => setOptions({ captureExtraViewports: e.target.checked })}
-            />
-            <span>Record tablet and mobile breakpoints without resizing</span>
-          </label>
+          <Checkbox
+            checked={options.loadLazyContent}
+            onChange={(e) => setOptions({ loadLazyContent: e.target.checked })}
+            label="Load lazy content"
+          />
+          <Checkbox
+            checked={options.includeNavigationAndFooter}
+            onChange={(e) => setOptions({ includeNavigationAndFooter: e.target.checked })}
+            label="Include nav and footer"
+          />
+          <Checkbox
+            checked={options.includeHiddenStructural}
+            onChange={(e) => setOptions({ includeHiddenStructural: e.target.checked })}
+            label="Include hidden structure"
+          />
+          <Checkbox
+            wide
+            checked={options.captureExtraViewports}
+            onChange={(e) => setOptions({ captureExtraViewports: e.target.checked })}
+            label="Record tablet and mobile breakpoints without resizing"
+          />
         </div>
         {design ? (
           <>

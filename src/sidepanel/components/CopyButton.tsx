@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { startScan } from '../scan-flow'
 import { useScanStore } from '../store/useScanStore'
+import { Button } from './Button'
 
 interface Props {
   value: string
@@ -28,9 +30,9 @@ export function ScanPrompt({ afterScan }: { afterScan: string }) {
   return (
     <div className="empty-scan">
       <p>Scan this page to extract fonts, colors, and assets.</p>
-      <button type="button" className="btn compact" disabled={busy || tabRestricted} onClick={() => void startScan()}>
+      <Button size="sm" icon={RefreshCw} disabled={busy || tabRestricted} onClick={() => void startScan()}>
         {busy ? 'Scanning…' : 'Scan page'}
-      </button>
+      </Button>
       <button type="button" className="link" onClick={() => useScanStore.getState().setView('overview')}>
         Back to Overview
       </button>

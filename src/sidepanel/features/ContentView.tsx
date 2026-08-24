@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Copy } from 'lucide-react'
 import type { AssetRecord, ContentBlock } from '../../shared/types'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
+import { Button } from '../components/Button'
 import { ScanPrompt } from '../components/CopyButton'
 import {
   AriaBlockIcon,
@@ -40,10 +42,9 @@ export function ContentView() {
   return (
     <div className="content-wrap">
       <div className="content-toolbar">
-        <button type="button" className="copy-values" onClick={() => void copyAllContent(copyContentPlain(groups))}>
-          <CopyIcon />
+        <Button size="sm" icon={Copy} onClick={() => void copyAllContent(copyContentPlain(groups))}>
           Copy all
-        </button>
+        </Button>
       </div>
       <div className="content-scroll">
         {groups.map((group) => (
