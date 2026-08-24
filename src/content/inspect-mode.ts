@@ -1,11 +1,12 @@
-import { colorLooksLike } from '../normalize/colors';
+import { colorIsExact } from '../normalize/colors';
 
 const BOX_ID = 'page2design-inspect-box';
-const HITS_ID = 'page2design-color-hits';
+const HIT_ID = 'page2design-color-hit';
 
 let enabled = false;
 let box: HTMLDivElement | null = null;
 let activeKey: string | null = null;
+let hitIndex = -1;
 
 export function isInspectEnabled(): boolean {
   return enabled;
@@ -18,8 +19,9 @@ export function setInspectMode(next: boolean): void {
     window.removeEventListener('click', onClick, true);
     box?.remove();
     box = null;
-    clearColorHits();
+    clearColorHit();
     activeKey = null;
+    hitIndex = -1;
     return;
   }
   ensureBox();
@@ -48,7 +50,7 @@ function onMove(event: MouseEvent): void {
   if (!enabled) return;
   const target = event.target;
   if (!(target instanceof Element)) return;
-  if (target.id === 'page2design-overlay-root' || target.closest?.('#page2design-overlay-root')) {
+  if (isOverlay(target)) {
     if (box) box.style.display = 'none';
     return;
   }
@@ -65,53 +67,82 @@ function onClick(event: MouseEvent): void {
   if (!enabled) return;
   const target = event.target;
   if (!(target instanceof Element)) return;
-  if (target.id === 'page2design-overlay-root' || target.closest?.('#page2design-overlay-root')) return;
+  if (isOverlay(target)) return;
   event.preventDefault();
   event.stopPropagation();
 }
 
-export function highlightColorOnPage(payload: { hex: string | null; css?: string | null }): void {
+export function highlightColorOnPage(payload: {
+  hex: string | null;
+  css?: string | null;
+}): { index: number; total: number; done: boolean } {
   const key = (payload.css || payload.hex || '').replace(/\s+/g, ' ').trim();
-  if (!key || activeKey === key) {
-    clearColorHits();
+  if (!key) {
+    clearColorHit();
     activeKey = null;
-    return;
+    hitIndex = -1;
+    return { index: 0, total: 0, done: true };
   }
 
-  clearColorHits();
-  activeKey = key;
-  const layer = document.createElement('div');
-  layer.id = HITS_ID;
-  Object.assign(layer.style, {
-    position: 'fixed',
-    inset: '0',
-    pointerEvents: 'none',
-    zIndex: '2147483644',
-  } as CSSStyleDeclaration);
-  document.documentElement.appendChild(layer);
+  const hits = collectExactHits(payload);
+  if (hits.length === 0) {
+    clearColorHit();
+    activeKey = null;
+    hitIndex = -1;
+    return { index: 0, total: 0, done: true };
+  }
 
-  const gradient = payload.css && /gradient\(/i.test(payload.css) ? payload.css.replace(/\s+/g, ' ').trim() : null;
+  if (activeKey !== key) {
+    activeKey = key;
+    hitIndex = 0;
+  } else {
+    hitIndex += 1;
+    if (hitIndex >= hits.length) {
+      clearColorHit();
+      activeKey = null;
+      hitIndex = -1;
+      return { index: 0, total: hits.length, done: true };
+    }
+  }
+
+  paintHit(hits[hitIndex] as Element);
+  return { index: hitIndex, total: hits.length, done: false };
+}
+
+function collectExactHits(payload: { hex: string | null; css?: string | null }): Element[] {
+  const gradient =
+    payload.css && /gradient\(/i.test(payload.css) ? payload.css.replace(/\s+/g, ' ').trim() : null;
+  const hits: Element[] = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
-  let marked = 0;
-  while (walker.nextNode() && marked < 80) {
+  while (walker.nextNode() && hits.length < 200) {
     const el = walker.currentNode as Element;
     if (el.id?.startsWith('page2design-')) continue;
-    if (el.closest?.('#page2design-overlay-root')) continue;
+    if (isOverlay(el)) continue;
     const style = getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
     const match = gradient
       ? style.backgroundImage.replace(/\s+/g, ' ').trim() === gradient
-      : [
-          style.color,
-          style.backgroundColor,
-          style.borderTopColor,
-          style.fill,
-          style.stroke,
-        ].some((value) => payload.hex && colorLooksLike(value, payload.hex));
+      : Boolean(
+          payload.hex &&
+            [style.color, style.backgroundColor, style.borderTopColor, style.fill, style.stroke].some(
+              (value) => colorIsExact(value, payload.hex as string),
+            ),
+        );
     if (!match) continue;
     const rect = el.getBoundingClientRect();
-    if (rect.width < 2 || rect.height < 2) continue;
+    if (rect.width < 2 && rect.height < 2) continue;
+    hits.push(el);
+  }
+  return hits;
+}
+
+function paintHit(el: Element): void {
+  el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+  window.requestAnimationFrame(() => {
+    const rect = el.getBoundingClientRect();
+    clearColorHit();
     const mark = document.createElement('div');
+    mark.id = HIT_ID;
     Object.assign(mark.style, {
       position: 'fixed',
       left: `${rect.left}px`,
@@ -121,12 +152,18 @@ export function highlightColorOnPage(payload: { hex: string | null; css?: string
       border: '2px solid #7c5cfc',
       background: 'rgba(124, 92, 252, 0.12)',
       borderRadius: '4px',
+      pointerEvents: 'none',
+      zIndex: '2147483644',
     } as CSSStyleDeclaration);
-    layer.appendChild(mark);
-    marked += 1;
-  }
+    document.documentElement.appendChild(mark);
+  });
 }
 
-function clearColorHits(): void {
-  document.getElementById(HITS_ID)?.remove();
+function clearColorHit(): void {
+  document.getElementById(HIT_ID)?.remove();
+  document.getElementById('page2design-color-hits')?.remove();
+}
+
+function isOverlay(el: Element): boolean {
+  return Boolean(el.closest?.('#page2design-overlay-root') || el.id === 'page2design-overlay-root');
 }

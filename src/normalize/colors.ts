@@ -407,6 +407,14 @@ export function colorLooksLike(value: string, targetHex: string): boolean {
   return colorDistance(a, b) < 8;
 }
 
+export function colorIsExact(value: string, targetHex: string): boolean {
+  const a = parseColor(value);
+  const b = parseColor(targetHex);
+  if (!a || !b) return false;
+  if (a.a < 0.08 || Math.abs(a.a - b.a) > 0.05) return false;
+  return colorDistance(a, b) < 2.5;
+}
+
 export function pagePaletteGroups(
   colors: Array<{
     id: string;

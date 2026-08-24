@@ -147,9 +147,21 @@ export function routeMessage(
         sendResponse(createMessage({ type: 'SCANS_CLEARED', requestId: message.requestId }));
         return;
       }
-      case 'CLOSE_OVERLAY':
-      case 'SET_INSPECT_MODE':
       case 'HIGHLIGHT_COLOR': {
+        const tab = await identifyActiveTab();
+        let result: unknown = { ok: true };
+        if (tab.tabId) {
+          try {
+            result = await chrome.tabs.sendMessage(tab.tabId, message);
+          } catch {
+            result = { ok: false };
+          }
+        }
+        sendResponse(result);
+        return;
+      }
+      case 'CLOSE_OVERLAY':
+      case 'SET_INSPECT_MODE': {
         const tab = await identifyActiveTab();
         if (tab.tabId) {
           await chrome.tabs.sendMessage(tab.tabId, message);

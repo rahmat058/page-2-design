@@ -47,22 +47,13 @@ export function ColorsView() {
       <div key={tab} className="fade-pane colors-scroll">
         {tab === 'palette' ? (
           <div className="palette peeper-palette">
-            {grouped.map((group) => (
-              <section key={group.key} className="palette-group">
-                <h3>{group.title}</h3>
-                {group.ids.map((id) => {
-                  const color = colors.find((item) => item.id === id);
-                  if (!color) return null;
-                  return (
-                    <ColorCard
-                      key={color.id}
-                      color={color}
-                      inspecting={inspectingId === color.id}
-                      onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
-                    />
-                  );
-                })}
-              </section>
+            {colors.map((color) => (
+              <ColorCard
+                key={color.id}
+                color={color}
+                inspecting={inspectingId === color.id}
+                onInspect={() => void cycleInspectColor(color, setInspectingId)}
+              />
             ))}
           </div>
         ) : (
@@ -79,7 +70,7 @@ export function ColorsView() {
                         key={color.id}
                         color={color}
                         inspecting={inspectingId === color.id}
-                        onInspect={() => void toggleInspectColor(color, inspectingId, setInspectingId)}
+                        onInspect={() => void cycleInspectColor(color, setInspectingId)}
                       />
                     );
                   })}
@@ -162,29 +153,27 @@ async function copyColor(value: string, label: string): Promise<void> {
   useToastStore.getState().showToast(`${label} copied`);
 }
 
-async function toggleInspectColor(
+async function cycleInspectColor(
   color: ColorToken,
-  inspectingId: string | null,
   setInspectingId: (id: string | null) => void,
 ): Promise<void> {
-  const turningOff = inspectingId === color.id;
-  if (turningOff) {
-    await sendRuntime({
-      type: 'HIGHLIGHT_COLOR',
-      requestId: createRequestId(),
-      payload: { hex: null },
-    });
-    setInspectingId(null);
-    useToastStore.getState().showToast('Inspect off');
-    return;
-  }
-  await sendRuntime({
+  const response = await sendRuntime({
     type: 'HIGHLIGHT_COLOR',
     requestId: createRequestId(),
     payload: { hex: color.hex, css: color.css ?? color.hex },
   });
+  if (response?.type !== 'HIGHLIGHT_COLOR_RESULT' || response.payload.done || response.payload.total === 0) {
+    setInspectingId(null);
+    useToastStore.getState().showToast(
+      response?.type === 'HIGHLIGHT_COLOR_RESULT' && response.payload.total === 0
+        ? 'No matches on the page'
+        : 'Inspect off',
+    );
+    return;
+  }
   setInspectingId(color.id);
-  useToastStore.getState().showToast(`Inspecting ${color.kind === 'gradient' ? color.name : color.hex}`);
+  const label = color.kind === 'gradient' ? color.name : color.hex;
+  useToastStore.getState().showToast(`${label} · ${response.payload.index + 1} of ${response.payload.total}`);
 }
 
 export function TypographyView() {

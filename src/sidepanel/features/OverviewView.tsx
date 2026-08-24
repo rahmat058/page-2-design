@@ -44,7 +44,7 @@ export function OverviewView() {
 
       {design ? (
         <>
-          <section className="overview-block">
+          <section className="overview-block lead">
             <h2>Typography</h2>
             <div className="type-pair stacked">
               <div>

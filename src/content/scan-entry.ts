@@ -48,8 +48,14 @@ function init(): void {
     }
 
     if (message.type === 'HIGHLIGHT_COLOR') {
-      highlightColorOnPage(message.payload);
-      sendResponse({ ok: true });
+      const result = highlightColorOnPage(message.payload);
+      sendResponse(
+        createMessage({
+          type: 'HIGHLIGHT_COLOR_RESULT',
+          requestId: message.requestId,
+          payload: result,
+        }),
+      );
       return false;
     }
 

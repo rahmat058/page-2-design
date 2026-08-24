@@ -43,7 +43,8 @@ export type MessageType =
   | 'CLOSE_OVERLAY'
   | 'DOCK_SIDE_PANEL'
   | 'SET_INSPECT_MODE'
-  | 'HIGHLIGHT_COLOR';
+  | 'HIGHLIGHT_COLOR'
+  | 'HIGHLIGHT_COLOR_RESULT';
 
 interface MessageBase {
   schemaVersion: string;
@@ -227,6 +228,11 @@ export interface HighlightColorMessage extends MessageBase {
   payload: { hex: string | null; css?: string | null };
 }
 
+export interface HighlightColorResultMessage extends MessageBase {
+  type: 'HIGHLIGHT_COLOR_RESULT';
+  payload: { index: number; total: number; done: boolean };
+}
+
 export type ExtensionMessage =
   | PingMessage
   | PongMessage
@@ -257,7 +263,8 @@ export type ExtensionMessage =
   | CloseOverlayMessage
   | DockSidePanelMessage
   | SetInspectModeMessage
-  | HighlightColorMessage;
+  | HighlightColorMessage
+  | HighlightColorResultMessage;
 
 const MESSAGE_TYPES = new Set<MessageType>([
   'PING',
@@ -290,6 +297,7 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'DOCK_SIDE_PANEL',
   'SET_INSPECT_MODE',
   'HIGHLIGHT_COLOR',
+  'HIGHLIGHT_COLOR_RESULT',
 ]);
 
 export function createMessage(partial: {

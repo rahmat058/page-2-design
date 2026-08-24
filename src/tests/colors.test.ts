@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseColor, inferColorRole, pagePaletteGroups } from '../normalize/colors';
+import { parseColor, inferColorRole, pagePaletteGroups, colorIsExact } from '../normalize/colors';
 
 describe('color parsing', () => {
   it('parses hex, rgb, hsl, and named colors', () => {
@@ -21,6 +21,11 @@ describe('color parsing', () => {
   it('rejects unsupported values', () => {
     expect(parseColor('currentcolor')).toBeNull();
     expect(parseColor('color(display-p3 1 0 0)')).toBeNull();
+  });
+
+  it('treats only near-identical computed values as exact', () => {
+    expect(colorIsExact('rgb(17, 17, 17)', '#111111')).toBe(true);
+    expect(colorIsExact('rgb(18, 18, 40)', '#111111')).toBe(false);
   });
 
   it('infers roles without claiming certainty', () => {
