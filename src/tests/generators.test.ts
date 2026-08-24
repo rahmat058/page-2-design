@@ -60,6 +60,62 @@ describe('zip paths', () => {
   });
 });
 
+describe('palette clustering', () => {
+  it('merges near-duplicate colors and drops unused variables', () => {
+    const scan = sampleScan();
+    scan.colors = [
+      {
+        original: ['#111111'],
+        canonicalRgba: 'rgba(17, 17, 17, 1)',
+        canonicalHex: '#111111',
+        properties: ['color'],
+        count: 40,
+        elementIds: ['el_1'],
+        source: 'text',
+      },
+      {
+        original: ['#121212'],
+        canonicalRgba: 'rgba(18, 18, 18, 1)',
+        canonicalHex: '#121212',
+        properties: ['color'],
+        count: 8,
+        elementIds: ['el_2'],
+        source: 'text',
+      },
+      {
+        original: ['#ffffff'],
+        canonicalRgba: 'rgba(255, 255, 255, 1)',
+        canonicalHex: '#FFFFFF',
+        properties: ['background-color'],
+        count: 20,
+        elementIds: ['el_3'],
+        source: 'background',
+      },
+      {
+        original: ['#1111111A'],
+        canonicalRgba: 'rgba(17, 17, 17, 0.1)',
+        canonicalHex: '#1111111A',
+        properties: ['box-shadow'],
+        count: 3,
+        elementIds: ['el_4'],
+        source: 'shadow',
+      },
+      {
+        original: ['#abc'],
+        canonicalRgba: 'rgba(10, 20, 30, 1)',
+        canonicalHex: '#0A141E',
+        properties: ['--token'],
+        count: 1,
+        elementIds: ['root'],
+        source: 'variable',
+      },
+    ];
+    const design = normalizeScan(scan);
+    expect(design.tokens.colors.length).toBeLessThanOrEqual(3);
+    expect(design.tokens.colors.some((color) => color.hex === '#111111')).toBe(true);
+  });
+});
+
 describe('normalization and privacy', () => {
   it('normalizes deterministically and omits secrets', () => {
     const a = normalizeScan(sampleScan());

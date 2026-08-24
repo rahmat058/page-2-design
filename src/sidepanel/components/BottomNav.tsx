@@ -1,4 +1,5 @@
 import { useScanStore, type PanelView } from '../store/useScanStore';
+import { useToastStore } from '../toast';
 import { AssetsIcon, ColorsIcon, OverviewIcon, ProfileIcon, TypeIcon } from './LucideIcons';
 
 const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
@@ -30,7 +31,11 @@ export function BottomNav() {
             className={active === item.id ? 'nav-btn on' : 'nav-btn'}
             aria-current={active === item.id ? 'page' : undefined}
             aria-label={item.label}
-            onClick={() => setView(item.id)}
+            onClick={() => {
+              if (active === item.id) return;
+              setView(item.id);
+              useToastStore.getState().showToast(item.label);
+            }}
           >
             <Icon />
           </button>

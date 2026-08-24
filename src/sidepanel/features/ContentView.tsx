@@ -11,6 +11,7 @@ import {
   objectUrlForAsset,
 } from '../download-asset';
 import { useScanStore } from '../store/useScanStore';
+import { useToastStore } from '../toast';
 
 export function ContentView() {
   const blocks = useScanStore((s) => s.design?.content ?? []);
@@ -53,39 +54,51 @@ export function AssetsView() {
   if (assets.length === 0) return <ScanPrompt afterScan="No assets were captured." />;
   return (
     <div className="assets-wrap">
-      <div className="view-toggle" role="group" aria-label="Asset layout">
+      <div className="segmented pill-tabs asset-tabs" role="tablist" aria-label="Asset layout">
         <button
           type="button"
+          role="tab"
           className={mode === 'grid' ? 'on' : ''}
-          aria-pressed={mode === 'grid'}
-          aria-label="Grid view"
-          onClick={() => setMode('grid')}
+          aria-selected={mode === 'grid'}
+          onClick={() => {
+            if (mode === 'grid') return;
+            setMode('grid');
+            useToastStore.getState().showToast('Grid view');
+          }}
         >
           <GridViewIcon />
+          Grid
         </button>
         <button
           type="button"
+          role="tab"
           className={mode === 'list' ? 'on' : ''}
-          aria-pressed={mode === 'list'}
-          aria-label="List view"
-          onClick={() => setMode('list')}
+          aria-selected={mode === 'list'}
+          onClick={() => {
+            if (mode === 'list') return;
+            setMode('list');
+            useToastStore.getState().showToast('List view');
+          }}
         >
           <ListViewIcon />
+          List
         </button>
       </div>
-      {mode === 'grid' ? (
-        <div className="asset-grid">
-          {assets.map((asset) => (
-            <AssetTile key={asset.id} asset={asset} />
-          ))}
-        </div>
-      ) : (
-        <div className="asset-list">
-          {assets.map((asset) => (
-            <AssetRow key={asset.id} asset={asset} />
-          ))}
-        </div>
-      )}
+      <div key={mode} className="fade-pane asset-scroll">
+        {mode === 'grid' ? (
+          <div className="asset-grid">
+            {assets.map((asset) => (
+              <AssetTile key={asset.id} asset={asset} />
+            ))}
+          </div>
+        ) : (
+          <div className="asset-list">
+            {assets.map((asset) => (
+              <AssetRow key={asset.id} asset={asset} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

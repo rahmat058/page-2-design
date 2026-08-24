@@ -8,6 +8,7 @@ import { ColorsView, LayoutView, TypographyView } from './features/ColorsView';
 import { AssetsView, ContentView } from './features/ContentView';
 import { ExportView } from './features/ExportView';
 import { OverviewView } from './features/OverviewView';
+import { Toast } from './components/Toast';
 import { downloadAllImagesZip } from './download-asset';
 import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow';
 import { useScanStore } from './store/useScanStore';
@@ -28,7 +29,7 @@ export function App() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    void refreshTab();
+    void boot();
     return onRuntimeMessage((message) => {
       if (message.type === 'SCAN_PROGRESS') {
         useScanStore.getState().setProgress(message.payload);
@@ -83,14 +84,14 @@ export function App() {
             </>
           ) : null}
         </div>
-        {view === 'overview' ? (
+        {view === 'overview' && design ? (
           <button
             type="button"
             className="btn compact"
             disabled={busy || tabRestricted}
             onClick={() => void startScan()}
           >
-            {busy ? 'Scanning…' : design ? 'Rescan' : 'Scan page'}
+            {busy ? 'Scanning…' : 'Rescan'}
           </button>
         ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
           <button
@@ -114,15 +115,18 @@ export function App() {
         <p className="banner">This tab cannot be scanned. Open an http(s) page.</p>
       ) : null}
       <main className="main">
-        {view === 'overview' ? <OverviewView /> : null}
-        {view === 'content' ? <ContentView /> : null}
-        {view === 'assets' || view === 'images' || view === 'icons' ? <AssetsView /> : null}
-        {view === 'colors' ? <ColorsView /> : null}
-        {view === 'typography' ? <TypographyView /> : null}
-        {view === 'layout' ? <LayoutView /> : null}
-        {view === 'export' ? <ExportView /> : null}
+        <div key={view} className="fade-pane">
+          {view === 'overview' ? <OverviewView /> : null}
+          {view === 'content' ? <ContentView /> : null}
+          {view === 'assets' || view === 'images' || view === 'icons' ? <AssetsView /> : null}
+          {view === 'colors' ? <ColorsView /> : null}
+          {view === 'typography' ? <TypographyView /> : null}
+          {view === 'layout' ? <LayoutView /> : null}
+          {view === 'export' ? <ExportView /> : null}
+        </div>
       </main>
       <BottomNav />
+      <Toast />
     </div>
   );
 
@@ -151,6 +155,17 @@ export function App() {
     });
     await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() });
   }
+}
+
+let autoScanStarted = false;
+
+async function boot(): Promise<void> {
+  await refreshTab();
+  if (autoScanStarted) return;
+  const { tabRestricted, design, phase } = useScanStore.getState();
+  if (tabRestricted || design || phase !== 'idle') return;
+  autoScanStarted = true;
+  await startScan();
 }
 
 function headingFor(view: string): string {

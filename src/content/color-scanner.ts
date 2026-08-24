@@ -1,12 +1,10 @@
-import { parseColor, isFullyTransparent } from '../normalize/colors';
+import { parseColor } from '../normalize/colors';
 import type { ColorUsage } from '../shared/types';
-import { extractCssUrls } from './css-urls';
 
 const COLOR_PROPS = [
   ['color', 'text'],
   ['background-color', 'background'],
-  ['border-color', 'border'],
-  ['outline-color', 'outline'],
+  ['border-top-color', 'border'],
   ['fill', 'svg'],
   ['stroke', 'svg'],
 ] as const;
@@ -19,8 +17,6 @@ export function collectColors(
   for (const [prop, source] of COLOR_PROPS) {
     addColor(bucket, style[prop], prop, source, elementId);
   }
-  addShadowColors(bucket, style['box-shadow'], 'box-shadow', elementId);
-  addShadowColors(bucket, style['text-shadow'], 'text-shadow', elementId);
   addGradientColors(bucket, style['background-image'], elementId);
 }
 
@@ -41,12 +37,10 @@ export function collectSvgColors(
 }
 
 export function collectCssVariableColors(
-  vars: { name: string; value: string }[],
-  bucket: Map<string, ColorUsage>,
+  _vars: { name: string; value: string }[],
+  _bucket: Map<string, ColorUsage>,
 ): void {
-  for (const item of vars) {
-    addColor(bucket, item.value, item.name, 'variable', 'root');
-  }
+  /* Unused design-token variables inflate the palette. Visual colors come from computed styles. */
 }
 
 function addColor(
@@ -59,8 +53,9 @@ function addColor(
   if (!raw) return;
   const parsed = parseColor(raw);
   if (!parsed) return;
-  if (isFullyTransparent(parsed) && source !== 'background') return;
-  const key = parsed.rgba;
+  if (parsed.a < 0.08) return;
+  if (source === 'border' && parsed.a < 0.2) return;
+  const key = paletteKey(parsed);
   const existing = bucket.get(key);
   if (existing) {
     existing.count += 1;
@@ -80,21 +75,6 @@ function addColor(
   });
 }
 
-function addShadowColors(
-  bucket: Map<string, ColorUsage>,
-  value: string | undefined,
-  property: string,
-  elementId: string,
-): void {
-  if (!value || value === 'none') return;
-  const colorLikes =
-    value.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)|[a-z]+/gi) ?? [];
-  for (const token of colorLikes) {
-    if (extractCssUrls(token).length) continue;
-    addColor(bucket, token, property, 'shadow', elementId);
-  }
-}
-
 function addGradientColors(
   bucket: Map<string, ColorUsage>,
   value: string | undefined,
@@ -106,6 +86,11 @@ function addGradientColors(
   for (const token of colorLikes) {
     addColor(bucket, token, 'background-image', 'gradient', elementId);
   }
+}
+
+function paletteKey(parsed: NonNullable<ReturnType<typeof parseColor>>): string {
+  const alpha = parsed.a >= 0.92 ? 1 : Math.round(parsed.a * 10) / 10;
+  return `${parsed.r},${parsed.g},${parsed.b},${alpha}`;
 }
 
 export function colorUsages(bucket: Map<string, ColorUsage>): ColorUsage[] {

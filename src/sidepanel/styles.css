@@ -384,8 +384,7 @@ body,
 }
 
 .view-toggle {
-  position: sticky;
-  top: 0;
+  position: static;
   z-index: 1;
   background: #fff;
 }
@@ -1135,12 +1134,8 @@ body,
   transform: rotate(-45deg) translate(0, -1px);
 }
 
-.segmented,
 .view-toggle {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #fff;
+  position: static;
 }
 
 .compact-palette {
@@ -1207,5 +1202,192 @@ body,
   color: #6d5efc;
   cursor: pointer;
   font: inherit;
+}
+
+.segmented.pill-tabs {
+  background: #eceff3;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 10px;
+}
+
+.segmented.pill-tabs button {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5b6472;
+}
+
+.segmented.pill-tabs button.on {
+  background: #fff;
+  color: #111;
+  font-weight: 650;
+  box-shadow: 0 1px 3px rgba(16, 18, 27, 0.12);
+}
+
+.peeper-palette {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.peeper-card {
+  min-height: 64px;
+  border-radius: 12px;
+  padding: 12px 12px 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(16, 18, 27, 0.06);
+}
+
+.peeper-card.checker {
+  background-image: linear-gradient(45deg, #d9d9d9 25%, transparent 25%),
+    linear-gradient(-45deg, #d9d9d9 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d9d9d9 75%),
+    linear-gradient(-45deg, transparent 75%, #d9d9d9 75%);
+  background-size: 12px 12px;
+}
+
+.peeper-copy {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.peeper-copy strong {
+  font-size: 13px;
+}
+
+.peeper-copy span {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.peeper-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0.35;
+}
+
+.peeper-card:hover .peeper-actions {
+  opacity: 1;
+}
+
+.swatch-action {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 4px rgba(16, 18, 27, 0.16);
+}
+
+.palette-card.peeper-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  cursor: default;
+  min-height: 64px;
+  padding: 12px 12px 12px 14px;
+}
+
+.peeper-copy {
+  text-align: left;
+  min-width: 0;
+}
+
+.peeper-actions {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.peeper-card:hover .peeper-actions,
+.peeper-card:focus-within .peeper-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.assets-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.asset-tabs {
+  flex-shrink: 0;
+  position: static;
+}
+
+.asset-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.asset-scroll {
+  min-height: 0;
+}
+
+.fade-pane {
+  animation: fade-up 0.22s ease;
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: #1b2128;
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(16, 18, 27, 0.22);
+  animation: toast-in 0.2s ease;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app.inspector {
+  position: relative;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 

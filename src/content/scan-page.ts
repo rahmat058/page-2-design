@@ -14,7 +14,7 @@ import type {
   TypographyUsage,
 } from '../shared/types';
 import { collectDocumentAssets, materializeBlobAssets, mergeAssets } from './asset-scanner';
-import { collectColors, collectCssVariableColors, colorUsages } from './color-scanner';
+import { collectColors, colorUsages } from './color-scanner';
 import { scanPseudos } from './pseudo-scanner';
 import { orderContent } from './content-scanner';
 import { scanDom } from './dom-scanner';
@@ -109,7 +109,6 @@ export async function runPageScan(
   }
 
   const cssVariables = readCssVariables();
-  collectCssVariableColors(cssVariables, colorBucket);
 
   const assets = mergeAssets([...dom.assets.values(), ...collectDocumentAssets()]);
   await materializeBlobAssets(assets);

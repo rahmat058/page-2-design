@@ -96,7 +96,9 @@ export function OverviewView() {
           </section>
         </>
       ) : (
-        <EmptyState>Scan a page to extract fonts, colors, and assets.</EmptyState>
+        <EmptyState>
+          {phase === 'idle' ? 'Opening this page…' : 'Scanning this page for fonts, colors, and assets.'}
+        </EmptyState>
       )}
 
       <details className="more-details">

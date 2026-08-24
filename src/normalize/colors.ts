@@ -398,3 +398,11 @@ export function inferColorRole(hex: string, properties: string[]): string {
 export function colorDistance(a: ParsedColor, b: ParsedColor): number {
   return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
 }
+
+export function colorLooksLike(value: string, targetHex: string): boolean {
+  const a = parseColor(value);
+  const b = parseColor(targetHex);
+  if (!a || !b) return false;
+  if (Math.abs(a.a - b.a) > 0.2) return false;
+  return colorDistance(a, b) < 18;
+}

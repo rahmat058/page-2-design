@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { isDarkHex } from '../../normalize/colors';
+import { createRequestId } from '../../shared/messages';
+import type { ColorToken } from '../../shared/types';
+import { sendRuntime } from '../chrome-api';
 import { CopyButton, ScanPrompt } from '../components/CopyButton';
+import { CopyIcon, InspectIcon } from '../components/LucideIcons';
 import { useScanStore } from '../store/useScanStore';
+import { useToastStore } from '../toast';
 
 export function ColorsView() {
   const colors = useScanStore((s) => s.design?.tokens.colors ?? []);
@@ -10,60 +15,113 @@ export function ColorsView() {
   const grouped = groupByRole(colors);
   return (
     <div className="colors-wrap">
-      <div className="segmented">
-        <button type="button" className={tab === 'palette' ? 'on' : ''} onClick={() => setTab('palette')}>
+      <div className="segmented pill-tabs" role="tablist" aria-label="Color views">
+        <button
+          type="button"
+          role="tab"
+          className={tab === 'palette' ? 'on' : ''}
+          aria-selected={tab === 'palette'}
+          onClick={() => {
+              if (tab === 'palette') return;
+              setTab('palette');
+              useToastStore.getState().showToast('Palette');
+            }}
+        >
           Palette
         </button>
         <button
           type="button"
+          role="tab"
           className={tab === 'categories' ? 'on' : ''}
-          onClick={() => setTab('categories')}
+          aria-selected={tab === 'categories'}
+          onClick={() => {
+              if (tab === 'categories') return;
+              setTab('categories');
+              useToastStore.getState().showToast('Categories');
+            }}
         >
           Categories
         </button>
       </div>
-      {tab === 'palette' ? (
-        <div className="palette compact-palette">
-          {colors.map((color) => (
-            <button
-              key={color.id}
-              type="button"
-              className="palette-card"
-              style={{ background: color.hex, color: isDarkHex(color.hex) ? '#fff' : '#111' }}
-              onClick={() => void navigator.clipboard.writeText(color.hex)}
-            >
-              <strong>{color.hex}</strong>
-              <span>
-                {color.count} {color.count === 1 ? 'instance' : 'instances'}
-              </span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="category-list">
-          {Object.entries(grouped).map(([role, items]) => (
-            <section key={role} className="category-block">
-              <h3>{role}</h3>
-              <div className="swatch-grid">
-                {items.map((color) => (
-                  <button
-                    key={color.id}
-                    type="button"
-                    className="mini-swatch"
-                    title={`${color.hex} · ${color.count} instances`}
-                    style={{ background: color.hex, color: isDarkHex(color.hex) ? '#fff' : '#111' }}
-                    onClick={() => void navigator.clipboard.writeText(color.hex)}
-                  >
-                    <span>{color.hex}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+      <div key={tab} className="fade-pane">
+        {tab === 'palette' ? (
+          <div className="palette peeper-palette">
+            {colors.map((color) => (
+              <ColorCard key={color.id} color={color} />
+            ))}
+          </div>
+        ) : (
+          <div className="category-list">
+            {Object.entries(grouped).map(([role, items]) => (
+              <section key={role} className="category-block">
+                <h3>{role}</h3>
+                <div className="peeper-palette">
+                  {items.map((color) => (
+                    <ColorCard key={color.id} color={color} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+function ColorCard({ color }: { color: ColorToken }) {
+  const ink = isDarkHex(color.hex) ? '#fff' : '#111';
+  const translucent = color.hex.length > 7;
+  return (
+    <div
+      className={translucent ? 'palette-card peeper-card checker' : 'palette-card peeper-card'}
+      style={{ background: color.hex, color: ink }}
+    >
+      <div className="peeper-copy">
+        <strong>{color.hex}</strong>
+        <span>
+          {color.count} {color.count === 1 ? 'instance' : 'instances'}
+        </span>
+      </div>
+      <div className="peeper-actions">
+        <button
+          type="button"
+          className="swatch-action"
+          aria-label={`Inspect ${color.hex} on the page`}
+          onClick={() => void inspectColor(color.hex)}
+        >
+          <InspectIcon />
+        </button>
+        <button
+          type="button"
+          className="swatch-action"
+          aria-label={`Copy ${color.hex}`}
+          onClick={() => void copyColor(color.hex)}
+        >
+          <CopyIcon />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+async function copyColor(hex: string): Promise<void> {
+  await navigator.clipboard.writeText(hex);
+  useToastStore.getState().showToast(`${hex} copied`);
+}
+
+async function inspectColor(hex: string): Promise<void> {
+  useToastStore.getState().showToast(`Inspecting ${hex}`);
+  await sendRuntime({
+    type: 'SET_INSPECT_MODE',
+    requestId: createRequestId(),
+    payload: { enabled: true },
+  });
+  await sendRuntime({
+    type: 'HIGHLIGHT_COLOR',
+    requestId: createRequestId(),
+    payload: { hex },
+  });
 }
 
 export function TypographyView() {
@@ -152,8 +210,8 @@ function primaryFont(stack: string): string {
   return stack.split(',')[0]?.replace(/['"]/g, '').trim() || stack;
 }
 
-function groupByRole(colors: Array<{ id: string; hex: string; count: number; role: string }>) {
-  const groups: Record<string, typeof colors> = {};
+function groupByRole(colors: ColorToken[]) {
+  const groups: Record<string, ColorToken[]> = {};
   for (const color of colors) {
     const key = color.role || 'other';
     groups[key] ??= [];

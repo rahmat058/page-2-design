@@ -42,7 +42,8 @@ export type MessageType =
   | 'TOGGLE_OVERLAY'
   | 'CLOSE_OVERLAY'
   | 'DOCK_SIDE_PANEL'
-  | 'SET_INSPECT_MODE';
+  | 'SET_INSPECT_MODE'
+  | 'HIGHLIGHT_COLOR';
 
 interface MessageBase {
   schemaVersion: string;
@@ -221,6 +222,11 @@ export interface SetInspectModeMessage extends MessageBase {
   payload: { enabled: boolean };
 }
 
+export interface HighlightColorMessage extends MessageBase {
+  type: 'HIGHLIGHT_COLOR';
+  payload: { hex: string | null };
+}
+
 export type ExtensionMessage =
   | PingMessage
   | PongMessage
@@ -250,7 +256,8 @@ export type ExtensionMessage =
   | ToggleOverlayMessage
   | CloseOverlayMessage
   | DockSidePanelMessage
-  | SetInspectModeMessage;
+  | SetInspectModeMessage
+  | HighlightColorMessage;
 
 const MESSAGE_TYPES = new Set<MessageType>([
   'PING',
@@ -282,6 +289,7 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'CLOSE_OVERLAY',
   'DOCK_SIDE_PANEL',
   'SET_INSPECT_MODE',
+  'HIGHLIGHT_COLOR',
 ]);
 
 export function createMessage(partial: {

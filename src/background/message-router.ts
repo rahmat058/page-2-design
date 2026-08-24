@@ -148,7 +148,8 @@ export function routeMessage(
         return;
       }
       case 'CLOSE_OVERLAY':
-      case 'SET_INSPECT_MODE': {
+      case 'SET_INSPECT_MODE':
+      case 'HIGHLIGHT_COLOR': {
         const tab = await identifyActiveTab();
         if (tab.tabId) {
           await chrome.tabs.sendMessage(tab.tabId, message);

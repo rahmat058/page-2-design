@@ -1,4 +1,6 @@
 import {
+  Copy,
+  Crosshair,
   Download,
   Droplet,
   GripVertical,
@@ -52,6 +54,14 @@ export function ProfileIcon() {
 
 export function DownloadIcon() {
   return <Download size={14} {...STROKE} aria-hidden="true" />;
+}
+
+export function CopyIcon() {
+  return <Copy size={14} {...STROKE} aria-hidden="true" />;
+}
+
+export function InspectIcon() {
+  return <Crosshair size={14} {...STROKE} aria-hidden="true" />;
 }
 
 export function GridViewIcon() {

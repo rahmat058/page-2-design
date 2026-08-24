@@ -108,9 +108,12 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
 function groupColors(raw: PageScan): ColorToken[] {
   const tokens: ColorToken[] = [];
   for (const usage of raw.colors) {
+    if (usage.source === 'variable' || usage.source === 'outline' || usage.source === 'shadow') {
+      continue;
+    }
     const parsed = parseColor(usage.canonicalHex) ?? parseColor(usage.canonicalRgba);
     if (!parsed) continue;
-    if (isFullyTransparent(parsed) && usage.source !== 'background') continue;
+    if (isFullyTransparent(parsed) || parsed.a < 0.08) continue;
     const role = inferColorRole(parsed.hex, usage.properties);
     tokens.push({
       id: `color_${tokens.length + 1}`,
@@ -129,17 +132,58 @@ function groupColors(raw: PageScan): ColorToken[] {
       nearDuplicates: [],
     });
   }
+  return finalizePalette(tokens);
+}
 
-  for (const token of tokens) {
+function finalizePalette(tokens: ColorToken[]): ColorToken[] {
+  const sorted = [...tokens].sort((a, b) => b.count - a.count);
+  const clustered: ColorToken[] = [];
+  for (const token of sorted) {
     const parsed = parseColor(token.hex);
     if (!parsed) continue;
-    token.nearDuplicates = tokens
-      .filter((other) => other.id !== token.id)
+    const host = clustered.find((item) => {
+      const other = parseColor(item.hex);
+      return other ? sameSwatch(parsed, other) : false;
+    });
+    if (host) {
+      host.count += token.count;
+      host.elementIds = [...new Set([...host.elementIds, ...token.elementIds])];
+      host.properties = [...new Set([...host.properties, ...token.properties])];
+      host.original = [...new Set([...host.original, ...token.original])];
+      continue;
+    }
+    clustered.push({ ...token, elementIds: [...token.elementIds] });
+  }
+
+  const ranked = clustered.sort((a, b) => b.count - a.count);
+  const floor = Math.max(2, Math.floor((ranked[0]?.count ?? 2) * 0.015));
+  const kept = ranked.filter((token, index) => {
+    if (index < 10) return true;
+    if (token.role === 'border' || token.role === 'shadow' || token.role === 'transparent') {
+      return token.count >= Math.max(4, floor);
+    }
+    return token.count >= floor;
+  });
+
+  return kept.slice(0, 28).map((token, index) => {
+    const nearDuplicates = kept
+      .filter((other) => other !== token)
       .filter((other) => {
-        const otherParsed = parseColor(other.hex);
-        return otherParsed ? colorDistance(parsed, otherParsed) < 18 : false;
+        const a = parseColor(token.hex);
+        const b = parseColor(other.hex);
+        return a && b ? colorDistance(a, b) < 18 : false;
       })
       .map((other) => other.id);
-  }
-  return tokens;
+    return {
+      ...token,
+      id: `color_${index + 1}`,
+      name: `${token.role}-${index + 1}`,
+      nearDuplicates,
+    };
+  });
+}
+
+function sameSwatch(a: NonNullable<ReturnType<typeof parseColor>>, b: NonNullable<ReturnType<typeof parseColor>>): boolean {
+  if (Math.abs(a.a - b.a) > 0.18) return false;
+  return colorDistance(a, b) < 22;
 }
