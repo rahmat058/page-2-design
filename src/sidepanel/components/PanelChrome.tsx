@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { PanelView } from '../store/useScanStore'
+import { Switch } from './Switch'
 import {
   CancelMenuIcon,
   ClearMenuIcon,
@@ -45,11 +46,7 @@ export function PanelChrome(props: Props) {
         <GripIcon />
         <span className="tip tip-below tip-start">Move panel</span>
       </button>
-      <label className="inspect-toggle">
-        <span>Inspect Mode</span>
-        <input type="checkbox" checked={props.inspectOn} onChange={props.onToggleInspect} />
-        <span className="switch" />
-      </label>
+      <Switch checked={props.inspectOn} onChange={props.onToggleInspect} label="Inspect Mode" />
       <div className="chrome-spacer" />
       <div className="chrome-actions">
         <button type="button" className="icon-btn" aria-label="Open side panel" onClick={props.onDock}>
