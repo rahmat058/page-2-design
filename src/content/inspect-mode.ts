@@ -206,7 +206,7 @@ function elementLabel(el: Element): string {
   const classes = className
     .split(/\s+/)
     .filter((c) => !c.startsWith('page2design-'))
-    .slice(0, 2)
+    .slice(0, 5)
     .map((c) => `.${c}`)
     .join('')
   return `${tag}${classes}`
@@ -447,9 +447,11 @@ function showHoverCard(el: Element, rect: DOMRect): void {
   const width = Math.round(rect.width * 10) / 10
   const height = Math.round(rect.height * 10) / 10
   const label = elementLabel(el)
-  const key = `${label}|${width}|${height}|${color}|${background}|${family}|${style.fontSize}`
+  const kind = classifyKind(el, el.tagName.toLowerCase())
+  const key = `${kind}|${label}|${width}|${height}|${color}|${background}|${family}|${style.fontSize}`
   if (key !== lastCardKey) {
     lastCardKey = key
+    setText(host, 'p2d-kind', kind)
     setText(host, 'p2d-label', label)
     setText(host, 'p2d-size', `${formatPx(width)} × ${formatPx(height)}`)
     setText(host, 'p2d-text-hex', color)
@@ -462,8 +464,8 @@ function showHoverCard(el: Element, rect: DOMRect): void {
     if (bgSwatch) bgSwatch.style.setProperty('background', background === 'transparent' ? '#ffffff' : background, 'important')
   }
   host.style.setProperty('display', 'block', 'important')
-  const cardW = host.offsetWidth || 268
-  const cardH = host.offsetHeight || 156
+  const cardW = host.offsetWidth || 300
+  const cardH = host.offsetHeight || 180
   const gap = 10
   let left = rect.left
   let top = rect.bottom + gap
@@ -498,72 +500,119 @@ function ensureCard(): HTMLDivElement {
     'z-index': '2147483647',
     'pointer-events': 'none',
     display: 'none',
-    width: '268px',
+    width: '300px',
+    'max-width': 'min(300px, calc(100vw - 16px))',
     'box-sizing': 'border-box',
     margin: '0',
-    padding: '10px 12px 8px',
+    padding: '0',
+    overflow: 'hidden',
     border: '1px solid #edf0f3',
-    'border-radius': '12px',
+    'border-radius': '14px',
     background: '#ffffff',
-    'box-shadow': '0 12px 32px rgb(10 10 10 / 0.16)',
+    'box-shadow': '0 18px 40px rgb(10 10 10 / 0.16), 0 0 0 1px rgb(255 147 171 / 0.18)',
     color: '#0a0a0a',
-    font: '12px/1.35 "Segoe UI", system-ui, sans-serif',
+    font: '12px/1.4 "Segoe UI", system-ui, sans-serif',
   })
 
-  const head = row()
-  important(head, { 'padding-bottom': '8px', 'border-bottom': '1px solid #edf0f3', 'margin-bottom': '2px' })
-  const label = text('p2d-label', { flex: '1', 'min-width': '0', 'font-weight': '700', 'font-size': '12px' })
-  const size = text('p2d-size', { 'flex-shrink': '0', color: '#2e2a42', 'font-size': '11px' })
-  head.append(label, size)
+  const accent = document.createElement('div')
+  important(accent, {
+    height: '3px',
+    background: 'linear-gradient(90deg, #ff93ab, #ff9c7f)',
+  })
+
+  const body = document.createElement('div')
+  important(body, { padding: '12px 14px 10px' })
+
+  const meta = document.createElement('div')
+  important(meta, {
+    display: 'flex',
+    'align-items': 'center',
+    gap: '8px',
+    'margin-bottom': '8px',
+  })
+  const kind = document.createElement('span')
+  kind.dataset.p2d = 'p2d-kind'
+  important(kind, {
+    'flex-shrink': '0',
+    'border-radius': '999px',
+    background: '#ff93ab',
+    padding: '2px 8px',
+    color: '#ffffff',
+    'font-weight': '700',
+    'font-size': '10px',
+    'letter-spacing': '0.02em',
+  })
+  const size = document.createElement('span')
+  size.dataset.p2d = 'p2d-size'
+  important(size, {
+    'margin-left': 'auto',
+    'flex-shrink': '0',
+    'border-radius': '6px',
+    background: '#0a0a0a',
+    padding: '3px 8px',
+    color: '#ffffff',
+    'font-weight': '650',
+    'font-size': '11px',
+    'font-variant-numeric': 'tabular-nums',
+    'letter-spacing': '0.02em',
+  })
+  meta.append(kind, size)
+
+  const label = document.createElement('div')
+  label.dataset.p2d = 'p2d-label'
+  important(label, {
+    'margin-bottom': '10px',
+    color: '#0a0a0a',
+    'font-weight': '700',
+    'font-size': '13px',
+    'line-height': '1.35',
+    'word-break': 'break-word',
+    'overflow-wrap': 'anywhere',
+    'white-space': 'normal',
+  })
 
   const colorRow = propRow()
-  const textSwatch = swatch('text-swatch')
-  colorRow.append(textSwatch, text('p2d-text-hex', { 'font-weight': '650' }), keyLabel('Text color'))
+  colorRow.append(swatch('text-swatch'), valueText('p2d-text-hex'), keyLabel('Text color'))
 
   const bgRow = propRow()
-  const bgSwatch = swatch('bg-swatch')
-  bgRow.append(bgSwatch, text('p2d-bg-hex', { 'font-weight': '650' }), keyLabel('Background'))
+  bgRow.append(swatch('bg-swatch'), valueText('p2d-bg-hex'), keyLabel('Background'))
 
   const fontRow = propRow()
-  fontRow.append(text('p2d-font', { 'font-weight': '650' }), keyLabel('Font family'))
+  fontRow.append(valueText('p2d-font'), keyLabel('Font family'))
 
-  const sizeRow = propRow()
-  important(sizeRow, { 'border-bottom': '0' })
-  sizeRow.append(text('p2d-font-size', { 'font-weight': '650' }), keyLabel('Font size'))
+  const sizeRow = propRow(true)
+  sizeRow.append(valueText('p2d-font-size'), keyLabel('Font size'))
 
-  cardHost.append(head, colorRow, bgRow, fontRow, sizeRow)
+  body.append(meta, label, colorRow, bgRow, fontRow, sizeRow)
+  cardHost.append(accent, body)
   document.documentElement.appendChild(cardHost)
   return cardHost
 }
 
-function row(): HTMLDivElement {
-  const el = document.createElement('div')
-  important(el, { display: 'flex', 'align-items': 'baseline', gap: '10px' })
-  return el
-}
-
-function propRow(): HTMLDivElement {
+function propRow(last = false): HTMLDivElement {
   const el = document.createElement('div')
   important(el, {
     display: 'flex',
     'align-items': 'center',
     gap: '8px',
-    padding: '7px 0',
-    'border-bottom': '1px solid #edf0f3',
+    padding: '8px 0',
+    'border-bottom': last ? '0' : '1px solid #edf0f3',
   })
   return el
 }
 
-function text(key: string, extra: Record<string, string> = {}): HTMLSpanElement {
+function valueText(key: string): HTMLSpanElement {
   const el = document.createElement('span')
   el.dataset.p2d = key
   important(el, {
     flex: '1',
     'min-width': '0',
-    overflow: 'hidden',
-    'text-overflow': 'ellipsis',
-    'white-space': 'nowrap',
-    ...extra,
+    color: '#0a0a0a',
+    'font-weight': '650',
+    'font-size': '12px',
+    'word-break': 'break-word',
+    'overflow-wrap': 'anywhere',
+    'white-space': 'normal',
   })
   return el
 }
@@ -571,7 +620,11 @@ function text(key: string, extra: Record<string, string> = {}): HTMLSpanElement 
 function keyLabel(label: string): HTMLSpanElement {
   const el = document.createElement('span')
   el.textContent = label
-  important(el, { 'flex-shrink': '0', color: '#2e2a42', 'font-size': '11px' })
+  important(el, {
+    'flex-shrink': '0',
+    color: '#2e2a42',
+    'font-size': '11px',
+  })
   return el
 }
 
@@ -580,11 +633,12 @@ function swatch(key: string): HTMLSpanElement {
   el.dataset.p2d = key
   important(el, {
     'flex-shrink': '0',
-    width: '14px',
-    height: '14px',
+    width: '16px',
+    height: '16px',
     border: '1px solid rgb(10 10 10 / 0.12)',
-    'border-radius': '3px',
+    'border-radius': '4px',
     background: '#ffffff',
+    'box-shadow': 'inset 0 0 0 1px rgb(255 255 255 / 0.4)',
   })
   return el
 }
