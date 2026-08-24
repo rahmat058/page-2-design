@@ -1,8 +1,8 @@
-import type { NormalizedDesign } from '../shared/types';
-import { escapeMarkdown } from '../normalize/markdown-escape';
+import type { NormalizedDesign } from '../shared/types'
+import { escapeMarkdown } from '../normalize/markdown-escape'
 
 export function generateSkillMarkdown(design: NormalizedDesign): string {
-  const title = design.metadata.title || design.metadata.hostname;
+  const title = design.metadata.title || design.metadata.hostname
   const body = `---
 name: recreate-scanned-page
 description: Recreate and visually validate this scanned reference page using its captured design specification, content, assets, tokens, layouts, and screenshots. Use when implementing or repairing the exported reference interface in a frontend project.
@@ -68,6 +68,6 @@ If \`screenshots/viewport.png\` or \`screenshots/full-page.png\` exist, compare 
 10. Minor decoration
 
 Detailed measurements stay in \`DESIGN.md\` and \`references/\`. Do not duplicate them here.
-`;
-  return body.trim() + '\n';
+`
+  return body.trim() + '\n'
 }

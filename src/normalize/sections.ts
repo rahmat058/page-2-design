@@ -1,4 +1,4 @@
-import type { PageSection, NormalizedSection, ColorToken, TypographyToken } from '../shared/types';
+import type { PageSection, NormalizedSection, ColorToken, TypographyToken } from '../shared/types'
 
 export function normalizeSections(
   sections: PageSection[],
@@ -23,5 +23,5 @@ export function normalizeSections(
     typographyTokenIds: typeTokens.slice(0, 6).map((t) => t.id),
     confidence: section.confidence,
     provenance: section.provenance,
-  }));
+  }))
 }

@@ -1,5 +1,5 @@
-import type { NormalizedDesign } from '../shared/types';
-import { escapeMarkdown } from '../normalize/markdown-escape';
+import type { NormalizedDesign } from '../shared/types'
+import { escapeMarkdown } from '../normalize/markdown-escape'
 
 export function generateAgentsMarkdown(design: NormalizedDesign): string {
   return `# Agent instructions
@@ -31,7 +31,7 @@ This repository export describes **${escapeMarkdown(design.metadata.title || des
   }.
 - Compare \`screenshots/viewport.png\` and \`screenshots/full-page.png\` when those files exist.
 - Report inaccessible or uncertain details honestly. Never invent a visual-match percentage.
-`;
+`
 }
 
 export function generateClaudeMarkdown(design: NormalizedDesign): string {
@@ -50,7 +50,7 @@ Recreate the scanned page **${escapeMarkdown(design.metadata.title || design.met
       .join(', ') || `${design.page.viewportWidth}×${design.page.viewportHeight}`
   }.
 - Do not invent missing sections, assets, or testimonials.
-`;
+`
 }
 
 export function generateCursorRule(design: NormalizedDesign): string {
@@ -73,5 +73,5 @@ When the user is recreating the page described in this export:
 6. This rule is scoped to reference-page recreation. Do not apply it to unrelated work.
 
 Schema version is recorded in \`references/scan.json\`.
-`;
+`
 }

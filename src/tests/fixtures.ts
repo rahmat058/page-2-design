@@ -1,6 +1,6 @@
-import { SCHEMA_VERSION } from '../shared/constants';
-import type { NormalizedDesign, PageScan } from '../shared/types';
-import { emptyCoverage } from '../shared/types';
+import { SCHEMA_VERSION } from '../shared/constants'
+import type { NormalizedDesign, PageScan } from '../shared/types'
+import { emptyCoverage } from '../shared/types'
 
 export function sampleScan(): PageScan {
   return {
@@ -122,9 +122,7 @@ export function sampleScan(): PageScan {
       },
     ],
     spacing: [{ value: '24px', px: 24, properties: ['padding'], count: 3, elementIds: ['el_1'] }],
-    radii: [
-      { value: '16px', px: 16, properties: ['border-radius'], count: 2, elementIds: ['el_5'] },
-    ],
+    radii: [{ value: '16px', px: 16, properties: ['border-radius'], count: 2, elementIds: ['el_5'] }],
     shadows: [
       {
         value: '0 12px 30px rgba(18, 32, 51, 0.12)',
@@ -134,9 +132,7 @@ export function sampleScan(): PageScan {
       },
     ],
     cssVariables: [{ name: '--accent', value: '#1d4ed8', source: 'root', elementId: null }],
-    interactions: [
-      { elementId: 'el_6', kind: 'button', trigger: 'click / keyboard', notes: 'button' },
-    ],
+    interactions: [{ elementId: 'el_6', kind: 'button', trigger: 'click / keyboard', notes: 'button' }],
     content: [
       {
         id: 'c1',
@@ -150,18 +146,16 @@ export function sampleScan(): PageScan {
       },
     ],
     pseudos: [],
-    mediaQueries: [
-      { raw: '(max-width: 720px)', readable: true, notes: 'Read from stylesheet cssRules.' },
-    ],
+    mediaQueries: [{ raw: '(max-width: 720px)', readable: true, notes: 'Read from stylesheet cssRules.' }],
     limitations: [],
     coverage: emptyCoverage(),
     lazyLoad: { attempted: true, truncated: false, reason: null, finalScrollHeight: 1600 },
     viewportSnapshots: [],
-  };
+  }
 }
 
 export function sampleDesign(): NormalizedDesign {
-  const raw = sampleScan();
+  const raw = sampleScan()
   return {
     schemaVersion: SCHEMA_VERSION,
     metadata: raw.metadata,
@@ -300,5 +294,5 @@ export function sampleDesign(): NormalizedDesign {
     },
     page: raw.page,
     styleRegistry: raw.styleRegistry,
-  };
+  }
 }

@@ -14,16 +14,16 @@
       }
       body {
         margin: 0;
-        font-family: Georgia, 'Times New Roman', serif;
-        color: var(--ink);
         background: linear-gradient(180deg, #f6f3ee 0%, #efe7d8 100%);
+        color: var(--ink);
+        font-family: Georgia, 'Times New Roman', serif;
       }
       header,
       footer,
       main {
-        max-width: 880px;
         margin: 0 auto;
         padding: 24px;
+        max-width: 880px;
       }
       header {
         display: flex;
@@ -41,21 +41,21 @@
       .hero {
         display: grid;
         grid-template-columns: 1.2fr 1fr;
-        gap: 24px;
         align-items: center;
+        gap: 24px;
       }
       .card {
-        background: var(--card);
-        border-radius: 16px;
         box-shadow: 0 12px 30px rgba(18, 32, 51, 0.12);
+        border-radius: 16px;
+        background: var(--card);
         padding: 20px;
       }
       .btn {
-        background: var(--accent);
-        color: #fff;
         border: 0;
         border-radius: 999px;
+        background: var(--accent);
         padding: 10px 16px;
+        color: #fff;
       }
       .cards {
         display: grid;
@@ -63,13 +63,13 @@
         gap: 16px;
       }
       .photo {
-        width: 100%;
         border-radius: 12px;
+        width: 100%;
       }
       .icon::before {
+        margin-right: 6px;
         content: '★';
         color: var(--accent);
-        margin-right: 6px;
       }
       .lazy {
         min-height: 240px;
@@ -94,9 +94,7 @@
       <section class="hero">
         <div>
           <h1>Measured design, not guessed style</h1>
-          <p>
-            This controlled page exists so Page2Design can verify capture, redaction, and export.
-          </p>
+          <p>This controlled page exists so Page2Design can verify capture, redaction, and export.</p>
           <button class="btn" type="button">View the system</button>
         </div>
         <div class="card">
@@ -104,8 +102,7 @@
             class="photo"
             src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'><rect fill='%231d4ed8' width='640' height='400'/><text x='40' y='210' fill='white' font-size='42'>Hero</text></svg>"
             srcset="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='200'><rect fill='%231e3a8a' width='320' height='200'/></svg> 320w"
-            alt="Blue hero graphic"
-          />
+            alt="Blue hero graphic" />
         </div>
       </section>
       <section id="work" class="cards">
@@ -138,8 +135,7 @@
       <section class="lazy">
         <img
           data-src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='80'><rect fill='%2394a3b8' width='200' height='80'/></svg>"
-          alt="Lazy placeholder"
-        />
+          alt="Lazy placeholder" />
       </section>
     </main>
     <footer>

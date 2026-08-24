@@ -1,4 +1,4 @@
-import type { NormalizedDesign } from '../shared/types';
+import type { NormalizedDesign } from '../shared/types'
 
 export function generateBuildPrompt(design: NormalizedDesign): string {
   return `# Build the scanned page
@@ -21,7 +21,7 @@ Captured viewports: ${
       .map((item) => `${item.viewportWidth}×${item.viewportHeight}`)
       .join(', ') || `${design.page.viewportWidth}×${design.page.viewportHeight}`
   }.
-`;
+`
 }
 
 export function generateValidatePrompt(design: NormalizedDesign): string {
@@ -50,5 +50,5 @@ Captured viewports: ${
 10. Minor decoration
 
 Do not invent a percentage match score. Report remaining gaps, failed assets, and uncaptured breakpoints honestly.
-`;
+`
 }

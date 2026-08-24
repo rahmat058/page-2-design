@@ -1,6 +1,6 @@
-import { SCHEMA_VERSION } from './constants';
-import { emptyCoverage } from './types';
-import type { PageScan } from './types';
+import { SCHEMA_VERSION } from './constants'
+import { emptyCoverage } from './types'
+import type { PageScan } from './types'
 
 export function assembleScan(chunks: { kind: string; data: unknown }[]): PageScan {
   const scan: PageScan = {
@@ -48,29 +48,29 @@ export function assembleScan(chunks: { kind: string; data: unknown }[]): PageSca
     coverage: emptyCoverage(),
     lazyLoad: { attempted: false, truncated: false, reason: null, finalScrollHeight: 0 },
     viewportSnapshots: [],
-  };
+  }
 
   for (const chunk of chunks) {
-    const data = chunk.data as Record<string, unknown>;
+    const data = chunk.data as Record<string, unknown>
     if (chunk.kind === 'meta') {
       Object.assign(scan, {
         metadata: data.metadata,
         page: data.page,
         lazyLoad: data.lazyLoad,
-      });
+      })
     } else if (chunk.kind === 'sections') {
-      scan.sections = chunk.data as PageScan['sections'];
+      scan.sections = chunk.data as PageScan['sections']
     } else if (chunk.kind === 'elements') {
-      scan.elements.push(...(chunk.data as PageScan['elements']));
+      scan.elements.push(...(chunk.data as PageScan['elements']))
     } else if (chunk.kind === 'styles') {
-      scan.styleRegistry = chunk.data as PageScan['styleRegistry'];
+      scan.styleRegistry = chunk.data as PageScan['styleRegistry']
     } else if (chunk.kind === 'assets') {
-      scan.assets = chunk.data as PageScan['assets'];
+      scan.assets = chunk.data as PageScan['assets']
     } else if (chunk.kind === 'tokens') {
-      Object.assign(scan, data);
+      Object.assign(scan, data)
     } else if (chunk.kind === 'content') {
-      Object.assign(scan, data);
+      Object.assign(scan, data)
     }
   }
-  return scan;
+  return scan
 }

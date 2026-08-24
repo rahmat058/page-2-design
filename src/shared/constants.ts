@@ -1,18 +1,18 @@
-export const SCHEMA_VERSION = '1.0.0';
-export const MESSAGE_SCHEMA_VERSION = '1.0.0';
-export const EXTENSION_NAME = 'Page2Design';
-export const DB_NAME = 'page2design';
-export const DB_VERSION = 1;
-export const STALE_SCAN_MS = 24 * 60 * 60 * 1000;
-export const INCOMPLETE_SCAN_MS = 60 * 60 * 1000;
-export const ELEMENT_CHUNK_SIZE = 40;
-export const ASSET_FETCH_CONCURRENCY = 4;
-export const MAX_ASSETS = 250;
-export const MAX_ASSET_BYTES = 8 * 1024 * 1024;
-export const MAX_TOTAL_ASSET_BYTES = 40 * 1024 * 1024;
-export const MAX_SCAN_HEIGHT = 20000;
-export const MAX_LAZY_LOAD_MS = 12000;
-export const MAX_ELEMENTS = 2500;
+export const SCHEMA_VERSION = '1.0.0'
+export const MESSAGE_SCHEMA_VERSION = '1.0.0'
+export const EXTENSION_NAME = 'Page2Design'
+export const DB_NAME = 'page2design'
+export const DB_VERSION = 1
+export const STALE_SCAN_MS = 24 * 60 * 60 * 1000
+export const INCOMPLETE_SCAN_MS = 60 * 60 * 1000
+export const ELEMENT_CHUNK_SIZE = 40
+export const ASSET_FETCH_CONCURRENCY = 4
+export const MAX_ASSETS = 250
+export const MAX_ASSET_BYTES = 8 * 1024 * 1024
+export const MAX_TOTAL_ASSET_BYTES = 40 * 1024 * 1024
+export const MAX_SCAN_HEIGHT = 20000
+export const MAX_LAZY_LOAD_MS = 12000
+export const MAX_ELEMENTS = 2500
 export const SENSITIVE_QUERY_KEYS = [
   'token',
   'access_token',
@@ -30,7 +30,7 @@ export const SENSITIVE_QUERY_KEYS = [
   'key',
   'code',
   'otp',
-];
+]
 
 export const STYLE_ALLOWLIST = [
   'display',
@@ -120,7 +120,7 @@ export const STYLE_ALLOWLIST = [
   'cursor',
   'fill',
   'stroke',
-] as const;
+] as const
 
 export const SAFE_ATTRIBUTES = new Set([
   'id',
@@ -188,7 +188,7 @@ export const SAFE_ATTRIBUTES = new Set([
   'itemprop',
   'itemscope',
   'itemtype',
-]);
+])
 
 export const SENSITIVE_INPUT_TYPES = new Set([
   'password',
@@ -203,14 +203,6 @@ export const SENSITIVE_INPUT_TYPES = new Set([
   'cc-exp-month',
   'cc-exp-year',
   'cc-name',
-]);
+])
 
-export const SKIP_TAGS = new Set([
-  'SCRIPT',
-  'STYLE',
-  'LINK',
-  'META',
-  'NOSCRIPT',
-  'TEMPLATE',
-  'HEAD',
-]);
+export const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT', 'TEMPLATE', 'HEAD'])

@@ -1,19 +1,17 @@
 export function escapeMarkdown(text: string): string {
-  return text.replace(/[\\`*_{}[\]()#+\-.!|<>]/g, (ch) => `\\${ch}`);
+  return text.replace(/[\\`*_{}[\]()#+\-.!|<>]/g, (ch) => `\\${ch}`)
 }
 
 export function escapeTableCell(text: string): string {
-  return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').trim();
+  return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').trim()
 }
 
 export function mdTable(headers: string[], rows: string[][]): string {
   if (rows.length === 0) {
-    return `_${headers.join(', ')}: none captured._`;
+    return `_${headers.join(', ')}: none captured._`
   }
-  const head = `| ${headers.join(' | ')} |`;
-  const sep = `| ${headers.map(() => '---').join(' | ')} |`;
-  const body = rows
-    .map((row) => `| ${row.map((c) => escapeTableCell(c)).join(' | ')} |`)
-    .join('\n');
-  return `${head}\n${sep}\n${body}`;
+  const head = `| ${headers.join(' | ')} |`
+  const sep = `| ${headers.map(() => '---').join(' | ')} |`
+  const body = rows.map((row) => `| ${row.map((c) => escapeTableCell(c)).join(' | ')} |`).join('\n')
+  return `${head}\n${sep}\n${body}`
 }

@@ -1,15 +1,15 @@
-import { hashString } from '../shared/utils';
-import type { AssetRecord } from '../shared/types';
+import { hashString } from '../shared/utils'
+import type { AssetRecord } from '../shared/types'
 
-const MAX_CANVAS_DATA_CHARS = 1_500_000;
+const MAX_CANVAS_DATA_CHARS = 1_500_000
 
 export function captureCanvasAsset(el: HTMLCanvasElement, elementId: string): AssetRecord | null {
   try {
-    const dataUrl = el.toDataURL('image/png');
+    const dataUrl = el.toDataURL('image/png')
     if (!dataUrl.startsWith('data:image/png') || dataUrl.length > MAX_CANVAS_DATA_CHARS) {
-      return null;
+      return null
     }
-    const id = `asset_${hashString(dataUrl.slice(0, 240))}`;
+    const id = `asset_${hashString(dataUrl.slice(0, 240))}`
     return {
       id,
       type: 'image',
@@ -28,8 +28,8 @@ export function captureCanvasAsset(el: HTMLCanvasElement, elementId: string): As
       licenseReviewRequired: false,
       inlineSvg: null,
       alt: el.getAttribute('aria-label') || 'Captured canvas pixels',
-    };
+    }
   } catch {
-    return null;
+    return null
   }
 }

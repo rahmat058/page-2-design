@@ -1,66 +1,46 @@
-import { create } from 'zustand';
-import type {
-  NormalizedDesign,
-  PageScan,
-  ScanCounts,
-  ScanLimitation,
-  ScanOptions,
-  ScanPhase,
-} from '../../shared/types';
-import { DEFAULT_SCAN_OPTIONS, emptyCounts } from '../../shared/types';
-import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner';
+import { create } from 'zustand'
+import type { NormalizedDesign, PageScan, ScanCounts, ScanLimitation, ScanOptions, ScanPhase } from '../../shared/types'
+import { DEFAULT_SCAN_OPTIONS, emptyCounts } from '../../shared/types'
+import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner'
 
 export type PanelView =
-  | 'overview'
-  | 'content'
-  | 'assets'
-  | 'images'
-  | 'icons'
-  | 'colors'
-  | 'typography'
-  | 'layout'
-  | 'export';
+  'overview' | 'content' | 'assets' | 'images' | 'icons' | 'colors' | 'typography' | 'layout' | 'export'
 
 interface ScanStore {
-  phase: ScanPhase;
-  scanId: string | null;
-  hostname: string | null;
-  title: string | null;
-  url: string | null;
-  tabRestricted: boolean;
-  progressMessage: string;
-  completedChunks: number;
-  totalChunks: number | null;
-  counts: ScanCounts;
-  limitations: ScanLimitation[];
-  error: string | null;
-  view: PanelView;
-  options: ScanOptions;
-  selectedAssetIds: string[];
-  raw: PageScan | null;
-  design: NormalizedDesign | null;
-  setTabInfo: (info: {
-    hostname: string | null;
-    title: string | null;
-    url: string | null;
-    restricted: boolean;
-  }) => void;
+  phase: ScanPhase
+  scanId: string | null
+  hostname: string | null
+  title: string | null
+  url: string | null
+  tabRestricted: boolean
+  progressMessage: string
+  completedChunks: number
+  totalChunks: number | null
+  counts: ScanCounts
+  limitations: ScanLimitation[]
+  error: string | null
+  view: PanelView
+  options: ScanOptions
+  selectedAssetIds: string[]
+  raw: PageScan | null
+  design: NormalizedDesign | null
+  setTabInfo: (info: { hostname: string | null; title: string | null; url: string | null; restricted: boolean }) => void
   setProgress: (payload: {
-    phase: ScanPhase;
-    message: string;
-    completedChunks: number;
-    totalChunks: number | null;
-    counts: ScanCounts;
-  }) => void;
-  setReady: (scanId: string, raw: PageScan, design: NormalizedDesign) => void;
-  setFailed: (message: string) => void;
-  setCancelled: () => void;
-  setPhase: (phase: ScanPhase) => void;
-  setView: (view: PanelView) => void;
-  setOptions: (options: Partial<ScanOptions>) => void;
-  toggleAsset: (id: string) => void;
-  setSelectedAssets: (ids: string[]) => void;
-  reset: () => void;
+    phase: ScanPhase
+    message: string
+    completedChunks: number
+    totalChunks: number | null
+    counts: ScanCounts
+  }) => void
+  setReady: (scanId: string, raw: PageScan, design: NormalizedDesign) => void
+  setFailed: (message: string) => void
+  setCancelled: () => void
+  setPhase: (phase: ScanPhase) => void
+  setView: (view: PanelView) => void
+  setOptions: (options: Partial<ScanOptions>) => void
+  toggleAsset: (id: string) => void
+  setSelectedAssets: (ids: string[]) => void
+  reset: () => void
 }
 
 export const useScanStore = create<ScanStore>((set) => ({
@@ -98,8 +78,8 @@ export const useScanStore = create<ScanStore>((set) => ({
       error: null,
     }),
   setReady: (scanId, raw, design) => {
-    const assets = mergeAssets(design.assets);
-    const next = { ...design, assets };
+    const assets = mergeAssets(design.assets)
+    const next = { ...design, assets }
     set({
       scanId,
       raw,
@@ -115,7 +95,7 @@ export const useScanStore = create<ScanStore>((set) => ({
       },
       selectedAssetIds: assets.map((asset) => asset.id),
       error: null,
-    });
+    })
   },
   setFailed: (message) => set({ phase: 'failed', error: message }),
   setCancelled: () => set({ phase: 'cancelled', progressMessage: 'Scan cancelled.' }),
@@ -142,4 +122,4 @@ export const useScanStore = create<ScanStore>((set) => ({
       totalChunks: null,
       progressMessage: '',
     }),
-}));
+}))

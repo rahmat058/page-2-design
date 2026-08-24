@@ -1,10 +1,10 @@
-import { SCHEMA_VERSION } from '../shared/constants';
-import type { NormalizedDesign } from '../shared/types';
-import { escapeMarkdown, escapeTableCell, mdTable } from '../normalize/markdown-escape';
-import { coverageSummary } from '../validation/coverage';
+import { SCHEMA_VERSION } from '../shared/constants'
+import type { NormalizedDesign } from '../shared/types'
+import { escapeMarkdown, escapeTableCell, mdTable } from '../normalize/markdown-escape'
+import { coverageSummary } from '../validation/coverage'
 
 export function generateDesignMarkdown(design: NormalizedDesign): string {
-  const m = design.metadata;
+  const m = design.metadata
   const sections = [
     heading(1, `${m.title || m.hostname} — design specification`),
     `_Schema ${SCHEMA_VERSION}. Generated from a local page scan. Values are measured or inferred as labeled._`,
@@ -17,11 +17,7 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
         ['Hostname', m.hostname, 'observed'],
         ['Language / direction', `${m.language} / ${m.direction}`, 'observed'],
         ['Scanned at', m.scannedAt, 'observed'],
-        [
-          'Viewport',
-          `${m.viewportWidth}×${m.viewportHeight} @${m.devicePixelRatio}dppx`,
-          'measured',
-        ],
+        ['Viewport', `${m.viewportWidth}×${m.viewportHeight} @${m.devicePixelRatio}dppx`, 'measured'],
         ['Document size', `${m.scrollWidth}×${m.scrollHeight}`, 'measured'],
         ['Document background', m.documentBackground, 'measured'],
         ['Color scheme', m.colorScheme, 'observed'],
@@ -31,8 +27,7 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
     coverageSummary(design.coverage),
     '',
     ...design.limitations.map(
-      (item) =>
-        `- **${item.code}** (${item.severity}${item.inferred ? ', inferred' : ''}): ${item.message}`,
+      (item) => `- **${item.code}** (${item.severity}${item.inferred ? ', inferred' : ''}): ${item.message}`,
     ),
     design.limitations.length === 0 ? '- No scanner limitations were recorded.' : '',
     heading(2, '3. Visual direction'),
@@ -100,13 +95,7 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
           String(t.count),
           t.nameInferred ? 'yes' : 'no',
         ]),
-        ...design.tokens.radii.map((t) => [
-          'radius',
-          t.name,
-          t.value,
-          String(t.count),
-          t.nameInferred ? 'yes' : 'no',
-        ]),
+        ...design.tokens.radii.map((t) => ['radius', t.name, t.value, String(t.count), t.nameInferred ? 'yes' : 'no']),
         ...design.tokens.shadows.map((t) => [
           'shadow',
           t.name,
@@ -121,13 +110,7 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
     heading(2, '11. Component patterns'),
     mdTable(
       ['Name', 'Kind', 'Confidence', 'Count', 'Notes'],
-      design.components.map((c) => [
-        c.name,
-        c.kind,
-        String(c.confidence),
-        String(c.elementIds.length),
-        c.notes,
-      ]),
+      design.components.map((c) => [c.name, c.kind, String(c.confidence), String(c.elementIds.length), c.notes]),
     ),
     heading(2, '12. Viewport behavior'),
     design.responsive
@@ -139,9 +122,7 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
     design.responsive.some((r) => r.mediaQueries.length)
       ? mdTable(
           ['Media query', 'Readable', 'Notes'],
-          design.responsive.flatMap((r) =>
-            r.mediaQueries.map((q) => [q.raw, q.readable ? 'yes' : 'no', q.notes]),
-          ),
+          design.responsive.flatMap((r) => r.mediaQueries.map((q) => [q.raw, q.readable ? 'yes' : 'no', q.notes])),
         )
       : '_No readable media queries were captured._',
     heading(2, '13. Observed interactions'),
@@ -163,30 +144,28 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
     '- Measured colors, type, spacing, and radii match this specification.',
     '- Missing screenshots or failed assets are reported, not faked.',
     `- Coverage snapshot: ${escapeMarkdown(coverageSummary(design.coverage))}`,
-  ];
+  ]
   return (
     sections
       .filter((line) => line !== undefined)
       .join('\n\n')
       .trim() + '\n'
-  );
+  )
 }
 
 function heading(level: number, text: string): string {
-  return `${'#'.repeat(level)} ${escapeMarkdown(text)}`;
+  return `${'#'.repeat(level)} ${escapeMarkdown(text)}`
 }
 
 function visualDirection(design: NormalizedDesign): string {
-  const topColors = design.tokens.colors.slice(0, 5).map((c) => `${c.hex} (${c.role})`);
-  const topType = design.tokens.typography[0];
+  const topColors = design.tokens.colors.slice(0, 5).map((c) => `${c.hex} (${c.role})`)
+  const topType = design.tokens.typography[0]
   const lines = [
     'Direction below is derived only from captured evidence.',
-    topColors.length
-      ? `Dominant observed colors: ${topColors.join(', ')}.`
-      : 'No dominant colors were captured.',
+    topColors.length ? `Dominant observed colors: ${topColors.join(', ')}.` : 'No dominant colors were captured.',
     topType
       ? `Primary observed type: ${escapeTableCell(topType.fontFamily)} ${topType.fontSize}/${topType.lineHeight} weight ${topType.fontWeight}.`
       : 'No typography tokens were captured.',
-  ];
-  return lines.join('\n\n');
+  ]
+  return lines.join('\n\n')
 }

@@ -1,8 +1,8 @@
-import type { LayoutSnapshot, ViewportSectionSnapshot } from '../shared/types';
+import type { LayoutSnapshot, ViewportSectionSnapshot } from '../shared/types'
 
 export function captureLayoutSnapshot(label: string): LayoutSnapshot {
-  const matching = readMatchingMedia();
-  const sections = snapshotSections();
+  const matching = readMatchingMedia()
+  const sections = snapshotSections()
   return {
     name: label,
     viewportWidth: window.innerWidth,
@@ -14,17 +14,17 @@ export function captureLayoutSnapshot(label: string): LayoutSnapshot {
     matchingMedia: matching,
     sections,
     notes: `Measured at ${window.innerWidth}×${window.innerHeight}.`,
-  };
+  }
 }
 
 function readMatchingMedia(): string[] {
-  const matches: string[] = [];
+  const matches: string[] = []
   try {
     for (const sheet of document.styleSheets) {
       try {
         for (const rule of sheet.cssRules) {
           if (rule instanceof CSSMediaRule && window.matchMedia(rule.conditionText).matches) {
-            matches.push(rule.conditionText);
+            matches.push(rule.conditionText)
           }
         }
       } catch {
@@ -34,14 +34,14 @@ function readMatchingMedia(): string[] {
   } catch {
     /* ignore */
   }
-  return [...new Set(matches)].slice(0, 40);
+  return [...new Set(matches)].slice(0, 40)
 }
 
 function snapshotSections(): ViewportSectionSnapshot[] {
-  const roots = document.querySelectorAll('header, nav, main, footer, aside, section, article');
+  const roots = document.querySelectorAll('header, nav, main, footer, aside, section, article')
   return [...roots].slice(0, 40).map((el, index) => {
-    const rect = el.getBoundingClientRect();
-    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect()
+    const style = getComputedStyle(el)
     return {
       id: el.id || `${el.tagName.toLowerCase()}-${index + 1}`,
       name: el.getAttribute('aria-label') || el.id || el.tagName.toLowerCase(),
@@ -53,6 +53,6 @@ function snapshotSections(): ViewportSectionSnapshot[] {
       },
       layoutMode: style.display || 'block',
       containerWidth: Math.round(rect.width) || null,
-    };
-  });
+    }
+  })
 }

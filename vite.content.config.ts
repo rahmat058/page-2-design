@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'node:path';
+import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 
 export default defineConfig({
   publicDir: false,
@@ -19,4 +19,4 @@ export default defineConfig({
       },
     },
   },
-});
+})

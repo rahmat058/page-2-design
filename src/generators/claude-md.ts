@@ -1,1 +1,1 @@
-export { generateClaudeMarkdown } from './agents-md';
+export { generateClaudeMarkdown } from './agents-md'

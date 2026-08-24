@@ -1,1 +1,1 @@
-export { generateCursorRule } from './agents-md';
+export { generateCursorRule } from './agents-md'

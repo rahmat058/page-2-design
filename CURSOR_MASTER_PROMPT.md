@@ -168,40 +168,40 @@ At minimum, create types equivalent to:
 
 ```ts
 export interface PageScan {
-  schemaVersion: string;
-  metadata: PageMetadata;
-  page: PageGeometry;
-  sections: PageSection[];
-  elements: ScannedElement[];
-  assets: AssetRecord[];
-  colors: ColorUsage[];
-  typography: TypographyUsage[];
-  spacing: NumericUsage[];
-  radii: NumericUsage[];
-  shadows: ShadowUsage[];
-  cssVariables: CssVariableRecord[];
-  interactions: InteractionRecord[];
-  limitations: ScanLimitation[];
-  coverage: ScanCoverage;
+  schemaVersion: string
+  metadata: PageMetadata
+  page: PageGeometry
+  sections: PageSection[]
+  elements: ScannedElement[]
+  assets: AssetRecord[]
+  colors: ColorUsage[]
+  typography: TypographyUsage[]
+  spacing: NumericUsage[]
+  radii: NumericUsage[]
+  shadows: ShadowUsage[]
+  cssVariables: CssVariableRecord[]
+  interactions: InteractionRecord[]
+  limitations: ScanLimitation[]
+  coverage: ScanCoverage
 }
 
 export interface NormalizedDesign {
-  schemaVersion: string;
-  metadata: PageMetadata;
-  sections: NormalizedSection[];
-  components: ComponentPattern[];
+  schemaVersion: string
+  metadata: PageMetadata
+  sections: NormalizedSection[]
+  components: ComponentPattern[]
   tokens: {
-    colors: ColorToken[];
-    typography: TypographyToken[];
-    spacing: DesignToken[];
-    radii: DesignToken[];
-    shadows: DesignToken[];
-  };
-  assets: AssetRecord[];
-  responsive: ResponsiveObservation[];
-  content: ContentBlock[];
-  limitations: ScanLimitation[];
-  coverage: ScanCoverage;
+    colors: ColorToken[]
+    typography: TypographyToken[]
+    spacing: DesignToken[]
+    radii: DesignToken[]
+    shadows: DesignToken[]
+  }
+  assets: AssetRecord[]
+  responsive: ResponsiveObservation[]
+  content: ContentBlock[]
+  limitations: ScanLimitation[]
+  coverage: ScanCoverage
 }
 ```
 

@@ -1,5 +1,5 @@
-import { SCHEMA_VERSION } from '../shared/constants';
-import type { NormalizedDesign, PageScan } from '../shared/types';
+import { SCHEMA_VERSION } from '../shared/constants'
+import type { NormalizedDesign, PageScan } from '../shared/types'
 
 export function designTokensJson(design: NormalizedDesign): unknown {
   return {
@@ -9,7 +9,7 @@ export function designTokensJson(design: NormalizedDesign): unknown {
     spacing: design.tokens.spacing,
     radii: design.tokens.radii,
     shadows: design.tokens.shadows,
-  };
+  }
 }
 
 export function layoutJson(design: NormalizedDesign): unknown {
@@ -19,7 +19,7 @@ export function layoutJson(design: NormalizedDesign): unknown {
     sections: design.sections,
     components: design.components,
     responsive: design.responsive,
-  };
+  }
 }
 
 export function scanJson(raw: PageScan): unknown {
@@ -32,7 +32,7 @@ export function scanJson(raw: PageScan): unknown {
     elementCount: raw.elements.length,
     sections: raw.sections,
     limitations: raw.limitations,
-  };
+  }
 }
 
 export function assetManifestJson(design: NormalizedDesign): unknown {
@@ -53,7 +53,7 @@ export function assetManifestJson(design: NormalizedDesign): unknown {
         rendered: [asset.renderedWidth, asset.renderedHeight],
       },
     })),
-  };
+  }
 }
 
 export function limitationsJson(design: NormalizedDesign): unknown {
@@ -61,9 +61,9 @@ export function limitationsJson(design: NormalizedDesign): unknown {
     schemaVersion: SCHEMA_VERSION,
     limitations: design.limitations,
     coverage: design.coverage,
-  };
+  }
 }
 
 export function prettyJson(value: unknown): string {
-  return `${JSON.stringify(value, null, 2)}\n`;
+  return `${JSON.stringify(value, null, 2)}\n`
 }

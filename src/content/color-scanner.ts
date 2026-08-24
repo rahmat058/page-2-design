@@ -1,5 +1,5 @@
-import { parseColor } from '../normalize/colors';
-import type { ColorUsage } from '../shared/types';
+import { parseColor } from '../normalize/colors'
+import type { ColorUsage } from '../shared/types'
 
 const COLOR_PROPS = [
   ['color', 'text', 0.28],
@@ -7,7 +7,7 @@ const COLOR_PROPS = [
   ['fill', 'svg', 0.7],
   ['stroke', 'svg', 0.2],
   ['border-color', 'border', 0.08],
-] as const;
+] as const
 
 export function collectColors(
   elementId: string,
@@ -15,27 +15,22 @@ export function collectColors(
   bucket: Map<string, ColorUsage>,
   area = 1,
 ): void {
-  const px = Math.max(1, Math.round(area));
+  const px = Math.max(1, Math.round(area))
   for (const [prop, source, weight] of COLOR_PROPS) {
-    addSolid(bucket, style[prop], prop, source, elementId, px * weight);
+    addSolid(bucket, style[prop], prop, source, elementId, px * weight)
   }
-  addGradient(bucket, style['background-image'], elementId, px);
+  addGradient(bucket, style['background-image'], elementId, px)
 }
 
-export function collectSvgColors(
-  el: Element,
-  elementId: string,
-  bucket: Map<string, ColorUsage>,
-): void {
-  if (el.tagName.toLowerCase() !== 'svg' && !el.closest('svg')) return;
+export function collectSvgColors(el: Element, elementId: string, bucket: Map<string, ColorUsage>): void {
+  if (el.tagName.toLowerCase() !== 'svg' && !el.closest('svg')) return
   const fill =
-    el.getAttribute('fill') ||
-    (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).fill : '');
+    el.getAttribute('fill') || (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).fill : '')
   const stroke =
     el.getAttribute('stroke') ||
-    (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).stroke : '');
-  addSolid(bucket, fill, 'fill', 'svg', elementId, 4);
-  addSolid(bucket, stroke, 'stroke', 'svg', elementId, 2);
+    (el instanceof HTMLElement || el instanceof SVGElement ? getComputedStyle(el).stroke : '')
+  addSolid(bucket, fill, 'fill', 'svg', elementId, 4)
+  addSolid(bucket, stroke, 'stroke', 'svg', elementId, 2)
 }
 
 export function collectCssVariableColors(
@@ -53,19 +48,19 @@ function addSolid(
   elementId: string,
   area: number,
 ): void {
-  if (!raw) return;
-  const parsed = parseColor(raw);
-  if (!parsed || parsed.a < 0.08) return;
-  const key = `solid:${parsed.r},${parsed.g},${parsed.b},${parsed.a >= 0.96 ? 1 : Math.round(parsed.a * 20) / 20}`;
-  const painted = Math.max(1, Math.round(area));
-  const existing = bucket.get(key);
+  if (!raw) return
+  const parsed = parseColor(raw)
+  if (!parsed || parsed.a < 0.08) return
+  const key = `solid:${parsed.r},${parsed.g},${parsed.b},${parsed.a >= 0.96 ? 1 : Math.round(parsed.a * 20) / 20}`
+  const painted = Math.max(1, Math.round(area))
+  const existing = bucket.get(key)
   if (existing) {
-    existing.count += 1;
-    existing.area = (existing.area ?? 0) + painted;
-    if (!existing.properties.includes(property)) existing.properties.push(property);
-    if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId);
-    if (!existing.original.includes(raw)) existing.original.push(raw);
-    return;
+    existing.count += 1
+    existing.area = (existing.area ?? 0) + painted
+    if (!existing.properties.includes(property)) existing.properties.push(property)
+    if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId)
+    if (!existing.original.includes(raw)) existing.original.push(raw)
+    return
   }
   bucket.set(key, {
     original: [raw],
@@ -76,7 +71,7 @@ function addSolid(
     area: painted,
     elementIds: [elementId],
     source,
-  });
+  })
 }
 
 function addGradient(
@@ -85,18 +80,17 @@ function addGradient(
   elementId: string,
   area: number,
 ): void {
-  if (!value || value === 'none' || !/gradient\(/i.test(value)) return;
-  const css = value.trim();
-  const key = `gradient:${css}`;
-  const stops =
-    css.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)/gi) ?? [];
-  const first = stops.map((stop) => parseColor(stop)).find((color) => color && color.a >= 0.08);
-  const painted = Math.max(1, Math.round(area));
-  const existing = bucket.get(key);
+  if (!value || value === 'none' || !/gradient\(/i.test(value)) return
+  const css = value.trim()
+  const key = `gradient:${css}`
+  const stops = css.match(/#(?:[0-9a-f]{3,8})|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)/gi) ?? []
+  const first = stops.map((stop) => parseColor(stop)).find((color) => color && color.a >= 0.08)
+  const painted = Math.max(1, Math.round(area))
+  const existing = bucket.get(key)
   if (existing) {
-    existing.count += 1;
-    existing.area = (existing.area ?? 0) + painted;
-    if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId);
+    existing.count += 1
+    existing.area = (existing.area ?? 0) + painted
+    if (!existing.elementIds.includes(elementId)) existing.elementIds.push(elementId)
   } else {
     bucket.set(key, {
       original: [css],
@@ -107,22 +101,22 @@ function addGradient(
       area: painted,
       elementIds: [elementId],
       source: 'gradient',
-    });
+    })
   }
   for (const stop of stops) {
-    addSolid(bucket, stop, 'background-image', 'background', elementId, painted * 0.9);
+    addSolid(bucket, stop, 'background-image', 'background', elementId, painted * 0.9)
   }
 }
 
 function displayHex(hex: string): string {
   if (/^#[0-9a-f]{8}$/i.test(hex) && hex.slice(7).toUpperCase() === 'FF') {
-    return hex.slice(0, 7).toUpperCase();
+    return hex.slice(0, 7).toUpperCase()
   }
-  return hex.toUpperCase();
+  return hex.toUpperCase()
 }
 
 export function colorUsages(bucket: Map<string, ColorUsage>): ColorUsage[] {
   return [...bucket.values()].sort(
     (a, b) => (b.area || b.count) - (a.area || a.count) || a.canonicalHex.localeCompare(b.canonicalHex),
-  );
+  )
 }

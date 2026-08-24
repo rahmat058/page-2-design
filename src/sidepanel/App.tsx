@@ -1,53 +1,53 @@
-import { useEffect, useState } from 'react';
-import { createRequestId } from '../shared/messages';
-import { userFacingError } from '../shared/errors';
-import { sendRuntime, onRuntimeMessage } from './chrome-api';
-import { BottomNav } from './components/BottomNav';
-import { PanelChrome } from './components/PanelChrome';
-import { ColorsView, LayoutView, TypographyView } from './features/ColorsView';
-import { AssetsView, ContentView } from './features/ContentView';
-import { ExportView } from './features/ExportView';
-import { OverviewView } from './features/OverviewView';
-import { Toast } from './components/Toast';
-import { downloadAllImagesZip } from './download-asset';
-import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow';
-import { useScanStore } from './store/useScanStore';
-import { uniqueVisualAssets } from '../content/asset-scanner';
-import { panelContentBlocks } from './content-groups';
-import type { NormalizedDesign } from '../shared/types';
+import { useEffect, useState } from 'react'
+import { createRequestId } from '../shared/messages'
+import { userFacingError } from '../shared/errors'
+import { sendRuntime, onRuntimeMessage } from './chrome-api'
+import { BottomNav } from './components/BottomNav'
+import { PanelChrome } from './components/PanelChrome'
+import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
+import { AssetsView, ContentView } from './features/ContentView'
+import { ExportView } from './features/ExportView'
+import { OverviewView } from './features/OverviewView'
+import { Toast } from './components/Toast'
+import { downloadAllImagesZip } from './download-asset'
+import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow'
+import { useScanStore } from './store/useScanStore'
+import { uniqueVisualAssets } from '../content/asset-scanner'
+import { panelContentBlocks } from './content-groups'
+import type { NormalizedDesign } from '../shared/types'
 
-const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting'];
-const OVERLAY = typeof window !== 'undefined' && window !== window.top;
+const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting']
+const OVERLAY = typeof window !== 'undefined' && window !== window.top
 
 export function App() {
-  const phase = useScanStore((s) => s.phase);
-  const view = useScanStore((s) => s.view);
-  const hostname = useScanStore((s) => s.hostname);
-  const title = useScanStore((s) => s.title);
-  const url = useScanStore((s) => s.url);
-  const tabRestricted = useScanStore((s) => s.tabRestricted);
-  const design = useScanStore((s) => s.design);
-  const counts = useScanStore((s) => s.counts);
-  const [inspectOn, setInspectOn] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const phase = useScanStore((s) => s.phase)
+  const view = useScanStore((s) => s.view)
+  const hostname = useScanStore((s) => s.hostname)
+  const title = useScanStore((s) => s.title)
+  const url = useScanStore((s) => s.url)
+  const tabRestricted = useScanStore((s) => s.tabRestricted)
+  const design = useScanStore((s) => s.design)
+  const counts = useScanStore((s) => s.counts)
+  const [inspectOn, setInspectOn] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    void boot();
+    void boot()
     return onRuntimeMessage((message) => {
       if (message.type === 'SCAN_PROGRESS') {
-        useScanStore.getState().setProgress(message.payload);
+        useScanStore.getState().setProgress(message.payload)
       }
       if (message.type === 'SCAN_FAILED') {
-        useScanStore.getState().setFailed(userFacingError(message.payload));
+        useScanStore.getState().setFailed(userFacingError(message.payload))
       }
       if (message.type === 'SCAN_COMPLETE' && message.payload.assembled) {
-        void loadScan(message.scanId);
+        void loadScan(message.scanId)
       }
-    });
-  }, []);
+    })
+  }, [])
 
-  const busy = BUSY.includes(phase);
-  const canExport = Boolean(design) && (phase === 'ready' || phase === 'complete');
+  const busy = BUSY.includes(phase)
+  const canExport = Boolean(design) && (phase === 'ready' || phase === 'complete')
 
   return (
     <div className="app inspector">
@@ -65,30 +65,27 @@ export function App() {
         onScan={() => void startScan()}
         onCancel={() => void cancelScan()}
         onExport={() => {
-          setMenuOpen(false);
-          useScanStore.getState().setView('export');
+          setMenuOpen(false)
+          useScanStore.getState().setView('export')
         }}
         onClear={() => void clearScanData()}
         onOpen={(next) => {
-          setMenuOpen(false);
-          useScanStore.getState().setView(next);
+          setMenuOpen(false)
+          useScanStore.getState().setView(next)
         }}
       />
       <div className={view === 'overview' ? 'page-head overview-head' : 'page-head'}>
         <div className="head-row">
           <h1>
             {headingFor(view)}
-            {view !== 'overview' ? (
-              <span className="count-pill">{countFor(view, counts, design)}</span>
-            ) : null}
+            {view !== 'overview' ? <span className="count-pill">{countFor(view, counts, design)}</span> : null}
           </h1>
           {view === 'overview' && design ? (
             <button
               type="button"
               className="btn rescan"
               disabled={busy || tabRestricted}
-              onClick={() => void startScan()}
-            >
+              onClick={() => void startScan()}>
               {busy ? 'Scanning…' : 'Rescan'}
             </button>
           ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
@@ -98,13 +95,12 @@ export function App() {
               disabled={!canExport}
               onClick={() => {
                 if (view === 'assets' || view === 'images' || view === 'icons') {
-                  const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? []);
-                  void downloadAllImagesZip(assets, hostname);
-                  return;
+                  const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? [])
+                  void downloadAllImagesZip(assets, hostname)
+                  return
                 }
-                useScanStore.getState().setView('export');
-              }}
-            >
+                useScanStore.getState().setView('export')
+              }}>
               Export All
             </button>
           ) : null}
@@ -116,9 +112,7 @@ export function App() {
           </>
         ) : null}
       </div>
-      {tabRestricted ? (
-        <p className="banner">This tab cannot be scanned. Open an http(s) page.</p>
-      ) : null}
+      {tabRestricted ? <p className="banner">This tab cannot be scanned. Open an http(s) page.</p> : null}
       <main className="main">
         <div key={view} className="fade-pane">
           {view === 'overview' ? <OverviewView /> : null}
@@ -133,54 +127,54 @@ export function App() {
       <BottomNav />
       <Toast />
     </div>
-  );
+  )
 
   async function toggleInspect() {
-    const next = !inspectOn;
-    setInspectOn(next);
+    const next = !inspectOn
+    setInspectOn(next)
     await sendRuntime({
       type: 'SET_INSPECT_MODE',
       requestId: createRequestId(),
       payload: { enabled: next },
-    });
+    })
   }
 
   async function dockSidePanel() {
-    await sendRuntime({ type: 'DOCK_SIDE_PANEL', requestId: createRequestId() });
+    await sendRuntime({ type: 'DOCK_SIDE_PANEL', requestId: createRequestId() })
   }
 
   async function closePanel() {
     if (OVERLAY) {
-      window.parent.postMessage({ source: 'page2design', type: 'close' }, '*');
+      window.parent.postMessage({ source: 'page2design', type: 'close' }, '*')
     }
     await sendRuntime({
       type: 'SET_INSPECT_MODE',
       requestId: createRequestId(),
       payload: { enabled: false },
-    });
-    await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() });
+    })
+    await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() })
   }
 }
 
-let autoScanStarted = false;
+let autoScanStarted = false
 
 async function boot(): Promise<void> {
-  await refreshTab();
-  if (autoScanStarted) return;
-  const { tabRestricted, design, phase } = useScanStore.getState();
-  if (tabRestricted || design || phase !== 'idle') return;
-  autoScanStarted = true;
-  await startScan();
+  await refreshTab()
+  if (autoScanStarted) return
+  const { tabRestricted, design, phase } = useScanStore.getState()
+  if (tabRestricted || design || phase !== 'idle') return
+  autoScanStarted = true
+  await startScan()
 }
 
 function headingFor(view: string): string {
-  if (view === 'colors') return 'Colors';
-  if (view === 'typography') return 'Typography';
-  if (view === 'assets' || view === 'images' || view === 'icons') return 'Assets';
-  if (view === 'export') return 'Export';
-  if (view === 'content') return 'Content';
-  if (view === 'layout') return 'Layout';
-  return 'Overview';
+  if (view === 'colors') return 'Colors'
+  if (view === 'typography') return 'Typography'
+  if (view === 'assets' || view === 'images' || view === 'icons') return 'Assets'
+  if (view === 'export') return 'Export'
+  if (view === 'content') return 'Content'
+  if (view === 'layout') return 'Layout'
+  return 'Overview'
 }
 
 function countFor(
@@ -188,11 +182,11 @@ function countFor(
   counts: { colors: number; typography: number; images: number; textBlocks: number },
   design: NormalizedDesign | null,
 ): number {
-  if (view === 'colors') return counts.colors;
-  if (view === 'typography') return counts.typography;
+  if (view === 'colors') return counts.colors
+  if (view === 'typography') return counts.typography
   if (view === 'assets' || view === 'images' || view === 'icons') {
-    return design ? uniqueVisualAssets(design.assets).length : counts.images;
+    return design ? uniqueVisualAssets(design.assets).length : counts.images
   }
-  if (view === 'content') return design ? panelContentBlocks(design.content).length : counts.textBlocks;
-  return 0;
+  if (view === 'content') return design ? panelContentBlocks(design.content).length : counts.textBlocks
+  return 0
 }
