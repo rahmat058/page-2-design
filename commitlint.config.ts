@@ -1,6 +1,4 @@
 import { type UserConfig } from '@commitlint/types'
-import createPreset from 'conventional-changelog-conventionalcommits'
-import { merge } from 'lodash-es'
 
 /** Trailing space after each emoji keeps the commitizen type list aligned in VS Code. */
 const TYPE_ENUM = {
@@ -65,29 +63,27 @@ function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-async function createEmojiParser() {
-  const emojiRegexPart = Object.values(TYPE_ENUM)
-    .map((item) => escapeRegex(item.emoji.trim()))
-    .join('|')
+const emojiRegexPart = Object.values(TYPE_ENUM)
+  .map((item) => escapeRegex(item.emoji.trim()))
+  .join('|')
 
-  const parserOpts = {
-    headerPattern: new RegExp(`^(?:${emojiRegexPart})?\\s*(\\w*)(?:\\((.*)\\))?!?: (.*)$`),
-    headerCorrespondence: ['type', 'scope', 'subject'],
-  }
-
-  const preset = await createPreset()
-
-  return merge({}, preset, {
-    parserOpts,
-    parser: parserOpts,
-  })
+/** Must be a plain object (not a Promise) or @commitlint/config-conventional overwrites it. */
+const parserOpts = {
+  headerPattern: new RegExp(`^(?:${emojiRegexPart})?\\s*(\\w*)(?:\\((.*)\\))?!?: (.*)$`, 'u'),
+  breakingHeaderPattern: new RegExp(`^(?:${emojiRegexPart})?\\s*(\\w*)(?:\\((.*)\\))?!: (.*)$`, 'u'),
+  headerCorrespondence: ['type', 'scope', 'subject'],
+  noteKeywords: ['BREAKING CHANGE', 'BREAKING-CHANGE'],
+  revertPattern: /^(?:Revert|revert:)\s"?([\s\S]+?)"?\s*This reverts commit (\w*)\./i,
+  revertCorrespondence: ['header', 'hash'],
+  issuePrefixes: ['#'],
 }
-
-const emojiParser = createEmojiParser()
 
 const config = {
   extends: ['@commitlint/config-conventional'],
-  parserPreset: emojiParser,
+  parserPreset: {
+    name: 'conventional-changelog-conventionalcommits',
+    parserOpts,
+  },
   prompt: {
     settings: {
       useExclamationMark: true,

@@ -1,1 +1,6 @@
+#!/usr/bin/env sh
+set -e
+
+# Auto-prefix conventional type emoji (fix: → 🐛 fix:), then validate.
+node "$(dirname "$0")/../scripts/prepend-commit-emoji.mjs" "$1"
 npx --no -- commitlint --edit "$1"

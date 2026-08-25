@@ -47,21 +47,25 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 `npm install` runs Husky (`prepare`). Hooks run in this order:
 
 1. **pre-commit** — lint-staged (`eslint --fix` + Prettier on staged files), then `npm test` (Vitest). The hook reattaches `/dev/tty` when possible so Windows can show the same spinner/checkmark UI as macOS.
-2. **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
+2. **commit-msg** — prepends the type emoji when missing (e.g. `fix:` → `🐛 fix:`), then checks [Conventional Commits](https://www.conventionalcommits.org/)
 3. **pre-push** — `npm run lint:fix` and `npm run format` on the whole repo; if anything changes, the push stops so you can commit the fixes first
 
 If commit output still looks plain on Windows, use [Windows Terminal](https://aka.ms/terminal) and update [Git for Windows](https://git-scm.com/downloads) (2.36+ handles hook TTYs better). Your machine is on Git 2.30.1, which is also why lint-staged 17 was pinned down earlier.
 
 ## Commit messages
 
-The `commit-msg` hook rejects messages that are not conventional. Type emojis are
-optional on `git commit -m`, and included automatically when you run
-`npm run commit` (`emojiInHeader`). Use this shape:
+The `commit-msg` hook prepends the type emoji when it is missing, then rejects
+messages that are not conventional. You can still type the emoji yourself, or use
+`npm run commit` for the interactive prompt. Use this shape:
 
 ```text
-✨ feat(optional-scope): short summary in lowercase
+fix: short summary in lowercase
+```
 
-Optional body: what changed and why.
+After the hook, git stores:
+
+```text
+🐛 fix: short summary in lowercase
 ```
 
 - **Header** — optional type emoji (trailing space), then `type`, optional `scope`, then the summary
