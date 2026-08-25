@@ -799,6 +799,10 @@ body,
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.12s ease;
   border: 0;
   border-radius: var(--btn-radius);
   background: transparent;
@@ -815,7 +819,17 @@ body,
 }
 
 .menu button:hover:not(:disabled) {
-  background: var(--accent-soft);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgb(165 201 242 / 0.4);
+  background: linear-gradient(135deg, var(--pink), var(--cool));
+}
+
+.menu button:hover:not(:disabled) svg {
+  color: var(--ink);
+}
+
+.menu button:active:not(:disabled) {
+  transform: translateX(1px) scale(0.99);
 }
 
 .menu button:disabled {
