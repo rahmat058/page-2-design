@@ -1,87 +1,52 @@
 # Page2Design
 
-Local-only Chrome **Manifest V3** extension that scans the active webpage after you click **Scan page** and exports one agent-ready ZIP. Nothing is sent to a backend.
+Scan a live webpage and export one **agent-ready** design package — local-only, no backend.
 
-The package helps Cursor, Claude Code, and similar coding agents recreate the **observed** page. It does not recover original source code, React components, or private form values.
+[![Page2Design](./public/icons/icon-128.png)](https://github.com/rahmat058/page-2-design)
 
-**Repo:** [github.com/rahmat058/page-2-design](https://github.com/rahmat058/page-2-design)
+[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat&logo=googlechrome&logoColor=white&colorA=020420&colorB=4285F4)](https://developer.chrome.com/docs/extensions/mv3)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-007ACC?style=flat&logo=typescript&logoColor=white&colorA=020420&colorB=007ACC)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black&colorA=020420&colorB=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat&logo=vite&logoColor=white&colorA=020420&colorB=646CFF)](https://vitejs.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat&colorA=020420&colorB=EEEEEE)](./LICENSE)
 
-Licensed under **[MIT](./LICENSE)**. How to contribute: **[CONTRIBUTING.md](./CONTRIBUTING.md)**. Conduct: **[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)**. Releases: **[CHANGELOG.md](./CHANGELOG.md)**.
+The ZIP helps Cursor, Claude Code, and similar coding agents recreate the **observed** page. It does not recover original source, React trees, or private form values.
 
-For scan pipeline, folders, messages, ZIP layout, and privacy — see **[ARCHITECTURE.MD](./ARCHITECTURE.MD)**.
-
----
-
-## Tech Stack
-
-<div>
-<img src="https://img.shields.io/badge/Chrome_MV3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white">
-<img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white">
-<img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black">
-<img src="https://img.shields.io/badge/Vite_7-646CFF?style=for-the-badge&logo=vite&logoColor=white">
-<img src="https://img.shields.io/badge/Zustand-000000?style=for-the-badge&logo=react&logoColor=white">
-<img src="https://img.shields.io/badge/Lucide-000000?style=for-the-badge&logo=lucide&logoColor=white">
-<img src="https://img.shields.io/badge/JSZip-37AEE2?style=for-the-badge&logo=zip&logoColor=white">
-<img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white">
-<img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white">
-<img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black">
-<img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge">
-</div>
-
-**Key pieces:** `content.js` (DOM scan + overlay) · `background.js` (orchestrator) · `sidepanel.html` (inspector UI) · IndexedDB (local scans) · generators for `AGENTS.md` / `DESIGN.md` / ZIP
+Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md](./CHANGELOG.md)**
 
 ---
 
-## Features
+## 🚀 Quick Start
 
-- **Scan** — click **Scan page**; lazy content and extra breakpoints are on by default
-- **Inspector** — floating overlay on normal sites; side panel on `chrome://` pages
-- **Overview** — typography pair, palette, contrast, live **CSS Information**
-- **Tokens** — colors, type, assets (images / icons / SVG)
-- **Content** — visible copy only; passwords and hidden fields are never stored
-- **Generate Markdown** — preview the same files that go in the ZIP
-- **Export** — one ZIP for coding agents (`AGENTS.md`, `docs/DESIGN.md`, `assets/`)
-- **Local-only** — host permissions are for the tab; nothing is uploaded
+### Prerequisites
 
----
+| Requirement | Notes                       |
+| ----------- | --------------------------- |
+| **Node.js** | 24+ (npm)                   |
+| **Chrome**  | Current stable, Manifest V3 |
 
-## Prerequisites
-
-| Requirement | Version / notes     |
-| ----------- | ------------------- |
-| **Node.js** | 24+ (repo uses npm) |
-| **Chrome**  | Current stable, MV3 |
-
----
-
-## First-time setup
+### Local setup
 
 ```bash
-cd Page2Design
+git clone https://github.com/rahmat058/page-2-design.git
+cd page-2-design
 npm install
 npm test
-npm run typecheck
-npm run lint
 npm run build
 ```
 
-`npm run build` writes the loadable extension into `dist`.
+`npm run build` writes the loadable extension into **`dist`**.
 
 ### Load the unpacked extension
 
 1. Open `chrome://extensions`
 2. Turn on **Developer mode**
 3. Click **Load unpacked**
-4. Select the project **`dist`** folder, not the repo root  
-   Example: `c:\Users\USER\Desktop\Page2Design\dist`
+4. Select the project **`dist`** folder (not the repo root)
 5. Pin **Page2Design**
-6. Click the toolbar icon on a normal website — the **floating inspector** opens on the right (Overview, Colors, Typography, Assets). Chrome pages such as `chrome://` fall back to the side panel
+6. Open a normal `http(s)` site and click the toolbar icon — the floating inspector opens on the right
 
-Chrome will prompt for site access because the extension uses `http://*/*` and `https://*/*`. That lets it scan a tab, read extra frames, and download assets without an extra click on every page.
-
-If you already loaded an older build, click **Reload** on the extension card. If Chrome still complains about permissions, **Remove** the extension and load `dist` again.
-
-Do not test on `chrome://`, `edge://`, or the Chrome Web Store. Those pages cannot be scanned.
+Chrome will ask for site access (`http://*/*`, `https://*/*`) so the extension can scan the tab and download assets. Do not test on `chrome://`, `edge://`, or the Chrome Web Store.
 
 ### Development
 
@@ -89,126 +54,26 @@ Do not test on `chrome://`, `edge://`, or the Chrome Web Store. Those pages cann
 npm run dev
 ```
 
-`dist` rebuilds on save. After each change: **Reload** the extension card, then refresh the page (and the side panel if it is docked).
+`dist` rebuilds on save. After each change: **Reload** the extension card, then refresh the page (and the side panel if it is open).
 
 ---
 
-## Scripts
+## 🎯 What you get
 
-| Command                | Description                                           |
-| ---------------------- | ----------------------------------------------------- |
-| `npm run dev`          | Watch-build `dist` (sidepanel + background + content) |
-| `npm run build`        | Typecheck, then production `dist`                     |
-| `npm run typecheck`    | `tsc --noEmit`                                        |
-| `npm run lint`         | ESLint                                                |
-| `npm run lint:fix`     | ESLint with `--fix`                                   |
-| `npm test`             | Vitest unit tests                                     |
-| `npm run test:watch`   | Vitest watch                                          |
-| `npm run format`       | Prettier write                                        |
-| `npm run format:check` | Prettier check (no write)                             |
-| `npm run commit`       | Commitizen prompt (emoji + conventional header)       |
+- **Local-only scan** — click **Scan page**; nothing is uploaded; IndexedDB stays on device
+- **Floating inspector** — overlay on normal sites; Chrome side panel on restricted pages
+- **Overview** — typography pair, palette, contrast, live **CSS Information**
+- **Tokens & assets** — colors, type, images, icons, SVG
+- **Content** — visible copy only; passwords, hidden, and payment-like fields are never stored
+- **Generate Markdown** — preview the same files that go in the ZIP
+- **Agent-ready export** — one ZIP with `AGENTS.md`, `docs/DESIGN.md`, prompts, references, screenshots, and `assets/`
+- **Privacy-aware** — sensitive query params redacted; gaps listed in `limitations.json`, never invented
 
 ---
 
-## How to test
+## 🤖 Agent-ready ZIP
 
-Two layers: automated checks in the repo, then a real Chrome load of unpacked `dist`.
-
-### 1. Automated tests (no Chrome)
-
-```bash
-npm install
-npm test
-npm run typecheck
-npm run lint
-npm run build
-```
-
-Unit tests cover colors, filenames, generators, ZIP paths, viewport helpers, scan filters, and CSS formatting.
-
-### 2. Controlled fixture (best first test)
-
-1. In Chrome, open `fixtures/reference-page.html` (File → Open file, or drag the HTML onto Chrome)
-2. Keep that tab selected
-3. Open the Page2Design inspector and click **Identify tab**. You should see `Page2Design fixture`
-4. Leave **Load lazy content** and extra viewport capture on
-5. Click **Scan page**. The browser window should stay the same size
-
-| View        | What should appear                                                            |
-| ----------- | ----------------------------------------------------------------------------- |
-| Overview    | Hostname, phase `ready`, element/text/color counts, coverage, CSS Information |
-| Content     | Heading **Measured design, not guessed style**                                |
-| Images      | Hero graphic                                                                  |
-| Icons & SVG | Diamond icon                                                                  |
-| Colors      | Blue accent, paper background                                                 |
-| Typography  | Georgia-style heading                                                         |
-| Layout      | Header / main / footer-style sections                                         |
-
-**Privacy check:** search the inspector (and later the ZIP) for `super-secret-password-123` and `hidden-auth-token`. Those must **not** appear. The visible placeholder `Your name` may appear.
-
-### 3. Export check
-
-1. Open **Export**
-2. Click **Download ZIP** and save it
-3. Unzip it
-
-You should see:
-
-- `AGENTS.md`, `CLAUDE.md`, `SKILL.md` at the root
-- `.cursor/rules/recreate-reference-page.mdc`
-- `assets/` (images, icons, svg)
-- `docs/DESIGN.md`, `docs/prompts/`, `docs/references/`, `docs/screenshots/`
-
-Open `AGENTS.md` first, then `docs/DESIGN.md`. Paths in the Markdown should match files that exist, or the gap should be listed in `docs/references/limitations.json`.
-
-### 4. Real-site smoke test
-
-Open a normal site (`https://example.com` or any public page), scan, and export again. Confirm:
-
-- **Identify tab** shows that site without clicking the icon on the page first
-- Images, colors, and typography come through
-- Failed assets are listed, not invented
-- The ZIP still opens
-
-### After you change code
-
-```bash
-npm run build
-```
-
-Then **Reload** the extension card and refresh the page. During `npm run dev`, reload after each save.
-
-### Extension icons
-
-Put launcher/toolbar PNGs in `public/icons/` yourself:
-
-- `icon-16.png`
-- `icon-32.png`
-- `icon-48.png`
-- `icon-128.png`
-
-`npm run build` copies them into `dist`. Nothing in the repo generates or overwrites these files.
-
----
-
-## Scan and export (everyday use)
-
-1. Open a regular http(s) website tab
-2. Open the Page2Design inspector
-3. Review options (lazy content and extra viewports are on by default)
-4. Click **Scan page**
-5. Inspect Overview, Content, Images, Icons & SVG, Colors, Typography, and Layout
-6. On **Export**, choose assets and download one ZIP
-
-Sensitive query parameters are redacted. Password, hidden, and payment-like field values are never captured.
-
----
-
-## Use the ZIP in Cursor or Claude Code
-
-Unzip the archive, then open that folder (or copy it into the target repo) and ask the agent to follow `AGENTS.md`. Copy `assets/` into the app `public/` folder. The spec is `docs/DESIGN.md`; build and validation prompts are in `docs/prompts/`.
-
-Typical contents:
+Unzip the archive, open that folder (or copy it into a target repo), and ask the agent to follow `AGENTS.md`. Copy `assets/` into the app `public/` folder. Spec: `docs/DESIGN.md`. Build / validate prompts: `docs/prompts/`.
 
 ```text
 AGENTS.md, CLAUDE.md, SKILL.md
@@ -222,23 +87,129 @@ docs/screenshots/{viewport,full-page}.png
 
 Files that were not produced are omitted and listed in `docs/references/limitations.json`.
 
+### Everyday scan & export
+
+1. Open a regular http(s) website tab
+2. Open the Page2Design inspector
+3. Leave lazy content and extra viewports on (defaults)
+4. Click **Scan page**
+5. Review Overview, Content, Images, Icons & SVG, Colors, Typography, Layout
+6. On **Export**, choose assets and download one ZIP
+
 ---
 
-## Remaining limits
+## 📁 Project structure
 
-- `chrome://`, `edge://`, and Web Store pages still cannot be scanned
-- A tainted canvas, a frame Chrome will not inject into, or a host that blocks the download is recorded as a limitation instead of invented
+```text
+Page2Design/
+├── public/
+│   ├── manifest.json          # MV3 manifest (copied to dist)
+│   ├── inspect-css.js         # Injected for CSS Information
+│   └── icons/                 # Toolbar icons you supply (16 / 32 / 48 / 128)
+├── fixtures/                  # Local HTML fixture for first-run tests
+├── scripts/build.mjs          # Vite: sidepanel + background + content
+├── src/
+│   ├── background/            # Service worker (scan, CSS, ZIP)
+│   ├── content/               # DOM scan + overlay host
+│   ├── sidepanel/             # React inspector UI
+│   ├── normalize/             # PageScan → NormalizedDesign
+│   ├── generators/            # AGENTS.md, DESIGN.md, prompts, JSON refs
+│   ├── export/                # ZIP layout and asset download
+│   ├── storage/               # IndexedDB
+│   ├── shared/                # Types, messages, redaction
+│   └── tests/                 # Vitest
+├── ARCHITECTURE.MD            # Pipeline, messages, privacy, limits
+├── CONTRIBUTING.md
+└── LICENSE
+```
+
+More detail: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#project-structure)**.
+
+---
+
+## ⚡ Built with
+
+- [Chrome Manifest V3](https://developer.chrome.com/docs/extensions/mv3) — extension host
+- [TypeScript](https://www.typescriptlang.org/) — typed messages and scan models
+- [React 19](https://react.dev/) — inspector UI (overlay + side panel)
+- [Vite 7](https://vitejs.dev/) — sidepanel, background, and content bundles
+- [Zustand](https://zustand-demo.pmnd.rs/) — inspector state
+- [JSZip](https://stuk.github.io/jszip/) — agent package export
+- [Vitest](https://vitest.dev/) · [ESLint](https://eslint.org/) · [Prettier](https://prettier.io/) · [Husky](https://typicode.github.io/husky/) · [Commitlint](https://commitlint.js.org/)
+
+---
+
+## 🛠️ Scripts
+
+| Command                           | Description                                     |
+| --------------------------------- | ----------------------------------------------- |
+| `npm run dev`                     | Watch-build `dist`                              |
+| `npm run build`                   | Typecheck, then production `dist`               |
+| `npm run typecheck`               | `tsc --noEmit`                                  |
+| `npm run lint` / `lint:fix`       | ESLint                                          |
+| `npm test` / `test:watch`         | Vitest                                          |
+| `npm run format` / `format:check` | Prettier                                        |
+| `npm run commit`                  | Commitizen prompt (emoji + conventional header) |
+
+---
+
+## 🧪 How to test
+
+### Automated (no Chrome)
+
+```bash
+npm install
+npm test
+npm run typecheck
+npm run lint
+npm run build
+```
+
+### Fixture (best first Chrome test)
+
+1. Open `fixtures/reference-page.html` in Chrome
+2. Identify tab → should show `Page2Design fixture`
+3. **Scan page** (lazy content + extra viewports on)
+
+| View                   | Expect                                                      |
+| ---------------------- | ----------------------------------------------------------- |
+| Overview               | Hostname, phase `ready`, counts, CSS Information            |
+| Content                | **Measured design, not guessed style**                      |
+| Images / Icons         | Hero graphic / diamond icon                                 |
+| Colors / Type / Layout | Accent, paper bg, Georgia-style heading, header/main/footer |
+
+**Privacy:** `super-secret-password-123` and `hidden-auth-token` must **not** appear in the inspector or ZIP.
+
+### Export check
+
+Download ZIP → unzip → confirm `AGENTS.md`, `.cursor/rules/`, `assets/`, `docs/DESIGN.md`, prompts, references, screenshots.
+
+### Extension icons
+
+Place launcher PNGs in `public/icons/` yourself: `icon-16.png`, `icon-32.png`, `icon-48.png`, `icon-128.png`. Build copies them into `dist`; nothing regenerates them.
+
+---
+
+## ⚠️ Remaining limits
+
+- `chrome://`, `edge://`, and Web Store pages cannot be scanned
+- Tainted canvas, blocked frames, or failed downloads are recorded as limitations — not invented
 - Coverage is capture coverage, not a visual-match percentage
-- Extra viewport capture may resize the browser window briefly, then restore it
+- Extra viewport capture may briefly resize the browser window, then restore it
 
 Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-Issues and pull requests are welcome. See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for setup, PR checks, and the local-only scan rule. Everyone in the project follows the **[Code of Conduct](./CODE_OF_CONDUCT.md)**.
+We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and the **[Code of Conduct](./CODE_OF_CONDUCT.md)** before opening a PR.
 
-## License
+- [Report a bug or request a feature](https://github.com/rahmat058/page-2-design/issues)
+- [Changelog](./CHANGELOG.md)
 
-[MIT](./LICENSE) © 2026 [Kazi Rahamatullah](https://github.com/rahmat058).
+---
+
+## 📄 License
+
+Published under the [MIT](./LICENSE) license © 2026 [Kazi Rahamatullah](https://github.com/rahmat058).
