@@ -47,154 +47,120 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 `npm install` runs Husky (`prepare`). Hooks:
 
 - **pre-commit** — lint-staged on `src/**/*.{ts,tsx,js,jsx}` (`npm run lint`, then `npm run format`)
-- **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/) plus a `PROJ-` issue id in the footer
+- **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
 - **pre-push** — `npm run lint && npm run format`
 
 Fix lint locally with `npm run lint:fix`.
 
 ## Commit messages
 
-The `commit-msg` hook rejects messages that are not conventional or that omit a
-`PROJ-` reference. Use this shape:
+The `commit-msg` hook rejects messages that are not conventional. Type emojis are
+optional on `git commit -m`, and included automatically when you run
+`npm run commit` (`emojiInHeader`). Use this shape:
 
 ```text
-<type>(optional-scope): short summary in lowercase
+✨ feat(optional-scope): short summary in lowercase
 
 Optional body: what changed and why.
-
-PROJ-123
 ```
 
-- **Header** — `type` is required; `scope` is optional; summary is imperative and about 72 characters or less
-- **Footer** — at least one `PROJ-` id (for example `PROJ-1`). GitHub `#12` is not enough for this rule
+- **Header** — optional type emoji (trailing space), then `type`, optional `scope`, then the summary
+- **Issues** — optional GitHub refs in the body/footer (for example `Closes #12`)
 - **Breaking change** — add `!` after the type (or type+scope), and a `BREAKING CHANGE:` footer when the public API or ZIP layout changes
+- **Prompt** — `npm run commit` after `git add` (Commitizen + Commitlint). Emojis in the type list include a trailing space so VS Code aligns the menu.
 
 ### Types
 
-| Type | When to use |
-| ---- | ----------- |
-| `feat` | User-facing behavior (scan, inspector, export) |
-| `fix` | Bug fix |
-| `docs` | README, architecture, license, contributing, changelog, code of conduct |
-| `style` | Formatting only (Prettier, no logic change) |
-| `refactor` | Internal change with no feature or fix |
-| `perf` | Performance |
-| `test` | Tests only |
-| `build` | Vite, TypeScript, npm dependencies used to build the extension |
-| `ci` | Hooks, Commitlint, lint-staged, GitHub Actions |
-| `chore` | Maintenance that does not fit the types above |
-| `revert` | Revert a previous commit |
+| Type | Emoji | When to use |
+| ---- | ----- | ----------- |
+| `feat` | ✨ | User-facing behavior (scan, inspector, export) |
+| `fix` | 🐛 | Bug fix |
+| `docs` | 📚 | README, architecture, license, contributing, changelog, code of conduct |
+| `style` | 💎 | Formatting only (Prettier, no logic change) |
+| `refactor` | 📦 | Internal change with no feature or fix |
+| `perf` | 🚀 | Performance |
+| `test` | 🚨 | Tests only |
+| `build` | 🛠️ | Vite, TypeScript, npm dependencies used to build the extension |
+| `ci` | ⚙️ | Hooks, Commitlint, lint-staged, GitHub Actions |
+| `chore` | ♻️ | Maintenance that does not fit the types above |
+| `revert` | 🗑️ | Revert a previous commit |
 
 Optional scopes: `overlay`, `sidepanel`, `background`, `content`, `scan`, `export`, `docs`.
 
 ### Community files (`docs`)
 
 ```text
-docs: add mit license
-
-PROJ-1
+📚 docs: add mit license
 ```
 
 ```text
 docs: add contributor covenant code of conduct
-
-PROJ-1
 ```
 
 ```text
 docs: add contributing guide and changelog
-
-PROJ-1
 ```
 
 ```text
 docs: document conventional commit examples
-
-PROJ-1
 ```
 
 ### Other examples
 
 ```text
-feat(sidepanel): show css information on overview
-
-PROJ-2
+✨ feat(sidepanel): show css information on overview
 ```
 
 ```text
 feat(export): include limitations.json in the zip
 
 Capture gaps instead of inventing missing assets.
-
-PROJ-3
 ```
 
 ```text
 fix(scan): skip password and hidden field values
-
-PROJ-4
 ```
 
 ```text
 fix(overlay): restore window size after extra viewport capture
-
-PROJ-5
 ```
 
 ```text
 style(sidepanel): apply prettier to overview view
-
-PROJ-6
 ```
 
 ```text
 refactor(background): split message router from scan orchestrator
-
-PROJ-7
 ```
 
 ```text
 perf(content): walk visible nodes in smaller chunks
-
-PROJ-8
 ```
 
 ```text
 test: cover zip paths and redacted query params
-
-PROJ-9
 ```
 
 ```text
 build: bump vite and lock chrome types
-
-PROJ-10
 ```
 
 ```text
 ci: add husky lint-staged and commitlint
-
-PROJ-11
 ```
 
 ```text
 chore: ignore editor folders in git
-
-PROJ-12
 ```
 
 ```text
 revert: revert "feat(export): include limitations.json in the zip"
-
-PROJ-3
 ```
 
 ```text
 feat(export)!: drop unused fonts folder from the zip
 
 BREAKING CHANGE: agents must read assets from assets/images, assets/icons, and assets/svg only.
-
-PROJ-13
 ```
 
 ### Rejected by Commitlint
@@ -203,18 +169,10 @@ PROJ-13
 Updated code of conduct
 ```
 
-Missing type and missing `PROJ-` footer.
-
-```text
-feat: add code of conduct
-```
-
-Missing `PROJ-` footer.
+Missing conventional `type:`.
 
 ```text
 Feat: add code of conduct
-
-PROJ-1
 ```
 
 Type must be lowercase (`feat`, not `Feat`).

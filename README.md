@@ -105,6 +105,7 @@ npm run dev
 | `npm test`          | Vitest unit tests                                |
 | `npm run test:watch`| Vitest watch                                     |
 | `npm run format`    | Prettier                                         |
+| `npm run commit`    | Commitizen prompt (emoji + conventional header)  |
 | `npm run icons`     | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
 
 ---
