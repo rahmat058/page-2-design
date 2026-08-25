@@ -2563,13 +2563,18 @@ body,
   transition:
     transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
     width 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.16s ease;
-  box-shadow:
-    0 1px 3px rgb(16 18 27 / 0.1),
-    0 4px 12px rgb(255 147 171 / 0.18);
+    opacity 0.16s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+  box-shadow: var(--btn-shadow);
   border-radius: 8px;
-  background: #fff;
+  background: var(--btn-primary);
   pointer-events: none;
+}
+
+.ui-segmented:has(button.on:hover) .ui-segmented-indicator {
+  box-shadow: var(--btn-shadow-hover);
+  background: var(--btn-primary-hover);
 }
 
 .ui-segmented button {
