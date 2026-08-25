@@ -40,6 +40,33 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-color: rgb(46 42 66 / 0.32) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  margin: 4px 0;
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  background-color: rgb(46 42 66 / 0.28);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(46 42 66 / 0.48);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 html,
@@ -2139,6 +2166,7 @@ body,
   display: flex;
   flex: 1;
   flex-direction: column;
+  padding-right: 2px;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -3504,19 +3532,43 @@ body,
 .dev-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
-  padding: 0;
+  padding: 2px 4px 2px 0;
   list-style: none;
 }
 
 .dev-chips li {
-  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  box-shadow: inset 0 0 0 1px rgb(46 42 66 / 0.08);
+  border: 0;
   border-radius: 999px;
-  background: #fff;
-  padding: 4px 8px;
+  background: linear-gradient(135deg, #ffe8f0 0%, #ffd4c8 100%);
+  background-clip: padding-box;
+  padding: 6px 12px;
+  color: var(--plum);
   font-size: 11px;
-  line-height: 1.2;
+  line-height: 1.35;
+  font-family: var(--font-bold);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.dev-chips li:nth-child(5n + 2) {
+  background: linear-gradient(135deg, #f1e8ff 0%, #d7befc 100%);
+}
+
+.dev-chips li:nth-child(5n + 3) {
+  background: linear-gradient(135deg, #e8f2fc 0%, #a5c9f2 100%);
+}
+
+.dev-chips li:nth-child(5n + 4) {
+  background: linear-gradient(135deg, #fff2e8 0%, #ffc9a8 100%);
+}
+
+.dev-chips li:nth-child(5n + 5) {
+  background: linear-gradient(135deg, #ffddd2 0%, #ff93ab 100%);
 }
 
 .dev-open {
