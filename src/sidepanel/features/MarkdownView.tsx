@@ -8,10 +8,6 @@ import { CollectionShell } from '../components/Segmented'
 import { startScan } from '../scan-flow'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
-import { MAX_ELEMENTS, SCHEMA_VERSION } from '../../shared/constants'
-import type { NormalizedDesign, PageScan } from '../../shared/types'
-import { validateNormalized, validateScan } from '../../validation/scan-validator'
-import { coverageSummary } from '../../validation/coverage'
 
 const MD_TABS = [
   { value: 'design', label: 'DESIGN.md' },
@@ -22,7 +18,6 @@ const STROKE = { size: 14, strokeWidth: 1.75 } as const
 
 export function MarkdownView() {
   const design = useScanStore((s) => s.design)
-  const raw = useScanStore((s) => s.raw)
   const phase = useScanStore((s) => s.phase)
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const [tab, setTab] = useState<'design' | 'skill'>('design')
@@ -41,7 +36,7 @@ export function MarkdownView() {
   return (
     <CollectionShell value={tab} options={MD_TABS} onChange={setTab} label="Generated markdown">
       <div className="md-wrap">
-        {infoOpen && design ? <MarkdownInfoPanel tab={tab} design={design} raw={raw} onClose={() => setInfoOpen(false)} /> : null}
+        {infoOpen && design ? <MarkdownInfoPanel tab={tab} onClose={() => setInfoOpen(false)} /> : null}
         <div className="md-frame">
           <div className="md-toolbar">
             <button
@@ -107,110 +102,79 @@ async function refreshMarkdown(): Promise<void> {
   await startScan()
 }
 
-function MarkdownInfoPanel({
-  tab,
-  design,
-  raw,
-  onClose,
-}: {
-  tab: 'design' | 'skill'
-  design: NormalizedDesign
-  raw: PageScan | null
-  onClose: () => void
-}) {
-  const coverage = design.coverage
-  const sampled = coverage.relevantElements
-  const styled = coverage.styledElements
-  const truncated = raw?.lazyLoad.truncated
-  const semantic = design.sections.filter((section) => section.provenance === 'semantic').length
-  const inferred = design.sections.length - semantic
-  const headings = design.content.filter((block) => block.kind === 'heading').length
-  const nav = design.content.filter((block) => block.kind === 'navigation').length
-  const tables = design.content.filter((block) => block.kind === 'table').length
-  const og = design.metadata.ogTitle || design.metadata.title || design.metadata.hostname
-  const checks = markdownChecks(design, raw)
-  const passed = checks.filter((check) => check.ok).length
-  const file = tab === 'design' ? 'DESIGN.md' : 'SKILL.md'
-
+function MarkdownInfoPanel({ tab, onClose }: { tab: 'design' | 'skill'; onClose: () => void }) {
   return (
-    <section className="md-howto" aria-label="How this was generated">
+    <section className="md-howto" aria-label={tab === 'design' ? 'How DESIGN.md works' : 'How SKILL.md works'}>
       <header className="md-howto-head">
-        <h3>How This Was Generated</h3>
+        <h3>{tab === 'design' ? 'How DESIGN.md works' : 'How SKILL.md works'}</h3>
         <Button variant="secondary" size="sm" className="md-howto-close" onClick={onClose}>
           Close
         </Button>
       </header>
       <div className="md-howto-body">
         {tab === 'design' ? (
-          <p>
-            <strong>DESIGN.md</strong> is generated automatically through a multi-step pipeline:
-          </p>
+          <>
+            <p>
+              <strong>DESIGN.md</strong> is Page2Design’s design spec for the page you scanned. It is built from the
+              same local scan as Overview, Colors, Typography, Content, and Assets — nothing is sent to a server.
+            </p>
+            <ol>
+              <li>
+                <strong>Scan the tab.</strong> Open a normal website, then scan (or tap Refresh here). The extension
+                reads the rendered page: layout, tokens, copy, and assets.
+              </li>
+              <li>
+                <strong>This tab writes the spec.</strong> Switch DESIGN.md / SKILL.md above. What you see is the file
+                as it will be copied or downloaded — measured facts, with inferred names labeled.
+              </li>
+              <li>
+                <strong>Copy or download.</strong> Copy puts DESIGN.md on the clipboard for Cursor, Claude Code, or
+                another agent. Download saves the file. Use Export if you need the full ZIP (assets, screenshots,
+                JSON).
+              </li>
+              <li>
+                <strong>Rebuild from the spec.</strong> Give the agent DESIGN.md as the source of truth. Do not invent
+                sections, copy, or images that were not captured. Treat token names as inferred and values as measured.
+              </li>
+              <li>
+                <strong>Refresh to update.</strong> If the page changed, Refresh rescans this tab and regenerates both
+                markdown files from the new scan.
+              </li>
+            </ol>
+          </>
         ) : (
-          <p>
-            <strong>SKILL.md</strong> is assembled from the same page scan as DESIGN.md. It is the agent playbook, not a
-            second measurement pass:
-          </p>
+          <>
+            <p>
+              <strong>SKILL.md</strong> is the agent playbook for the same scan. It does not measure the page again —
+              it tells an agent how to recreate the page from DESIGN.md and the export package.
+            </p>
+            <ol>
+              <li>
+                <strong>Same scan, different job.</strong> After you scan, this tab writes SKILL.md. DESIGN.md holds
+                measurements; SKILL.md holds rules: what to read first, what not to invent, and in what order to
+                implement and check.
+              </li>
+              <li>
+                <strong>Give it to an agent.</strong> Copy or download SKILL.md, then place it where the agent looks
+                for skills (for example <code>.cursor/skills/</code> or <code>~/.claude/skills/</code>), or keep it in
+                the Export ZIP next to DESIGN.md.
+              </li>
+              <li>
+                <strong>Read order.</strong> The skill tells the agent to use DESIGN.md, captured copy, tokens, layout,
+                assets, and screenshots when those files exist — and to skip anything that was not captured.
+              </li>
+              <li>
+                <strong>Hard rules.</strong> Use exported asset paths and exact copy. Do not rewrite headlines or add
+                testimonials, logos, or stock images. If a resource failed, omit it and mention the gap.
+              </li>
+              <li>
+                <strong>Refresh to update.</strong> Refresh rescans the tab. Both DESIGN.md and SKILL.md regenerate
+                together so the playbook still matches the spec.
+              </li>
+            </ol>
+          </>
         )}
-        <ol>
-          <li>
-            <strong>Style extraction.</strong> The extension scans visible page elements and captures computed
-            typography, colors, spacing, radius, shadows, copy, and assets. Current run: {styled} styled of {sampled}{' '}
-            sampled elements
-            {sampled >= MAX_ELEMENTS ? `, capped at ${MAX_ELEMENTS}` : ''}.
-            {truncated ? ` Lazy-load was truncated${raw?.lazyLoad.reason ? ` (${raw.lazyLoad.reason})` : ''}.` : ''}
-          </li>
-          <li>
-            <strong>Token normalization.</strong> Raw values are deduplicated into reusable token sets. Token names are
-            inferred; values stay measured. Current token coverage: typography {design.tokens.typography.length}, color{' '}
-            {design.tokens.colors.length}, spacing {design.tokens.spacing.length}, radius {design.tokens.radii.length},
-            shadow {design.tokens.shadows.length}.
-          </li>
-          <li>
-            <strong>Structure profiling.</strong> URL, Open Graph metadata, headings, navigation labels, and layout
-            signals are used to name sections and component patterns. Current run: {design.sections.length} sections (
-            {semantic} semantic / {inferred} inferred), {design.components.length} component patterns. Evidence: “{og}”,{' '}
-            {headings} headings, {nav} navigation labels
-            {tables ? `, ${tables} tables` : ''}.
-          </li>
-          <li>
-            <strong>Blueprint assembly.</strong> DESIGN.md is the measured spec (tokens, layout, content, assets, and
-            implementation rules). SKILL.md is the recreation playbook: read order, hard rules, facts vs inferences, and
-            visual-fix order. Schema {SCHEMA_VERSION}. This panel is showing {file}.
-          </li>
-          <li>
-            <strong>Conformance checks.</strong> Raw and normalized scans are validated before these files are shown.
-            Current run: {passed}/{checks.length} checks passed
-            {checks.some((check) => !check.ok)
-              ? ` (${checks
-                  .filter((check) => !check.ok)
-                  .map((check) => check.label)
-                  .join(', ')})`
-              : ''}
-            . Coverage: {coverageSummary(coverage)}.
-            {design.limitations.length
-              ? ` ${design.limitations.length} limitation${design.limitations.length === 1 ? '' : 's'} recorded.`
-              : ''}
-          </li>
-        </ol>
-        <p>
-          This flow writes measured facts into <strong>DESIGN.md</strong> and recreation rules into{' '}
-          <strong>SKILL.md</strong>. Do not invent sections, copy, or assets that were not captured on this page.
-        </p>
       </div>
     </section>
   )
-}
-
-function markdownChecks(design: NormalizedDesign, raw: PageScan | null): { ok: boolean; label: string }[] {
-  const warnings = [...(raw ? validateScan(raw) : []), ...validateNormalized(design)]
-  return [
-    { ok: Boolean(design.metadata.url), label: 'page URL' },
-    { ok: design.coverage.relevantElements > 0, label: 'sampled elements' },
-    { ok: design.tokens.colors.length > 0, label: 'color tokens' },
-    { ok: design.tokens.typography.length > 0, label: 'typography tokens' },
-    { ok: design.content.length > 0, label: 'content blocks' },
-    { ok: design.sections.length > 0, label: 'sections' },
-    { ok: Boolean(design.schemaVersion), label: 'schema version' },
-    { ok: warnings.length === 0, label: warnings[0] ?? 'validator' },
-  ]
 }
