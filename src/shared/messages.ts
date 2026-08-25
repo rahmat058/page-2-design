@@ -3,6 +3,7 @@ import type { SerializedError } from './errors'
 import { isRecord, asString } from './utils'
 import type {
   CompactFrameScan,
+  CssInformation,
   ExportOptions,
   LayoutSnapshot,
   NormalizedDesign,
@@ -47,6 +48,8 @@ export type MessageType =
   | 'INSPECT_ELEMENT'
   | 'HIGHLIGHT_COLOR'
   | 'HIGHLIGHT_COLOR_RESULT'
+  | 'GET_CSS_INFO'
+  | 'CSS_INFO'
 
 interface MessageBase {
   schemaVersion: string
@@ -286,6 +289,15 @@ export interface HighlightColorResultMessage extends MessageBase {
   payload: { index: number; total: number; done: boolean }
 }
 
+export interface GetCssInfoMessage extends MessageBase {
+  type: 'GET_CSS_INFO'
+}
+
+export interface CssInfoMessage extends MessageBase {
+  type: 'CSS_INFO'
+  payload: CssInformation
+}
+
 export type ExtensionMessage =
   | PingMessage
   | PongMessage
@@ -320,6 +332,8 @@ export type ExtensionMessage =
   | InspectElementMessage
   | HighlightColorMessage
   | HighlightColorResultMessage
+  | GetCssInfoMessage
+  | CssInfoMessage
 
 const MESSAGE_TYPES = new Set<MessageType>([
   'PING',
@@ -355,6 +369,8 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'INSPECT_ELEMENT',
   'HIGHLIGHT_COLOR',
   'HIGHLIGHT_COLOR_RESULT',
+  'GET_CSS_INFO',
+  'CSS_INFO',
 ])
 
 export function createMessage(partial: {

@@ -11,6 +11,8 @@ import {
   identifyActiveTab,
   startScan,
 } from './scan-orchestrator'
+import { readTabCssInformation } from './read-tab-css'
+import { emptyCssInformation } from '../shared/types'
 
 export function routeMessage(
   raw: unknown,
@@ -120,6 +122,13 @@ export function routeMessage(
             },
           }),
         )
+        return
+      }
+      case 'GET_CSS_INFO': {
+        const tab = await identifyActiveTab()
+        const payload =
+          tab.tabId && !tab.restricted ? await readTabCssInformation(tab.tabId) : emptyCssInformation()
+        sendResponse(createMessage({ type: 'CSS_INFO', requestId: message.requestId, payload }))
         return
       }
       case 'FETCH_ASSET': {

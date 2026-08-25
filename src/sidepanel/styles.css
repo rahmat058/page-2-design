@@ -1236,6 +1236,27 @@ body,
   font-size: 15px;
 }
 
+.css-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 16px;
+}
+
+.css-info-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.css-info-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
 .swatch-row {
   flex-wrap: nowrap;
   gap: 6px;

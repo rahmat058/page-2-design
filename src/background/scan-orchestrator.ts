@@ -13,6 +13,7 @@ import { normalizeScan } from '../normalize/normalize-scan'
 import { mergeFrameScan } from '../normalize/merge-frames'
 import { calculateCoverage } from '../validation/coverage'
 import { putScan, purgeStaleScans } from '../storage/indexed-db'
+import { readTabCssInformation } from './read-tab-css'
 import type { ExtensionMessage, ScanChunkMessage } from '../shared/messages'
 import type { CompactFrameScan, LayoutSnapshot, ScanOptions } from '../shared/types'
 import { DEFAULT_SCAN_OPTIONS } from '../shared/types'
@@ -153,6 +154,11 @@ export async function completeScan(scanId: string): Promise<void> {
     ]
   }
   raw.coverage = calculateCoverage(raw)
+  try {
+    raw.cssInformation = await readTabCssInformation(session.tabId)
+  } catch {
+    /* Keep whatever the content script captured. */
+  }
   const normalized = normalizeScan(raw)
   normalized.coverage = calculateCoverage(raw)
   await putScan({

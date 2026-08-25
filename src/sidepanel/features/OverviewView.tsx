@@ -9,7 +9,12 @@ import { CountBadge } from '../components/CountBadge'
 import { coverageSummary } from '../../validation/coverage'
 import { EmptyState } from '../components/CopyButton'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
+import { emptyCssInformation } from '../../shared/types'
+import type { CssInformation } from '../../shared/types'
+import { formatCssBytes, formatCssLoadTime } from '../../shared/css-format'
 import { objectUrlForAsset } from '../download-asset'
+import { sendRuntime } from '../chrome-api'
+import { createRequestId } from '../../shared/messages'
 
 export function OverviewView() {
   const design = useScanStore((s) => s.design)
@@ -20,6 +25,18 @@ export function OverviewView() {
   const error = useScanStore((s) => s.error)
   const options = useScanStore((s) => s.options)
   const setOptions = useScanStore((s) => s.setOptions)
+  const [liveCss, setLiveCss] = useState<CssInformation | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const response = await sendRuntime({ type: 'GET_CSS_INFO', requestId: createRequestId() })
+      if (!cancelled && response?.type === 'CSS_INFO') setLiveCss(response.payload)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [phase, design])
 
   const width =
     totalChunks && totalChunks > 0 ? Math.round((completedChunks / totalChunks) * 100) : phase === 'ready' ? 100 : 0
@@ -32,6 +49,7 @@ export function OverviewView() {
     design?.tokens.typography.find((token) => /body|paragraph/i.test(token.name))?.fontFamily ??
       design?.tokens.typography[1]?.fontFamily,
   )
+  const css = liveCss && hasCssData(liveCss) ? liveCss : (design?.cssInformation ?? emptyCssInformation())
 
   return (
     <>
@@ -97,6 +115,27 @@ export function OverviewView() {
                     <span className={`badge ${item.tone}`}>{item.label}</span>
                   </div>
                 ))}
+            </div>
+          </section>
+          <section className="overview-block">
+            <h2>CSS Information</h2>
+            <div className="css-info-grid">
+              <div>
+                <span>Style Rules</span>
+                <strong>{css.styleRules.toLocaleString()}</strong>
+              </div>
+              <div>
+                <span>CSS file</span>
+                <strong>{formatCssBytes(css.cssBytes)}</strong>
+              </div>
+              <div>
+                <span>Stylesheets</span>
+                <strong>{css.stylesheetCount.toLocaleString()}</strong>
+              </div>
+              <div>
+                <span>Load Time</span>
+                <strong>{formatCssLoadTime(css.loadTimeMs)}</strong>
+              </div>
             </div>
           </section>
         </>
@@ -233,4 +272,8 @@ function isLightHex(hex: string): boolean {
   const parsed = parseColor(hex)
   if (!parsed) return false
   return (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255 > 0.9
+}
+
+function hasCssData(css: CssInformation): boolean {
+  return css.styleRules > 0 || css.stylesheetCount > 0 || css.cssBytes > 0 || css.loadTimeMs != null
 }

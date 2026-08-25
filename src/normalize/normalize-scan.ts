@@ -1,6 +1,7 @@
 import { SCHEMA_VERSION } from '../shared/constants'
 import { mergeAssets } from '../content/asset-scanner'
 import type { ColorToken, NormalizedDesign, PageScan } from '../shared/types'
+import { emptyCssInformation } from '../shared/types'
 import { parseColor, inferColorRole, colorDistance, isFullyTransparent, pagePaletteGroups } from './colors'
 import { inferComponents } from './components'
 import { normalizeSections } from './sections'
@@ -112,6 +113,7 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
     coverage,
     page: raw.page,
     styleRegistry: raw.styleRegistry,
+    cssInformation: raw.cssInformation ?? emptyCssInformation(),
     documentOutline: buildDocumentOutline(raw, assets),
     utilityClasses: utilityClassesFor(raw.elements, 60),
     media: collectMediaSubstitutions(raw.elements, assets),

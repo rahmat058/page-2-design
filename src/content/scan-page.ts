@@ -21,6 +21,7 @@ import { scanDom } from './dom-scanner'
 import { collectNumeric, numericUsages, shadowUsages } from './layout-scanner'
 import { loadLazyContent } from './lazy-load'
 import { createRuntime } from './scan-context'
+import { readCssInformation } from './css-information'
 import { associateSections, detectSections } from './section-detector'
 import { collectTypography, typographyUsages } from './typography-scanner'
 import { emptyCoverage } from '../shared/types'
@@ -147,6 +148,7 @@ export async function runPageScan(options: ScanOptions, transport: ScanTransport
     content,
     pseudos: scanPseudos(root, dom.idMap),
     mediaQueries: readMediaQueries(runtime),
+    cssInformation: await readCssInformation(),
     limitations: runtime.limitations,
     coverage: emptyCoverage(),
     lazyLoad,
@@ -333,7 +335,7 @@ function chunkScan(scan: PageScan) {
     kind: 'meta',
     index: 0,
     total: 0,
-    data: { metadata: scan.metadata, page: scan.page, lazyLoad: scan.lazyLoad },
+    data: { metadata: scan.metadata, page: scan.page, lazyLoad: scan.lazyLoad, cssInformation: scan.cssInformation },
   })
   parts.push({ kind: 'sections', index: 0, total: 0, data: scan.sections })
   for (const chunk of elementChunks) {

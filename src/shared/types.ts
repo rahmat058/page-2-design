@@ -251,6 +251,13 @@ export interface MediaQueryObservation {
   notes: string
 }
 
+export interface CssInformation {
+  styleRules: number
+  stylesheetCount: number
+  cssBytes: number
+  loadTimeMs: number | null
+}
+
 export interface PageScan {
   schemaVersion: string
   metadata: PageMetadata
@@ -269,6 +276,7 @@ export interface PageScan {
   content: ContentBlock[]
   pseudos: PseudoRecord[]
   mediaQueries: MediaQueryObservation[]
+  cssInformation: CssInformation
   limitations: ScanLimitation[]
   coverage: ScanCoverage
   lazyLoad: {
@@ -479,6 +487,7 @@ export interface NormalizedDesign {
   coverage: ScanCoverage
   page: PageGeometry
   styleRegistry: Record<string, Record<string, string>>
+  cssInformation: CssInformation
   /** Real captured markup for the whole document. */
   documentOutline?: string
   /** Frequent non-generated class names across the page. */
@@ -560,4 +569,8 @@ export function emptyCoverage(): ScanCoverage {
 
 export function emptyCounts(): ScanCounts {
   return { elements: 0, textBlocks: 0, images: 0, colors: 0, typography: 0 }
+}
+
+export function emptyCssInformation(): CssInformation {
+  return { styleRules: 0, stylesheetCount: 0, cssBytes: 0, loadTimeMs: null }
 }

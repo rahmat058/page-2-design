@@ -1,5 +1,5 @@
 import { SCHEMA_VERSION } from './constants'
-import { emptyCoverage } from './types'
+import { emptyCoverage, emptyCssInformation } from './types'
 import type { PageScan } from './types'
 
 export function assembleScan(chunks: { kind: string; data: unknown }[]): PageScan {
@@ -47,6 +47,7 @@ export function assembleScan(chunks: { kind: string; data: unknown }[]): PageSca
     content: [],
     pseudos: [],
     mediaQueries: [],
+    cssInformation: emptyCssInformation(),
     limitations: [],
     coverage: emptyCoverage(),
     lazyLoad: { attempted: false, truncated: false, reason: null, finalScrollHeight: 0 },
@@ -60,6 +61,7 @@ export function assembleScan(chunks: { kind: string; data: unknown }[]): PageSca
         metadata: data.metadata,
         page: data.page,
         lazyLoad: data.lazyLoad,
+        cssInformation: data.cssInformation ?? emptyCssInformation(),
       })
     } else if (chunk.kind === 'sections') {
       scan.sections = chunk.data as PageScan['sections']

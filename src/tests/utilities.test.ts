@@ -15,10 +15,13 @@ import { publicUrlFromAssetPath } from '../export/package-paths'
 import { typographySignature } from '../content/typography-scanner'
 import { frequencyTokens } from '../normalize/spacing'
 import { escapeMarkdown, escapeTableCell } from '../normalize/markdown-escape'
+import { formatCssBytes, formatCssLoadTime } from '../shared/css-format'
+import { countStyleRulesInCss } from '../shared/count-css-rules'
 import { calculateCoverage } from '../validation/coverage'
 import { parseMessage, isMalformedMessage, createMessage } from '../shared/messages'
 import { MESSAGE_SCHEMA_VERSION } from '../shared/constants'
 import { sampleScan } from './fixtures'
+import { assembleScan } from '../shared/assemble-scan'
 
 describe('css url extraction', () => {
   it('extracts quoted and unquoted urls', () => {
@@ -278,6 +281,44 @@ describe('markdown escaping', () => {
   it('escapes markdown and table cells', () => {
     expect(escapeMarkdown('a|b*c')).toContain('\\')
     expect(escapeTableCell('a|b\nc')).toBe('a\\|b c')
+  })
+})
+
+describe('css information format', () => {
+  it('formats file size and load time like the overview panel', () => {
+    expect(formatCssBytes(220)).toBe('220B')
+    expect(formatCssBytes(118784)).toBe('116kb')
+    expect(formatCssLoadTime(1000)).toBe('1.0s')
+    expect(formatCssLoadTime(null)).toBe('—')
+  })
+
+  it('counts top-level cssRules the way CSS Peeper does', () => {
+    expect(countStyleRulesInCss('.a { color: red } .b { color: blue }')).toBe(2)
+    expect(
+      countStyleRulesInCss('@media (min-width: 1px) { .a { color: red } .b { color: blue } } .c { margin: 0 }'),
+    ).toBe(2)
+    expect(countStyleRulesInCss('@font-face { font-family: Test; src: url(a.woff2) } .a { font-family: Test }')).toBe(2)
+  })
+
+  it('keeps css information from the meta scan chunk', () => {
+    const sample = sampleScan()
+    const scan = assembleScan([
+      {
+        kind: 'meta',
+        data: {
+          metadata: sample.metadata,
+          page: sample.page,
+          lazyLoad: sample.lazyLoad,
+          cssInformation: { styleRules: 220, stylesheetCount: 3, cssBytes: 118784, loadTimeMs: 1300 },
+        },
+      },
+    ])
+    expect(scan.cssInformation).toEqual({
+      styleRules: 220,
+      stylesheetCount: 3,
+      cssBytes: 118784,
+      loadTimeMs: 1300,
+    })
   })
 })
 

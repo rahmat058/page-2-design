@@ -150,6 +150,7 @@ export function sampleScan(): PageScan {
     ],
     pseudos: [],
     mediaQueries: [{ raw: '(max-width: 720px)', readable: true, notes: 'Read from stylesheet cssRules.' }],
+    cssInformation: { styleRules: 220, stylesheetCount: 3, cssBytes: 118784, loadTimeMs: 1000 },
     limitations: [],
     coverage: emptyCoverage(),
     lazyLoad: { attempted: true, truncated: false, reason: null, finalScrollHeight: 1600 },
@@ -334,6 +335,7 @@ export function sampleDesign(): NormalizedDesign {
     },
     page: raw.page,
     styleRegistry: raw.styleRegistry,
+    cssInformation: raw.cssInformation,
     documentOutline:
       '<body class="bg-[#F6F3EE]">\n  <main class="mx-auto max-w-5xl px-6">\n    <h1 class="text-[42px] font-bold">Measured design, not guessed style</h1>\n  </main>\n</body>',
     utilityClasses: ['mx-auto', 'max-w-5xl', 'px-6'],
