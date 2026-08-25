@@ -9,6 +9,7 @@ const TABS: { id: PanelView; label: string }[] = [
   { id: 'typography', label: 'Typography' },
   { id: 'layout', label: 'Layout' },
   { id: 'export', label: 'Export' },
+  { id: 'generate-md', label: 'Generate MD' },
 ]
 
 export function TabNav() {

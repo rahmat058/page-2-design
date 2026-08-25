@@ -11,6 +11,7 @@ import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
 import { AssetsView, ContentView } from './features/ContentView'
 import { ExportView } from './features/ExportView'
 import { InspectorView } from './features/InspectorView'
+import { MarkdownView } from './features/MarkdownView'
 import { OverviewView } from './features/OverviewView'
 import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
@@ -20,6 +21,7 @@ import { useToastStore } from './toast'
 import { uniqueVisualAssets } from '../content/asset-scanner'
 import { copyContentPlain, groupContentBySection, panelContentBlocks } from './content-groups'
 import type { NormalizedDesign } from '../shared/types'
+import { OVERLAY_WIDE_WIDTH, OVERLAY_WIDTH } from '../shared/constants'
 
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting']
 const OVERLAY = typeof window !== 'undefined' && window !== window.top
@@ -33,6 +35,7 @@ export function App() {
   const counts = useScanStore((s) => s.counts)
   const inspectOn = useScanStore((s) => s.inspectOn)
   const [menuOpen, setMenuOpen] = useState(false)
+  const mdOpen = view === 'generate-md'
 
   useEffect(() => {
     void boot()
@@ -52,11 +55,23 @@ export function App() {
     })
   }, [])
 
+  useEffect(() => {
+    if (!OVERLAY) return
+    window.parent.postMessage(
+      {
+        source: 'page2design',
+        type: 'resize',
+        width: mdOpen && !inspectOn ? OVERLAY_WIDE_WIDTH : OVERLAY_WIDTH,
+      },
+      '*',
+    )
+  }, [mdOpen, inspectOn])
+
   const busy = BUSY.includes(phase)
   const canExport = Boolean(design) && (phase === 'ready' || phase === 'complete')
 
   return (
-    <div className="app inspector">
+    <div className={mdOpen && !inspectOn ? 'app inspector is-wide' : 'app inspector'}>
       <PanelChrome
         inspectOn={inspectOn}
         menuOpen={menuOpen}
@@ -86,7 +101,9 @@ export function App() {
         <>
           <PageHead
             title={headingFor(view)}
-            count={view !== 'overview' ? countFor(view, counts, design) : null}
+            count={
+              view !== 'overview' && view !== 'generate-md' ? countFor(view, counts, design) : null
+            }
             overview={view === 'overview'}
             action={
               view === 'overview' && design ? (
@@ -129,6 +146,7 @@ export function App() {
               {view === 'typography' ? <TypographyView /> : null}
               {view === 'layout' ? <LayoutView /> : null}
               {view === 'export' ? <ExportView /> : null}
+              {view === 'generate-md' ? <MarkdownView /> : null}
             </div>
           </main>
           <BottomNav />
@@ -192,6 +210,7 @@ function headingFor(view: string): string {
   if (view === 'export') return 'Export'
   if (view === 'content') return 'Content'
   if (view === 'layout') return 'Layout'
+  if (view === 'generate-md') return 'Generate MD'
   return 'Overview'
 }
 

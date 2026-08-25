@@ -1,6 +1,9 @@
+import { OVERLAY_WIDTH } from '../shared/constants'
+
 const HOST_ID = 'page2design-overlay-root'
-const PANEL_WIDTH = 336
+const PANEL_WIDTH = OVERLAY_WIDTH
 const MARGIN = 12
+const SIZE_TRANSITION = 'width 0.38s cubic-bezier(0.22, 1, 0.36, 1), left 0.38s cubic-bezier(0.22, 1, 0.36, 1)'
 
 export function isOverlayHost(node: EventTarget | null): boolean {
   return node instanceof Node && Boolean((node as Element).closest?.(`#${HOST_ID}`))
@@ -36,6 +39,7 @@ function mountOverlay(): void {
     height: `min(680px, calc(100vh - ${MARGIN * 2}px))`,
     zIndex: '2147483646',
     pointerEvents: 'auto',
+    transition: SIZE_TRANSITION,
   } as CSSStyleDeclaration)
 
   const shadow = host.attachShadow({ mode: 'closed' })
@@ -66,11 +70,16 @@ function mountOverlay(): void {
       type?: string
       screenX?: number
       screenY?: number
+      width?: number
     }
     if (data?.source !== 'page2design') return
     if (data.type === 'close') {
       window.removeEventListener('message', onMessage)
       closeOverlay()
+      return
+    }
+    if (data.type === 'resize') {
+      resizeHost(host, Number(data.width) || PANEL_WIDTH)
       return
     }
     if (data.type === 'dragstart') {
@@ -81,6 +90,7 @@ function mountOverlay(): void {
         screenX: Number(data.screenX) || 0,
         screenY: Number(data.screenY) || 0,
       }
+      host.style.transition = 'none'
       host.style.willChange = 'left, top'
       return
     }
@@ -91,6 +101,7 @@ function mountOverlay(): void {
       return
     }
     if (data.type === 'dragend') {
+      host.style.transition = SIZE_TRANSITION
       host.style.willChange = 'auto'
       drag = null
     }
@@ -100,8 +111,21 @@ function mountOverlay(): void {
   document.documentElement.appendChild(host)
 }
 
+function resizeHost(host: HTMLElement, nextWidth: number): void {
+  const width = Math.min(Math.max(nextWidth, PANEL_WIDTH), Math.max(PANEL_WIDTH, window.innerWidth - MARGIN * 2))
+  const prev = host.getBoundingClientRect()
+  host.style.width = `${Math.round(width)}px`
+  if (host.style.left && host.style.left !== 'auto') {
+    const delta = width - prev.width
+    const left = Number.parseFloat(host.style.left) - delta
+    const maxLeft = Math.max(MARGIN, window.innerWidth - width - MARGIN)
+    host.style.left = `${Math.round(Math.min(Math.max(MARGIN, left), maxLeft))}px`
+  }
+}
+
 function placeHost(host: HTMLElement, nextLeft: number, nextTop: number): void {
-  const maxLeft = Math.max(MARGIN, window.innerWidth - PANEL_WIDTH - MARGIN)
+  const width = host.getBoundingClientRect().width || PANEL_WIDTH
+  const maxLeft = Math.max(MARGIN, window.innerWidth - width - MARGIN)
   const maxTop = Math.max(MARGIN, window.innerHeight - 120)
   const left = Math.min(Math.max(MARGIN, nextLeft), maxLeft)
   const top = Math.min(Math.max(MARGIN, nextTop), maxTop)

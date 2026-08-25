@@ -5,7 +5,16 @@ import type { InspectedElement } from '../../shared/messages'
 import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner'
 
 export type PanelView =
-  'overview' | 'content' | 'assets' | 'images' | 'icons' | 'colors' | 'typography' | 'layout' | 'export'
+  | 'overview'
+  | 'content'
+  | 'assets'
+  | 'images'
+  | 'icons'
+  | 'colors'
+  | 'typography'
+  | 'layout'
+  | 'export'
+  | 'generate-md'
 
 interface ScanStore {
   phase: ScanPhase

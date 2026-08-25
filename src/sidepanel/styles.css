@@ -2623,6 +2623,11 @@ body,
   overflow: auto;
 }
 
+.collection-scroll:has(.md-wrap) {
+  display: flex;
+  overflow: hidden;
+}
+
 .ui-segmented {
   display: grid;
   position: relative;
@@ -2898,4 +2903,50 @@ body,
     transition: none;
     animation: none;
   }
+}
+
+.md-wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.md-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.md-preview {
+  flex: 1;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  padding: 14px;
+  min-height: 0;
+  overflow: auto;
+  color: var(--text);
+  font-family: ui-monospace, Consolas, 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bottom-nav {
+  gap: 2px;
+  padding: 4px 4px 6px;
+}
+
+.nav-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 40px;
+  width: auto;
+  height: 32px;
 }

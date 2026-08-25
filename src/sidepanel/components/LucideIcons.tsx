@@ -7,6 +7,8 @@ import {
   Crosshair,
   Download,
   Droplet,
+  FileCode,
+  FileTypeCorner,
   FolderInput,
   GripVertical,
   Heading,
@@ -61,7 +63,7 @@ export function TypeIcon() {
 }
 
 export function ContentIcon() {
-  return <AlignLeft size={18} {...STROKE} aria-hidden="true" />
+  return <FileTypeCorner size={18} {...STROKE} aria-hidden="true" />
 }
 
 export function HeadingBlockIcon() {
@@ -114,6 +116,14 @@ export function ProfileIcon() {
 
 export function ExportNavIcon() {
   return <FolderInput size={18} {...STROKE} aria-hidden="true" />
+}
+
+export function DesignMdIcon() {
+  return <FileCode size={18} {...STROKE} aria-hidden="true" />
+}
+
+export function SkillMdIcon() {
+  return <FileCode size={18} {...STROKE} aria-hidden="true" />
 }
 
 export function DownloadIcon() {

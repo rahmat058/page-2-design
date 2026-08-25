@@ -1,5 +1,13 @@
 import { useScanStore, type PanelView } from '../store/useScanStore'
-import { AssetsIcon, ColorsIcon, ContentIcon, ExportNavIcon, OverviewIcon, TypeIcon } from './LucideIcons'
+import {
+  AssetsIcon,
+  ColorsIcon,
+  ContentIcon,
+  DesignMdIcon,
+  ExportNavIcon,
+  OverviewIcon,
+  TypeIcon,
+} from './LucideIcons'
 
 const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'overview', label: 'Overview', icon: OverviewIcon },
@@ -7,6 +15,7 @@ const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'colors', label: 'Colors', icon: ColorsIcon },
   { id: 'typography', label: 'Typography', icon: TypeIcon },
   { id: 'assets', label: 'Assets', icon: AssetsIcon },
+  { id: 'generate-md', label: 'Generate MD', icon: DesignMdIcon },
   { id: 'export', label: 'Export', icon: ExportNavIcon },
 ]
 
