@@ -46,7 +46,7 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 
 `npm install` runs Husky (`prepare`). Hooks run in this order:
 
-1. **pre-commit** — lint-staged on staged files: `eslint --fix`, then `prettier --write` (JS/TS); Prettier only for `json` / `md` / `css` / `html` / `yml`. The hook reattaches `/dev/tty` when possible so Windows shows the same spinner/checkmark UI as macOS instead of `[STARTED]` / `[COMPLETED]` text.
+1. **pre-commit** — lint-staged (`eslint --fix` + Prettier on staged files), then `npm test` (Vitest). The hook reattaches `/dev/tty` when possible so Windows can show the same spinner/checkmark UI as macOS.
 2. **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
 3. **pre-push** — `npm run lint:fix` and `npm run format` on the whole repo; if anything changes, the push stops so you can commit the fixes first
 
