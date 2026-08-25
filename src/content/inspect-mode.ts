@@ -448,11 +448,12 @@ function showHoverCard(el: Element, rect: DOMRect): void {
   const color = rgbToHex(style.color)
   const background = effectiveBackground(el) || 'transparent'
   const family = primaryFont(style.fontFamily)
+  const weight = weightLabel(style.fontWeight)
   const width = Math.round(rect.width * 10) / 10
   const height = Math.round(rect.height * 10) / 10
   const label = elementLabel(el)
   const kind = classifyKind(el, el.tagName.toLowerCase())
-  const key = `${kind}|${label}|${width}|${height}|${color}|${background}|${family}|${style.fontSize}`
+  const key = `${kind}|${label}|${width}|${height}|${color}|${background}|${family}|${style.fontSize}|${weight}`
   if (key !== lastCardKey) {
     lastCardKey = key
     setText(host, 'p2d-kind', kind)
@@ -462,6 +463,7 @@ function showHoverCard(el: Element, rect: DOMRect): void {
     setText(host, 'p2d-bg-hex', background)
     setText(host, 'p2d-font', family)
     setText(host, 'p2d-font-size', style.fontSize)
+    setText(host, 'p2d-font-weight', weight)
     const textSwatch = host.querySelector('[data-p2d="text-swatch"]') as HTMLElement | null
     const bgSwatch = host.querySelector('[data-p2d="bg-swatch"]') as HTMLElement | null
     if (textSwatch) textSwatch.style.setProperty('background', color, 'important')
@@ -494,7 +496,7 @@ function important(el: HTMLElement, styles: Record<string, string>): void {
 }
 
 function ensureCard(): HTMLDivElement {
-  if (cardHost?.isConnected && !cardHost.querySelector('[data-p2d="p2d-padding"]')) return cardHost
+  if (cardHost?.isConnected && cardHost.querySelector('[data-p2d="p2d-font-weight"]')) return cardHost
   cardHost?.remove()
   cardHost = document.createElement('div')
   cardHost.id = CARD_ID
@@ -586,10 +588,13 @@ function ensureCard(): HTMLDivElement {
   const fontRow = propRow()
   fontRow.append(valueText('p2d-font'), keyLabel('Font family'))
 
-  const sizeRow = propRow(true)
+  const sizeRow = propRow()
   sizeRow.append(valueText('p2d-font-size'), keyLabel('Font size'))
 
-  body.append(meta, label, colorRow, bgRow, fontRow, sizeRow)
+  const weightRow = propRow(true)
+  weightRow.append(valueText('p2d-font-weight'), keyLabel('Font weight'))
+
+  body.append(meta, label, colorRow, bgRow, fontRow, sizeRow, weightRow)
   cardHost.append(accent, body)
   document.documentElement.appendChild(cardHost)
   return cardHost
