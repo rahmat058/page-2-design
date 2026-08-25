@@ -20,7 +20,8 @@ export async function readTabCssInformation(tabId: number): Promise<CssInformati
     const snap = injected?.[0]?.result as PageCssSnapshot | undefined
     if (!snap || typeof snap !== 'object' || !('stylesheetCount' in snap)) return emptyCssInformation()
 
-    let { styleRules, stylesheetCount, cssBytes, loadTimeMs } = snap
+    let { styleRules, cssBytes } = snap
+    const { stylesheetCount, loadTimeMs } = snap
     const sizedHrefs = new Set(snap.sizedHrefs)
     const seen = new Set<string>()
 
