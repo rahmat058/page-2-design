@@ -15,6 +15,7 @@ export type PanelView =
   | 'layout'
   | 'export'
   | 'generate-md'
+  | 'developer'
 
 interface ScanStore {
   phase: ScanPhase

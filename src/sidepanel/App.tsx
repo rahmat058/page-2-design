@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createRequestId } from '../shared/messages'
 import { userFacingError } from '../shared/errors'
 import { sendRuntime, onRuntimeMessage } from './chrome-api'
-import { Copy, Download, RefreshCw } from 'lucide-react'
+import { Copy, Download, RefreshCw, Star } from 'lucide-react'
 import { Button } from './components/Button'
 import { BottomNav } from './components/BottomNav'
 import { PageHead } from './components/PageHead'
@@ -12,6 +12,7 @@ import { AssetsView, ContentView } from './features/ContentView'
 import { ExportView } from './features/ExportView'
 import { InspectorView } from './features/InspectorView'
 import { MarkdownView } from './features/MarkdownView'
+import { DeveloperView, REPO_URL } from './features/DeveloperView'
 import { OverviewView } from './features/OverviewView'
 import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
@@ -102,16 +103,14 @@ export function App() {
           <PageHead
             title={headingFor(view)}
             count={
-              view !== 'overview' && view !== 'generate-md' ? countFor(view, counts, design) : null
+              view !== 'overview' && view !== 'generate-md' && view !== 'developer'
+                ? countFor(view, counts, design)
+                : null
             }
             overview={view === 'overview'}
             action={
               view === 'overview' && design ? (
-                <Button
-                  size="sm"
-                  icon={RefreshCw}
-                  disabled={busy || tabRestricted}
-                  onClick={() => void startScan()}>
+                <Button size="sm" icon={RefreshCw} disabled={busy || tabRestricted} onClick={() => void startScan()}>
                   {busy ? 'Scanning…' : 'Rescan'}
                 </Button>
               ) : view === 'content' ? (
@@ -133,6 +132,11 @@ export function App() {
                   }}>
                   Export All
                 </Button>
+              ) : view === 'developer' ? (
+                <a className="ui-btn ui-btn-sm" href={REPO_URL} target="_blank" rel="noopener noreferrer">
+                  <Star className="ui-btn-icon" size={16} strokeWidth={2} aria-hidden="true" />
+                  <span className="ui-btn-label">Star repo</span>
+                </a>
               ) : null
             }
           />
@@ -147,6 +151,7 @@ export function App() {
               {view === 'layout' ? <LayoutView /> : null}
               {view === 'export' ? <ExportView /> : null}
               {view === 'generate-md' ? <MarkdownView /> : null}
+              {view === 'developer' ? <DeveloperView /> : null}
             </div>
           </main>
           <BottomNav />
@@ -211,6 +216,7 @@ function headingFor(view: string): string {
   if (view === 'content') return 'Content'
   if (view === 'layout') return 'Layout'
   if (view === 'generate-md') return 'Generate Markdown'
+  if (view === 'developer') return 'Developer'
   return 'Overview'
 }
 

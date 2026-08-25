@@ -6,6 +6,7 @@ import {
   DesignMdIcon,
   ExportNavIcon,
   OverviewIcon,
+  ProfileIcon,
   TypeIcon,
 } from './LucideIcons'
 
@@ -17,6 +18,7 @@ const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'assets', label: 'Assets', icon: AssetsIcon },
   { id: 'generate-md', label: 'Generate Markdown', icon: DesignMdIcon },
   { id: 'export', label: 'Export', icon: ExportNavIcon },
+  { id: 'developer', label: 'Developer', icon: ProfileIcon },
 ]
 
 export function BottomNav() {
