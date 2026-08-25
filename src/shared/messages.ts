@@ -263,6 +263,19 @@ export interface InspectedElement {
   background: string | null
   borderRadius: string
   code: string
+  /** Present when the inspected node is an image / svg / media asset. */
+  asset: InspectedAsset | null
+}
+
+export interface InspectedAsset {
+  src: string
+  alt: string | null
+  intrinsicWidth: number | null
+  intrinsicHeight: number | null
+  renderedWidth: number
+  renderedHeight: number
+  inlineSvg: string | null
+  mimeHint: string | null
 }
 
 export interface InspectElementMessage extends MessageBase {

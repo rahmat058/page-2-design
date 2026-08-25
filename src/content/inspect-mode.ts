@@ -1,5 +1,5 @@
 import { colorIsExact, isFullyTransparent, parseColor } from '../normalize/colors'
-import { createMessage, createRequestId, type InspectedElement } from '../shared/messages'
+import { createMessage, createRequestId, type InspectedAsset, type InspectedElement } from '../shared/messages'
 
 const BOX_ID = 'page2design-inspect-box'
 const CARD_ID = 'page2design-inspect-card'
@@ -183,6 +183,7 @@ function describeElement(el: Element, locked: boolean): InspectedElement {
     background: effectiveBackground(el),
     borderRadius: style.borderTopLeftRadius || '0px',
     code: html.length > 4000 ? `${html.slice(0, 4000)}…` : html,
+    asset: collectInspectedAsset(el, style, rect),
   }
 }
 
@@ -493,7 +494,8 @@ function important(el: HTMLElement, styles: Record<string, string>): void {
 }
 
 function ensureCard(): HTMLDivElement {
-  if (cardHost?.isConnected) return cardHost
+  if (cardHost?.isConnected && !cardHost.querySelector('[data-p2d="p2d-padding"]')) return cardHost
+  cardHost?.remove()
   cardHost = document.createElement('div')
   cardHost.id = CARD_ID
   cardHost.setAttribute('data-page2design', 'inspect-card')
@@ -653,4 +655,86 @@ function primaryFont(stack: string): string {
 
 function formatPx(value: number): string {
   return Number.isInteger(value) ? String(value) : String(value)
+}
+
+function collectInspectedAsset(el: Element, style: CSSStyleDeclaration, rect: DOMRect): InspectedAsset | null {
+  const renderedWidth = Math.round(rect.width)
+  const renderedHeight = Math.round(rect.height)
+  if (el instanceof HTMLImageElement) {
+    const src = el.currentSrc || el.src || el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || ''
+    if (!src) return null
+    return {
+      src,
+      alt: el.alt || el.getAttribute('aria-label') || null,
+      intrinsicWidth: el.naturalWidth || null,
+      intrinsicHeight: el.naturalHeight || null,
+      renderedWidth,
+      renderedHeight,
+      inlineSvg: null,
+      mimeHint: null,
+    }
+  }
+  if (el instanceof HTMLVideoElement) {
+    const src = el.currentSrc || el.src || el.poster || el.getAttribute('poster') || ''
+    if (!src) return null
+    return {
+      src,
+      alt: el.getAttribute('aria-label') || 'video',
+      intrinsicWidth: el.videoWidth || null,
+      intrinsicHeight: el.videoHeight || null,
+      renderedWidth,
+      renderedHeight,
+      inlineSvg: null,
+      mimeHint: null,
+    }
+  }
+  if (el instanceof HTMLCanvasElement) {
+    let dataUrl: string | null = null
+    try {
+      dataUrl = el.toDataURL('image/png')
+    } catch {
+      dataUrl = null
+    }
+    if (!dataUrl) return null
+    return {
+      src: dataUrl,
+      alt: el.getAttribute('aria-label') || 'canvas',
+      intrinsicWidth: el.width || null,
+      intrinsicHeight: el.height || null,
+      renderedWidth,
+      renderedHeight,
+      inlineSvg: null,
+      mimeHint: 'image/png',
+    }
+  }
+  if (el.tagName.toLowerCase() === 'svg') {
+    const markup = new XMLSerializer().serializeToString(el)
+    return {
+      src: 'inline:svg',
+      alt: el.getAttribute('aria-label') || el.querySelector('title')?.textContent?.trim() || null,
+      intrinsicWidth: renderedWidth || null,
+      intrinsicHeight: renderedHeight || null,
+      renderedWidth,
+      renderedHeight,
+      inlineSvg: markup,
+      mimeHint: 'image/svg+xml',
+    }
+  }
+  const bg = style.backgroundImage
+  if (bg && bg !== 'none') {
+    const match = /url\(\s*(['"]?)([^'")]+)\1\s*\)/i.exec(bg)
+    if (match?.[2]) {
+      return {
+        src: match[2],
+        alt: 'background-image',
+        intrinsicWidth: null,
+        intrinsicHeight: null,
+        renderedWidth,
+        renderedHeight,
+        inlineSvg: null,
+        mimeHint: null,
+      }
+    }
+  }
+  return null
 }

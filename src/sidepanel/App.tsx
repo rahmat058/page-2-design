@@ -51,7 +51,9 @@ export function App() {
         void loadScan(message.scanId)
       }
       if (message.type === 'INSPECT_ELEMENT') {
-        useScanStore.getState().setInspected(message.payload)
+        const store = useScanStore.getState()
+        if (!store.inspectOn) store.setInspectOn(true)
+        store.setInspected(message.payload)
       }
     })
   }, [])
