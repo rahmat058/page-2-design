@@ -1,3 +1,14 @@
+/**
+ * Side panel styles for Page2Design.
+ *
+ * Layout is mostly additive: earlier blocks set shared primitives, later
+ * blocks refine the inspector shell, feature views, and motion.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Design tokens
+ * --------------------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
   --black: #000000;
@@ -37,6 +48,10 @@
   color: var(--text);
   font-family: var(--font-regular);
 }
+
+/* ---------------------------------------------------------------------------
+ * Base reset & scrollbars
+ * --------------------------------------------------------------------------- */
 
 * {
   box-sizing: border-box;
@@ -108,6 +123,10 @@ a:focus-visible,
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Legacy app shell & primitives
+ * --------------------------------------------------------------------------- */
 
 .app {
   display: flex;
@@ -573,6 +592,11 @@ label.field {
   word-break: break-word;
 }
 
+/* ---------------------------------------------------------------------------
+ * Inspector height lock (early)
+ * Locks the document and inspector shell to the viewport height.
+ * --------------------------------------------------------------------------- */
+
 html,
 body,
 #root {
@@ -590,6 +614,10 @@ body,
   overflow: hidden;
   font-size: 12px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Panel chrome, switch, menus
+ * --------------------------------------------------------------------------- */
 
 .chrome,
 .page-head,
@@ -938,6 +966,10 @@ body,
   cursor: not-allowed;
 }
 
+/* ---------------------------------------------------------------------------
+ * Page head, title, count badge
+ * --------------------------------------------------------------------------- */
+
 .page-head {
   display: flex;
   flex-direction: column;
@@ -1136,6 +1168,10 @@ body,
 .asset-tile.on {
   outline: 2px solid var(--accent);
 }
+
+/* ---------------------------------------------------------------------------
+ * Inspector density & overview
+ * --------------------------------------------------------------------------- */
 
 .app.inspector {
   padding-bottom: 52px;
@@ -1467,6 +1503,10 @@ body,
   transform: translateX(0) translateY(0);
 }
 
+/* ---------------------------------------------------------------------------
+ * Segmented controls & asset grids
+ * --------------------------------------------------------------------------- */
+
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1607,6 +1647,10 @@ body,
   cursor: pointer;
   color: var(--muted);
 }
+
+/* ---------------------------------------------------------------------------
+ * Typography view
+ * --------------------------------------------------------------------------- */
 
 .type-list {
   display: grid;
@@ -1756,6 +1800,10 @@ body,
   color: var(--ink);
 }
 
+/* ---------------------------------------------------------------------------
+ * Panel height refinements
+ * --------------------------------------------------------------------------- */
+
 html,
 body,
 #root {
@@ -1898,6 +1946,10 @@ body,
   font-weight: 650;
 }
 
+/* ---------------------------------------------------------------------------
+ * Colors / peeper palette
+ * --------------------------------------------------------------------------- */
+
 .peeper-palette {
   display: grid;
   grid-template-columns: 1fr;
@@ -2019,6 +2071,10 @@ body,
   opacity: 1;
   pointer-events: auto;
 }
+
+/* ---------------------------------------------------------------------------
+ * Content & assets views
+ * --------------------------------------------------------------------------- */
 
 .content-wrap,
 .assets-wrap {
@@ -2214,6 +2270,10 @@ body,
   border: 1px solid var(--line);
 }
 
+/* ---------------------------------------------------------------------------
+ * Toasts & shared motion
+ * --------------------------------------------------------------------------- */
+
 .toast {
   position: absolute;
   bottom: 58px;
@@ -2260,8 +2320,11 @@ body,
   }
 }
 
-/* Authoritative layout: keep the app a fixed-height flex column so the
-   bottom nav is always pinned and no gap can appear below it. */
+/* ---------------------------------------------------------------------------
+ * App shell (authoritative layout)
+ * Keep the app a fixed-height flex column so the bottom nav stays pinned.
+ * --------------------------------------------------------------------------- */
+
 .app.inspector {
   display: flex;
   position: relative;
@@ -2284,7 +2347,11 @@ body,
   margin-top: auto;
 }
 
-/* Scan options: single column with card-style rows and micro-interactions. */
+/* ---------------------------------------------------------------------------
+ * Scan options
+ * Single column with card-style rows and micro-interactions.
+ * --------------------------------------------------------------------------- */
+
 .more-details > summary {
   margin: 0 0 10px;
   color: var(--text);
@@ -2345,7 +2412,10 @@ body,
   font-size: 11px;
 }
 
-/* Inspector view */
+/* ---------------------------------------------------------------------------
+ * Inspector view
+ * --------------------------------------------------------------------------- */
+
 .inspector-view {
   display: flex;
   flex: 1 1 auto;
@@ -2737,7 +2807,11 @@ body,
   font-style: italic;
 }
 
-/* Collection tabs (Colors / Assets): shared shell, sliding pill, card motion. */
+/* ---------------------------------------------------------------------------
+ * Collection tabs shell
+ * Colors / Assets shared shell, sliding pill, and card motion.
+ * --------------------------------------------------------------------------- */
+
 .collection-shell {
   display: flex;
   flex: 1;
@@ -2770,6 +2844,10 @@ body,
   display: flex;
   overflow: hidden;
 }
+
+/* ---------------------------------------------------------------------------
+ * Markdown / export preview
+ * --------------------------------------------------------------------------- */
 
 .md-wrap {
   display: flex;
@@ -3060,6 +3138,10 @@ body,
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Sliding segmented control
+ * --------------------------------------------------------------------------- */
+
 .ui-segmented {
   display: grid;
   position: relative;
@@ -3168,6 +3250,10 @@ body,
 .palette-card.peeper-card:active {
   transform: translateY(0) scale(0.985);
 }
+
+/* ---------------------------------------------------------------------------
+ * Color / asset interaction polish
+ * --------------------------------------------------------------------------- */
 
 .swatch-action {
   transition:
@@ -3324,6 +3410,10 @@ body,
   background: var(--lavender);
 }
 
+/* ---------------------------------------------------------------------------
+ * Reduced motion
+ * --------------------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
   .ui-btn,
   .btn,
@@ -3345,6 +3435,10 @@ body,
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Bottom nav density
+ * --------------------------------------------------------------------------- */
+
 .bottom-nav {
   gap: 1px;
   padding: 4px 2px 6px;
@@ -3357,6 +3451,10 @@ body,
   max-width: 36px;
   height: 32px;
 }
+
+/* ---------------------------------------------------------------------------
+ * Developer / about tab
+ * --------------------------------------------------------------------------- */
 
 .dev-page {
   display: flex;
