@@ -49,7 +49,7 @@ For scan pipeline, folders, messages, ZIP layout, and privacy — see **[ARCHITE
 
 | Requirement | Version / notes     |
 | ----------- | ------------------- |
-| **Node.js** | 18+ (repo uses npm) |
+| **Node.js** | 24+ (repo uses npm) |
 | **Chrome**  | Current stable, MV3 |
 
 ---
@@ -95,18 +95,19 @@ npm run dev
 
 ## Scripts
 
-| Command              | Description                                                           |
-| -------------------- | --------------------------------------------------------------------- |
-| `npm run dev`        | Watch-build `dist` (sidepanel + background + content)                 |
-| `npm run build`      | Typecheck, then production `dist`                                     |
-| `npm run typecheck`  | `tsc --noEmit`                                                        |
-| `npm run lint`       | ESLint                                                                |
-| `npm run lint:fix`   | ESLint with `--fix`                                                   |
-| `npm test`           | Vitest unit tests                                                     |
-| `npm run test:watch` | Vitest watch                                                          |
-| `npm run format`     | Prettier                                                              |
-| `npm run commit`     | Commitizen prompt (emoji + conventional header)                       |
-| `npm run icons`      | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
+| Command                | Description                                                           |
+| ---------------------- | --------------------------------------------------------------------- |
+| `npm run dev`          | Watch-build `dist` (sidepanel + background + content)                 |
+| `npm run build`        | Typecheck, then production `dist`                                     |
+| `npm run typecheck`    | `tsc --noEmit`                                                        |
+| `npm run lint`         | ESLint                                                                |
+| `npm run lint:fix`     | ESLint with `--fix`                                                   |
+| `npm test`             | Vitest unit tests                                                     |
+| `npm run test:watch`   | Vitest watch                                                          |
+| `npm run format`       | Prettier write                                                        |
+| `npm run format:check` | Prettier check (no write)                                             |
+| `npm run commit`       | Commitizen prompt (emoji + conventional header)                       |
+| `npm run icons`        | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
 
 ---
 

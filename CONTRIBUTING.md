@@ -44,13 +44,13 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 
 ## Git hooks
 
-`npm install` runs Husky (`prepare`). Hooks:
+`npm install` runs Husky (`prepare`). Hooks run in this order:
 
-- **pre-commit** — lint-staged on `src/**/*.{ts,tsx,js,jsx}` (`npm run lint`, then `npm run format`)
-- **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
-- **pre-push** — `npm run lint && npm run format`
+1. **pre-commit** — lint-staged on staged files: `eslint --fix`, then `prettier --write` (JS/TS); Prettier only for `json` / `md` / `css` / `html` / `yml`
+2. **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
+3. **pre-push** — `npm run lint:fix` and `npm run format` on the whole repo; if anything changes, the push stops so you can commit the fixes first
 
-Fix lint locally with `npm run lint:fix`.
+Manual checks: `npm run lint:fix`, `npm run format`, `npm run format:check`.
 
 ## Commit messages
 
