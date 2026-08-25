@@ -47,12 +47,17 @@ Page2Design/
 ├── CHANGELOG.md
 ├── README.md
 ├── ARCHITECTURE.MD
+├── commitlint.config.ts       # Conventional commits + type emojis
+├── .husky/                    # pre-commit, commit-msg, pre-push
 ├── public/
 │   ├── manifest.json          # MV3 manifest (copied to dist)
 │   ├── inspect-css.js         # Injected into the tab for CSS Information
-│   └── icons/                 # Toolbar icons (16 / 32 / 48 / 128)
+│   └── icons/                 # Toolbar icons you supply (16 / 32 / 48 / 128)
 ├── fixtures/                  # Local HTML fixture for first-run tests
-├── scripts/build.mjs          # Vite: sidepanel + background + content
+├── scripts/
+│   ├── build.mjs              # Vite: sidepanel + background + content
+│   ├── cz-commitlint-emoji.mjs
+│   └── prepend-commit-emoji.mjs
 ├── src/
 │   ├── background/            # Service worker
 │   │   ├── service-worker.ts  # Action click, message listener
@@ -68,7 +73,7 @@ Page2Design/
 │   ├── sidepanel/             # React inspector (overlay + side panel)
 │   │   ├── App.tsx
 │   │   ├── store/useScanStore.ts
-│   │   ├── features/          # Overview, Colors, Content, Export, …
+│   │   ├── features/          # Overview, Colors, Content, Export, Developer, …
 │   │   └── components/        # Chrome, bottom nav, buttons
 │   ├── normalize/             # PageScan → NormalizedDesign
 │   ├── generators/            # AGENTS.md, DESIGN.md, prompts, JSON refs
@@ -81,6 +86,8 @@ Page2Design/
 ├── vite.background.config.ts
 └── vite.content.config.ts
 ```
+
+There is **no** icon generator — place PNGs under `public/icons/` yourself. Build copies them into `dist` only.
 
 Three Vite builds write into `dist/`:
 
