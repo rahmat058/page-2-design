@@ -4,11 +4,17 @@ Scan a live webpage and export one **agent-ready** design package — local-only
 
 [![Page2Design](./public/icons/icon-128.png)](https://github.com/rahmat058/page-2-design)
 
-[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat&logo=googlechrome&logoColor=white&colorA=020420&colorB=4285F4)](https://developer.chrome.com/docs/extensions/mv3)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-007ACC?style=flat&logo=typescript&logoColor=white&colorA=020420&colorB=007ACC)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black&colorA=020420&colorB=61DAFB)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat&logo=vite&logoColor=white&colorA=020420&colorB=646CFF)](https://vitejs.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat&colorA=020420&colorB=EEEEEE)](./LICENSE)
+<div>
+<img src="https://img.shields.io/badge/Chrome_MV3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white">
+<img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black">
+<img src="https://img.shields.io/badge/TypeScript_5.9-007ACC?style=for-the-badge&logo=typescript&logoColor=white">
+<img src="https://img.shields.io/badge/Vite_7-646CFF?style=for-the-badge&logo=vite&logoColor=white">
+<img src="https://img.shields.io/badge/Node.js_24-339933?style=for-the-badge&logo=nodedotjs&logoColor=white">
+<img src="https://img.shields.io/badge/Zustand-000000?style=for-the-badge&logo=react&logoColor=white">
+<img src="https://img.shields.io/badge/JSZip-37AEE2?style=for-the-badge&logo=zip&logoColor=white">
+<img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white">
+<img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge">
+</div>
 
 The ZIP helps Cursor, Claude Code, and similar coding agents recreate the **observed** page. It does not recover original source, React trees, or private form values.
 
