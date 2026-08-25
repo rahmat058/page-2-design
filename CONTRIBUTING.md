@@ -9,7 +9,7 @@ you agree to follow the [Code of Conduct](./CODE_OF_CONDUCT.md).
 - **Docs** — README and [ARCHITECTURE.MD](./ARCHITECTURE.MD) stay in sync: install and test in README, pipeline and folders in architecture.
 - **Code** — small, focused pull requests are easier to review than large redesigns.
 
-Do not send captured page content, passwords, or private ZIP exports in issues or PRs.
+Do not send captured page content, passwords, or private ZIP exports in issues or PRs. For security reports, see **[SECURITY.md](./SECURITY.md)** (do not file them as public issues).
 
 ## Development setup
 

@@ -45,6 +45,7 @@ Page2Design/
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── CHANGELOG.md
+├── SECURITY.md
 ├── README.md
 ├── ARCHITECTURE.MD
 ├── commitlint.config.ts       # Conventional commits + type emojis

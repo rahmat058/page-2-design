@@ -206,6 +206,7 @@ Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
 We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and the **[Code of Conduct](./CODE_OF_CONDUCT.md)** before opening a PR.
 
 - [Report a bug or request a feature](https://github.com/rahmat058/page-2-design/issues)
+- [Security policy](./SECURITY.md)
 - [Changelog](./CHANGELOG.md)
 
 ---
