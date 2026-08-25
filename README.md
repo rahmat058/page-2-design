@@ -1,4 +1,4 @@
-# Page2Design
+# Page2Design (Chrome Extension)
 
 Scan a live webpage and export one **agent-ready** design package — local-only, no backend.
 
