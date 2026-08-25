@@ -82,7 +82,7 @@ export function MarkdownView() {
               <span className="tip tip-below tip-end">Info</span>
             </button>
           </div>
-          <div className="md-preview" tabIndex={0} dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }} />
+          <pre className="md-preview" tabIndex={0}>{markdown}</pre>
         </div>
       </div>
     </CollectionShell>
@@ -213,96 +213,4 @@ function markdownChecks(design: NormalizedDesign, raw: PageScan | null): { ok: b
     { ok: Boolean(design.schemaVersion), label: 'schema version' },
     { ok: warnings.length === 0, label: warnings[0] ?? 'validator' },
   ]
-}
-
-function renderMarkdown(source: string): string {
-  const lines = source.split('\n')
-  const out: string[] = []
-  let fence = false
-  let frontmatter = false
-
-  for (const line of lines) {
-    if (line.startsWith('---') && (out.length === 0 || frontmatter)) {
-      frontmatter = !frontmatter
-      out.push(`<span class="md-line md-hr">${escapeHtml(line)}</span>`)
-      continue
-    }
-    if (line.startsWith('```')) {
-      fence = !fence
-      out.push(`<span class="md-line md-fence">${escapeHtml(line)}</span>`)
-      continue
-    }
-    if (fence) {
-      out.push(`<span class="md-line md-code">${escapeHtml(line) || '&nbsp;'}</span>`)
-      continue
-    }
-    if (frontmatter) {
-      const pair = line.match(/^([^:]+):(.*)$/)
-      if (pair?.[1] != null) {
-        out.push(
-          `<span class="md-line md-front"><span class="md-key">${escapeHtml(pair[1])}:</span>${inlineFormat(pair[2] ?? '')}</span>`,
-        )
-        continue
-      }
-      out.push(`<span class="md-line md-front">${escapeHtml(line) || '&nbsp;'}</span>`)
-      continue
-    }
-    const heading = line.match(/^(#{1,6})\s+(.*)$/)
-    if (heading?.[1]) {
-      out.push(
-        `<span class="md-line md-h md-h${heading[1].length}"><span class="md-hash">${heading[1]}</span> ${inlineFormat(heading[2] ?? '')}</span>`,
-      )
-      continue
-    }
-    if (/^\|.+\|$/.test(line)) {
-      out.push(`<span class="md-line md-table">${formatTableLine(line)}</span>`)
-      continue
-    }
-    if (/^[-*]{3,}$/.test(line.trim())) {
-      out.push(`<span class="md-line md-hr">${escapeHtml(line)}</span>`)
-      continue
-    }
-    if (/^\s*[-*]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
-      out.push(`<span class="md-line md-li">${formatListLine(line)}</span>`)
-      continue
-    }
-    if (line.startsWith('>')) {
-      out.push(`<span class="md-line md-quote">${inlineFormat(line)}</span>`)
-      continue
-    }
-    if (line.startsWith('_') && line.endsWith('_')) {
-      out.push(`<span class="md-line md-em">${inlineFormat(line)}</span>`)
-      continue
-    }
-    out.push(`<span class="md-line md-p">${line ? inlineFormat(line) : '&nbsp;'}</span>`)
-  }
-
-  return out.join('')
-}
-
-function formatListLine(line: string): string {
-  return inlineFormat(line)
-    .replace(/^(\s*)([-*])(\s+)/, '$1<span class="md-bullet">$2</span>$3')
-    .replace(/^(\s*)(\d+\.)(\s+)/, '$1<span class="md-bullet">$2</span>$3')
-}
-
-function formatTableLine(line: string): string {
-  const cells = line.split('|')
-  const formatted = cells.map((cell, index) => {
-    if (index === 0 || index === cells.length - 1) return ''
-    if (/^[\s:-]+$/.test(cell)) return `<span class="md-table-sep">${escapeHtml(cell)}</span>`
-    return `<span class="md-cell">${inlineFormat(cell)}</span>`
-  })
-  return formatted.join('<span class="md-pipe">|</span>')
-}
-
-function inlineFormat(value: string): string {
-  return escapeHtml(value)
-    .replace(/`([^`]+)`/g, '<code class="md-inline">$1</code>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<span class="md-link">$1</span>')
-}
-
-function escapeHtml(value: string): string {
-  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;')
 }
