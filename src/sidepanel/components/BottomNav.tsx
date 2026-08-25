@@ -15,7 +15,7 @@ const ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'colors', label: 'Colors', icon: ColorsIcon },
   { id: 'typography', label: 'Typography', icon: TypeIcon },
   { id: 'assets', label: 'Assets', icon: AssetsIcon },
-  { id: 'generate-md', label: 'Generate MD', icon: DesignMdIcon },
+  { id: 'generate-md', label: 'Generate Markdown', icon: DesignMdIcon },
   { id: 'export', label: 'Export', icon: ExportNavIcon },
 ]
 

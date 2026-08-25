@@ -210,7 +210,7 @@ function headingFor(view: string): string {
   if (view === 'export') return 'Export'
   if (view === 'content') return 'Content'
   if (view === 'layout') return 'Layout'
-  if (view === 'generate-md') return 'Generate MD'
+  if (view === 'generate-md') return 'Generate Markdown'
   return 'Overview'
 }
 
