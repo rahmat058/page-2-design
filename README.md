@@ -220,3 +220,13 @@ We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUT
 ## 📄 License
 
 Published under the [MIT](./LICENSE) license © 2026 [Kazi Rahamatullah](https://github.com/rahmat058).
+
+---
+
+## 👤 Made by
+
+**[Kazi Rahamatullah](https://www.kazi-rahamatullah.com/)** ([@rahmat058](https://github.com/rahmat058)) — Frontend & JAMstack developer based in Dhaka, Bangladesh.
+
+- [GitHub](https://github.com/rahmat058)
+- [LinkedIn](https://www.linkedin.com/in/rahmat058/)
+- [Website](https://www.kazi-rahamatullah.com/)
