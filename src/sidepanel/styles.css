@@ -14,7 +14,7 @@
   --cool: #edf0f3;
   --bg: var(--cream);
   --surface: var(--white);
-  --text: var(--black);
+  --text: var(--plum);
   --muted: var(--plum);
   --line: var(--cool);
   --accent: var(--pink);
@@ -32,7 +32,10 @@
   --btn-secondary: linear-gradient(135deg, #ffffff, #fcfbfa);
   --btn-shadow: 0 4px 12px rgb(255 147 171 / 0.32);
   --btn-shadow-hover: 0 6px 16px rgb(255 156 127 / 0.4);
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  --font-regular: 'sans-regular', sans-serif;
+  --font-bold: 'sans-bold', sans-serif;
+  font-family: var(--font-regular);
+  color: var(--text);
 }
 
 * {
@@ -46,6 +49,22 @@ body,
   background: var(--bg);
   min-height: 100%;
   color: var(--text);
+  font-family: var(--font-regular);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+b,
+.ui-btn,
+.btn,
+.count-badge,
+.ui-segmented button.on {
+  font-family: var(--font-bold);
 }
 
 button,
@@ -802,6 +821,7 @@ body,
   transition:
     background 0.2s ease,
     box-shadow 0.2s ease,
+    color 0.2s ease,
     transform 0.12s ease;
   border: 0;
   border-radius: var(--btn-radius);
@@ -820,16 +840,19 @@ body,
 
 .menu button:hover:not(:disabled) {
   transform: translateX(2px);
-  box-shadow: 0 2px 8px rgb(165 201 242 / 0.4);
-  background: linear-gradient(135deg, var(--pink), var(--cool));
+  box-shadow: var(--btn-shadow);
+  background: var(--btn-primary);
+  color: #fff;
 }
 
 .menu button:hover:not(:disabled) svg {
-  color: var(--ink);
+  color: #fff;
 }
 
 .menu button:active:not(:disabled) {
   transform: translateX(1px) scale(0.99);
+  box-shadow: var(--btn-shadow-hover);
+  background: var(--btn-primary-hover);
 }
 
 .menu button:disabled {
@@ -873,7 +896,7 @@ body,
   padding: 0 8px;
   min-width: 24px;
   height: 22px;
-  color: var(--plum);
+  color: var(--ink);
   font-weight: 700;
   font-size: 11px;
   letter-spacing: 0.02em;
