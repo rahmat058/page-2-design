@@ -41,6 +41,12 @@ For install, test, and everyday use — see **[README.md](./README.md)**.
 
 ```
 Page2Design/
+├── LICENSE                    # MIT
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+├── README.md
+├── ARCHITECTURE.MD
 ├── public/
 │   ├── manifest.json          # MV3 manifest (copied to dist)
 │   ├── inspect-css.js         # Injected into the tab for CSS Information

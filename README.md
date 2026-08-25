@@ -6,6 +6,8 @@ The package helps Cursor, Claude Code, and similar coding agents recreate the **
 
 **Repo:** [github.com/rahmat058/page-2-design](https://github.com/rahmat058/page-2-design)
 
+Licensed under **[MIT](./LICENSE)**. How to contribute: **[CONTRIBUTING.md](./CONTRIBUTING.md)**. Conduct: **[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)**. Releases: **[CHANGELOG.md](./CHANGELOG.md)**.
+
 For scan pipeline, folders, messages, ZIP layout, and privacy — see **[ARCHITECTURE.MD](./ARCHITECTURE.MD)**.
 
 ---
@@ -23,6 +25,7 @@ For scan pipeline, folders, messages, ZIP layout, and privacy — see **[ARCHITE
 <img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white">
 <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white">
 <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black">
+<img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge">
 </div>
 
 **Key pieces:** `content.js` (DOM scan + overlay) · `background.js` (orchestrator) · `sidepanel.html` (inspector UI) · IndexedDB (local scans) · generators for `AGENTS.md` / `DESIGN.md` / ZIP
@@ -98,6 +101,7 @@ npm run dev
 | `npm run build`     | Typecheck, then production `dist`                |
 | `npm run typecheck` | `tsc --noEmit`                                   |
 | `npm run lint`      | ESLint                                           |
+| `npm run lint:fix`  | ESLint with `--fix`                              |
 | `npm test`          | Vitest unit tests                                |
 | `npm run test:watch`| Vitest watch                                     |
 | `npm run format`    | Prettier                                         |
@@ -227,3 +231,13 @@ Files that were not produced are omitted and listed in `docs/references/limitati
 - Extra viewport capture may resize the browser window briefly, then restore it
 
 Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for setup, PR checks, and the local-only scan rule. Everyone in the project follows the **[Code of Conduct](./CODE_OF_CONDUCT.md)**.
+
+## License
+
+[MIT](./LICENSE) © 2026 [Kazi Rahamatullah](https://github.com/rahmat058).
