@@ -22,6 +22,7 @@ export const ASSET_CHUNK_SIZE = 25
 export const CONTENT_CHUNK_SIZE = 80
 export const TOKEN_CHUNK_SIZE = 100
 export const MAX_STORED_SCANS = 8
+export const MAX_CROSS_ORIGIN_FRAMES = 8
 export const OVERLAY_WIDTH = 336
 export const OVERLAY_WIDE_WIDTH = 560
 export const SENSITIVE_QUERY_KEYS = [

@@ -39,6 +39,7 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
   const interactions: InteractionRecord[] = []
   const assigned = new WeakMap<Element, string>()
   const swiperSeen = new WeakMap<Element, Set<string>>()
+  const classIndexCache = new WeakMap<Element, Map<string, Map<Element, number>>>()
   let visited = 0
   let truncated = false
 
@@ -151,7 +152,7 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
     let index = 0
     for (const child of el.children) {
       if (runtime.cancelled || truncated) return
-      if (shouldSkipChild(el, child, swiperSeen)) continue
+      if (shouldSkipChild(el, child, swiperSeen, classIndexCache)) continue
       await walk(child, id, index)
       index += 1
     }
@@ -172,12 +173,17 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
   return { elements, styleRegistry, assets, content, interactions, idMap: assigned }
 }
 
-function shouldSkipChild(parent: Element, child: Element, swiperSeen: WeakMap<Element, Set<string>>): boolean {
+function shouldSkipChild(
+  parent: Element,
+  child: Element,
+  swiperSeen: WeakMap<Element, Set<string>>,
+  classIndexCache: WeakMap<Element, Map<string, Map<Element, number>>>,
+): boolean {
   const parentClasses = classNamesOf(parent)
   const childClasses = classNamesOf(child)
   const kindIndex = marqueeKindIndex(parentClasses, childClasses, {
-    marquee: indexAmongClass(parent, child, 'rfm-marquee'),
-    child: indexAmongClass(parent, child, 'rfm-child'),
+    marquee: indexAmongClassCached(parent, child, 'rfm-marquee', classIndexCache),
+    child: indexAmongClassCached(parent, child, 'rfm-child', classIndexCache),
   })
   if (isMarqueeClone(parentClasses, childClasses, kindIndex)) return true
 
@@ -192,8 +198,31 @@ function shouldSkipChild(parent: Element, child: Element, swiperSeen: WeakMap<El
   return false
 }
 
-function indexAmongClass(parent: Element, child: Element, token: string): number {
-  return [...parent.children].filter((node) => classNamesOf(node).includes(token)).indexOf(child)
+/** Build class→index maps once per parent instead of O(n) filter per child. */
+function indexAmongClassCached(
+  parent: Element,
+  child: Element,
+  token: string,
+  cache: WeakMap<Element, Map<string, Map<Element, number>>>,
+): number {
+  let byToken = cache.get(parent)
+  if (!byToken) {
+    byToken = new Map()
+    cache.set(parent, byToken)
+  }
+  let indexes = byToken.get(token)
+  if (!indexes) {
+    indexes = new Map()
+    let i = 0
+    for (const node of parent.children) {
+      if (classNamesOf(node).includes(token)) {
+        indexes.set(node, i)
+        i += 1
+      }
+    }
+    byToken.set(token, indexes)
+  }
+  return indexes.get(child) ?? -1
 }
 
 /** Copy the inner calendar iframe URL onto the host so the placeholder can label it. */

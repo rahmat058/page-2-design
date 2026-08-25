@@ -99,6 +99,7 @@ export const useScanStore = create<ScanStore>((set) => ({
     }),
   setReady: (scanId, raw, design) => {
     const assets = mergeAssets(design.assets)
+    const visual = uniqueVisualAssets(assets)
     const next = { ...design, assets }
     set({
       scanId,
@@ -109,11 +110,11 @@ export const useScanStore = create<ScanStore>((set) => ({
       counts: {
         elements: next.coverage.relevantElements,
         textBlocks: next.coverage.visibleTextBlocks,
-        images: uniqueVisualAssets(assets).length,
+        images: visual.length,
         colors: next.tokens.colors.length,
         typography: next.tokens.typography.length,
       },
-      selectedAssetIds: assets.map((asset) => asset.id),
+      selectedAssetIds: visual.map((asset) => asset.id),
       error: null,
     })
   },

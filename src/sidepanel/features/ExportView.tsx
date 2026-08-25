@@ -25,6 +25,7 @@ export function ExportView() {
   if (!design || !raw) return <EmptyState>Export is available after a usable scan.</EmptyState>
 
   const uniqueAssets = uniqueVisualAssets(design.assets)
+  const selectedUniqueCount = uniqueAssets.filter((asset) => selectedAssetIds.includes(asset.id)).length
 
   const exportZip = async () => {
     setPhase('exporting')
@@ -146,7 +147,7 @@ export function ExportView() {
     <section className="card">
       <h2>Export</h2>
       <p>
-        {uniqueAssets.length} unique images ready to export. {selectedAssetIds.length} selected. The ZIP keeps{' '}
+        {uniqueAssets.length} unique images ready to export. {selectedUniqueCount} selected. The ZIP keeps{' '}
         <code>AGENTS.md</code> and <code>assets/</code> at the root; specs go under <code>docs/</code>. Copy{' '}
         <code>assets/</code> into the app <code>public/</code> folder after unzipping.
       </p>

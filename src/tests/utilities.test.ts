@@ -22,6 +22,7 @@ import { parseMessage, isMalformedMessage, createMessage } from '../shared/messa
 import { MESSAGE_SCHEMA_VERSION } from '../shared/constants'
 import { sampleScan } from './fixtures'
 import { assembleScan } from '../shared/assemble-scan'
+import { isAllowedAssetFetchUrl } from '../shared/asset-fetch-policy'
 
 describe('css url extraction', () => {
   it('extracts quoted and unquoted urls', () => {
@@ -326,6 +327,21 @@ describe('css information format', () => {
       cssBytes: 118784,
       loadTimeMs: 1300,
     })
+  })
+})
+
+describe('asset fetch policy', () => {
+  const page = 'https://www.rokomari.com/'
+
+  it('allows same-site CDN hosts and data URLs', () => {
+    expect(isAllowedAssetFetchUrl('https://www.rokomari.com/nstatic/a.png', page)).toBe(true)
+    expect(isAllowedAssetFetchUrl('https://rokbucket.rokomari.io/ProductNew/a.jpg', page)).toBe(true)
+    expect(isAllowedAssetFetchUrl('data:image/png;base64,aaa', page)).toBe(true)
+  })
+
+  it('blocks unrelated third-party hosts', () => {
+    expect(isAllowedAssetFetchUrl('https://evil.example/track.gif', page)).toBe(false)
+    expect(isAllowedAssetFetchUrl('https://www.facebook.com/tr?id=1', page)).toBe(false)
   })
 })
 

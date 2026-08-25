@@ -8,7 +8,8 @@ import {
   stitchCanvasSize,
   VIEWPORT_PRESETS,
 } from '../shared/viewports'
-import { MAX_SCAN_HEIGHT, MAX_SCREENSHOT_TILES } from '../shared/constants'
+import { MAX_SCAN_HEIGHT, MAX_SCREENSHOT_TILES, MAX_CROSS_ORIGIN_FRAMES } from '../shared/constants'
+import { isAllowedAssetFetchUrl } from '../shared/asset-fetch-policy'
 import { normalizeScan } from '../normalize/normalize-scan'
 import { mergeFrameScan } from '../normalize/merge-frames'
 import { calculateCoverage } from '../validation/coverage'
@@ -361,6 +362,10 @@ export async function fetchAssetBytes(
   url: string,
   tabId?: number,
 ): Promise<{ base64: string | null; mimeType: string | null; error: string | null }> {
+  const pageUrl = tabId != null ? await tabUrl(tabId) : null
+  if (pageUrl && !isAllowedAssetFetchUrl(url, pageUrl)) {
+    return { base64: null, mimeType: null, error: 'Asset origin is outside the scanned page site' }
+  }
   try {
     const response = await fetch(url, { credentials: 'include' })
     if (!response.ok) {
@@ -377,6 +382,15 @@ export async function fetchAssetBytes(
     }
   } catch {
     return fallbackContentFetch(url, tabId, 'Host fetch failed')
+  }
+}
+
+async function tabUrl(tabId: number): Promise<string | null> {
+  try {
+    const tab = await chrome.tabs.get(tabId)
+    return tab.url ?? null
+  } catch {
+    return null
   }
 }
 
@@ -415,8 +429,13 @@ async function mergeCrossOriginFrames(tabId: number, raw: ReturnType<typeof asse
   })
   let merged = raw
   let index = 0
+  let skipped = 0
   for (const frame of frames) {
     if (!frame.result || frame.result.isTop) continue
+    if (index >= MAX_CROSS_ORIGIN_FRAMES) {
+      skipped += 1
+      continue
+    }
     try {
       const response = (await chrome.tabs.sendMessage(
         tabId,
@@ -436,6 +455,13 @@ async function mergeCrossOriginFrames(tabId: number, raw: ReturnType<typeof asse
         severity: 'warning',
       })
     }
+  }
+  if (skipped > 0) {
+    merged.limitations.push({
+      code: 'MAX_IFRAMES',
+      message: `Skipped ${skipped} iframe(s) after the ${MAX_CROSS_ORIGIN_FRAMES}-frame merge budget.`,
+      severity: 'info',
+    })
   }
   return merged
 }
