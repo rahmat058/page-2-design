@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { AssetRecord, ContentBlock } from '../../shared/types'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
 import { CountBadge } from '../components/CountBadge'
 import { ScanPrompt } from '../components/CopyButton'
 import { CollectionShell } from '../components/Segmented'
+import { LazyMount, VirtualList } from '../components/VirtualList'
 import {
   AriaBlockIcon,
   ButtonBlockIcon,
@@ -48,11 +49,16 @@ export function ContentView() {
               <h2>{group.name}</h2>
               <CountBadge value={group.blocks.length} />
             </div>
-            <div className="content-list">
-              {group.blocks.map((block) => (
-                <ContentRow key={block.id} block={block} />
-              ))}
-            </div>
+            <VirtualList
+              className="content-list"
+              count={group.blocks.length}
+              itemHeight={64}
+              maxHeight={480}
+              renderItem={(index) => {
+                const block = group.blocks[index]
+                return block ? <ContentRow block={block} /> : null
+              }}
+            />
           </section>
         ))}
       </div>
@@ -118,15 +124,25 @@ export function AssetsView() {
       {mode === 'grid' ? (
         <div className="asset-grid">
           {unique.map((asset, index) => (
-            <AssetTile key={asset.id} asset={asset} index={index} />
+            <LazyMount
+              key={asset.id}
+              className="asset-tile-lazy"
+              placeholder={<div className="asset-tile asset-tile-placeholder" aria-hidden="true" />}>
+              <AssetTile asset={asset} index={index} />
+            </LazyMount>
           ))}
         </div>
       ) : (
-        <div className="asset-list">
-          {unique.map((asset, index) => (
-            <AssetRow key={asset.id} asset={asset} index={index} />
-          ))}
-        </div>
+        <VirtualList
+          className="asset-list"
+          count={unique.length}
+          itemHeight={72}
+          maxHeight={520}
+          renderItem={(index) => {
+            const asset = unique[index]
+            return asset ? <AssetRow asset={asset} index={index} /> : null
+          }}
+        />
       )}
     </CollectionShell>
   )
@@ -177,24 +193,39 @@ function AssetRow({ asset, index }: { asset: AssetRecord; index: number }) {
 function AssetPreview({ asset }: { asset: AssetRecord }) {
   const [src, setSrc] = useState<string | undefined>(() => assetPreviewUrl(asset))
   const [failed, setFailed] = useState(false)
+  const blobUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
-    let revoked: string | null = null
     let cancelled = false
     setFailed(false)
+
+    const clearBlob = () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current)
+        blobUrlRef.current = null
+      }
+    }
+
+    const adopt = (url: string | null | undefined) => {
+      if (cancelled || !url) return
+      clearBlob()
+      if (url.startsWith('blob:')) blobUrlRef.current = url
+      setSrc(url)
+    }
+
     const direct = assetPreviewUrl(asset)
     if (direct && !asset.resolvedUrl.startsWith('blob:')) {
+      clearBlob()
       setSrc(direct)
-      return () => undefined
+      return () => {
+        cancelled = true
+      }
     }
-    void objectUrlForAsset(asset).then((url) => {
-      if (cancelled || !url) return
-      revoked = url.startsWith('blob:') ? url : null
-      setSrc(url)
-    })
+
+    void objectUrlForAsset(asset).then(adopt)
     return () => {
       cancelled = true
-      if (revoked) URL.revokeObjectURL(revoked)
+      clearBlob()
     }
   }, [asset])
 
@@ -210,7 +241,15 @@ function AssetPreview({ asset }: { asset: AssetRecord }) {
         }
         setFailed(true)
         void objectUrlForAsset(asset).then((url) => {
-          if (url) setSrc(url)
+          if (!url) {
+            setSrc(undefined)
+            return
+          }
+          if (blobUrlRef.current && blobUrlRef.current !== url) {
+            URL.revokeObjectURL(blobUrlRef.current)
+          }
+          if (url.startsWith('blob:')) blobUrlRef.current = url
+          setSrc(url)
         })
       }}
     />

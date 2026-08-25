@@ -10,6 +10,7 @@ import { Archive, Ban, ListChecks } from 'lucide-react'
 import { Button } from '../components/Button'
 import { Checkbox } from '../components/Checkbox'
 import { EmptyState } from '../components/CopyButton'
+import { revokeObjectUrlLater } from '../download-asset'
 
 export function ExportView() {
   const design = useScanStore((s) => s.design)
@@ -131,7 +132,7 @@ export function ExportView() {
     })
     const url = URL.createObjectURL(zip.blob)
     await chrome.downloads.download({ url, filename: zip.filename, saveAs: true })
-    URL.revokeObjectURL(url)
+    revokeObjectUrlLater(url)
     setPhase('complete')
     setStatus(`Downloaded ${zip.filename}`)
   }

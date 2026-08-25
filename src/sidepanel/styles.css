@@ -399,9 +399,31 @@ a.ui-btn {
   overflow: auto;
 }
 
+.virtual.content-list,
+.virtual.asset-list {
+  border: none;
+  border-radius: 0;
+  max-height: none;
+}
+
 .virtual-item {
+  box-sizing: border-box;
   border-bottom: 1px solid var(--line);
-  padding: 8px 10px;
+  padding: 0;
+}
+
+.virtual-item > .content-row,
+.virtual-item > .asset-row {
+  height: 100%;
+}
+
+.asset-tile-lazy {
+  min-height: 120px;
+}
+
+.asset-tile-placeholder {
+  opacity: 0.35;
+  min-height: 120px;
 }
 
 label.field {

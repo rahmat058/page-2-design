@@ -17,6 +17,7 @@ import { PKG } from '../../export/package-paths'
 import { Button } from '../components/Button'
 import { ScanPrompt } from '../components/CopyButton'
 import { CollectionShell } from '../components/Segmented'
+import { revokeObjectUrlLater } from '../download-asset'
 import { startScan } from '../scan-flow'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
@@ -268,7 +269,7 @@ async function downloadMarkdown(markdown: string, filename: string): Promise<voi
   const blob = new Blob([markdown], { type })
   const url = URL.createObjectURL(blob)
   await chrome.downloads.download({ url, filename, saveAs: true })
-  URL.revokeObjectURL(url)
+  revokeObjectUrlLater(url)
   useToastStore.getState().showToast(`${filename} downloaded`)
 }
 

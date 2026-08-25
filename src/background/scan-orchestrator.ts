@@ -150,15 +150,44 @@ export async function startScan(scanId: string, options: ScanOptions): Promise<v
   })
 
   await ensureContentScript(tab.tabId)
-  await chrome.tabs.sendMessage(
-    tab.tabId,
-    createMessage({
-      type: 'START_SCAN',
-      requestId: createRequestId(),
-      scanId,
-      payload: options,
-    }),
-  )
+  let response: { ok?: boolean; error?: string } | undefined
+  try {
+    response = (await chrome.tabs.sendMessage(
+      tab.tabId,
+      createMessage({
+        type: 'START_SCAN',
+        requestId: createRequestId(),
+        scanId,
+        payload: options,
+      }),
+    )) as { ok?: boolean; error?: string } | undefined
+  } catch {
+    sessions.delete(scanId)
+    await clearPersistedSession(scanId)
+    await putScan({
+      id: scanId,
+      createdAt: Date.now(),
+      status: 'failed',
+      raw: null,
+      normalized: null,
+    })
+    throw new DomainError('INJECTION_FAILED', 'Could not start scan in this tab.')
+  }
+  if (!response || response.ok === false) {
+    sessions.delete(scanId)
+    await clearPersistedSession(scanId)
+    await putScan({
+      id: scanId,
+      createdAt: Date.now(),
+      status: 'failed',
+      raw: null,
+      normalized: null,
+    })
+    throw new DomainError(
+      'SCAN_FAILED',
+      typeof response?.error === 'string' ? response.error : 'Content script rejected the scan.',
+    )
+  }
 }
 
 export async function cancelScan(scanId: string): Promise<void> {

@@ -29,7 +29,7 @@ export function captureVideoFrameAsset(el: HTMLVideoElement, elementId: string):
     const dataUrl = canvas.toDataURL('image/png')
     if (!dataUrl.startsWith('data:image/png') || dataUrl.length > MAX_FRAME_DATA_CHARS) return null
 
-    const id = `asset_${hashString(dataUrl.slice(0, 240))}`
+    const id = `asset_${hashString(`${elementId}:${canvas.width}x${canvas.height}:${dataUrl.length}:${dataUrl.slice(0, 96)}:${dataUrl.slice(-96)}`)}`
     return {
       id,
       type: 'video-poster',

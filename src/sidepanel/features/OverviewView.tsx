@@ -221,11 +221,22 @@ function OgImage({ src, asset }: { src: string; asset?: AssetRecord }) {
   const [url, setUrl] = useState(src)
   const [hidden, setHidden] = useState(false)
   const triedAsset = useRef(false)
+  const blobUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
     setUrl(src)
     setHidden(false)
     triedAsset.current = false
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current)
+      blobUrlRef.current = null
+    }
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current)
+        blobUrlRef.current = null
+      }
+    }
   }, [src])
 
   if (hidden) return null
@@ -238,8 +249,15 @@ function OgImage({ src, asset }: { src: string; asset?: AssetRecord }) {
         if (!triedAsset.current && asset) {
           triedAsset.current = true
           void objectUrlForAsset(asset).then((next) => {
-            if (next) setUrl(next)
-            else setHidden(true)
+            if (!next) {
+              setHidden(true)
+              return
+            }
+            if (blobUrlRef.current && blobUrlRef.current !== next) {
+              URL.revokeObjectURL(blobUrlRef.current)
+            }
+            if (next.startsWith('blob:')) blobUrlRef.current = next
+            setUrl(next)
           })
           return
         }

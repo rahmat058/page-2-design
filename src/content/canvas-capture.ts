@@ -9,7 +9,7 @@ export function captureCanvasAsset(el: HTMLCanvasElement, elementId: string): As
     if (!dataUrl.startsWith('data:image/png') || dataUrl.length > MAX_CANVAS_DATA_CHARS) {
       return null
     }
-    const id = `asset_${hashString(dataUrl.slice(0, 240))}`
+    const id = `asset_${hashString(`${elementId}:${el.width}x${el.height}:${dataUrl.length}:${dataUrl.slice(0, 96)}:${dataUrl.slice(-96)}`)}`
     return {
       id,
       type: 'image',

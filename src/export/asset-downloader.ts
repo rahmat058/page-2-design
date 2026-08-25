@@ -47,38 +47,43 @@ export async function downloadAssets(
 
   for (let i = 0; i < queue.length; i += ASSET_FETCH_CONCURRENCY) {
     const batch = queue.slice(i, i + ASSET_FETCH_CONCURRENCY)
-    await Promise.all(
+    const fetched = await Promise.all(
       batch.map(async (asset) => {
         const record = byId.get(asset.id)
-        if (!record) return
-        if (record.resolvedUrl.startsWith('inline:')) return
+        if (!record || record.resolvedUrl.startsWith('inline:')) return null
         const result = await fetchAsset(record.resolvedUrl)
-        if (!result.bytes || result.error) {
-          record.downloadStatus = 'failed'
-          record.failureReason = result.error ?? 'Download failed'
-          return
-        }
-        if (result.bytes.byteLength > MAX_ASSET_BYTES) {
-          record.downloadStatus = 'failed'
-          record.failureReason = 'Exceeded per-asset size limit'
-          return
-        }
-        if (totalBytes + result.bytes.byteLength > MAX_TOTAL_ASSET_BYTES) {
-          record.downloadStatus = 'failed'
-          record.failureReason = 'Exceeded total asset budget'
-          return
-        }
-        totalBytes += result.bytes.byteLength
-        record.mimeType = result.mimeType ?? record.mimeType
-        const ext = extensionFromMimeOrUrl(record.mimeType, record.resolvedUrl, 'bin')
-        if (!record.localPath.endsWith(`.${ext}`) && record.type !== 'svg') {
-          record.localPath = record.localPath.replace(/\.[a-z0-9]+$/i, `.${ext}`)
-        }
-        files.set(record.localPath, result.bytes)
-        record.downloadStatus = 'downloaded'
-        record.failureReason = null
+        return { record, result }
       }),
     )
+    // Commit sizes sequentially so concurrent fetches cannot race past MAX_TOTAL_ASSET_BYTES.
+    for (const item of fetched) {
+      if (!item) continue
+      const { record, result } = item
+      if (!result.bytes || result.error) {
+        record.downloadStatus = 'failed'
+        record.failureReason = result.error ?? 'Download failed'
+        continue
+      }
+      if (result.bytes.byteLength > MAX_ASSET_BYTES) {
+        record.downloadStatus = 'failed'
+        record.failureReason = 'Exceeded per-asset size limit'
+        continue
+      }
+      if (totalBytes + result.bytes.byteLength > MAX_TOTAL_ASSET_BYTES) {
+        record.downloadStatus = 'failed'
+        record.failureReason = 'Exceeded total asset budget'
+        continue
+      }
+      totalBytes += result.bytes.byteLength
+      record.mimeType = result.mimeType ?? record.mimeType
+      const ext = extensionFromMimeOrUrl(record.mimeType, record.resolvedUrl, 'bin')
+      if (!record.localPath.endsWith(`.${ext}`) && record.type !== 'svg') {
+        record.localPath = record.localPath.replace(/\.[a-z0-9]+$/i, `.${ext}`)
+      }
+      files.set(record.localPath, result.bytes)
+      record.downloadStatus = 'downloaded'
+      record.failureReason = null
+    }
   }
 
   for (const asset of updated) {

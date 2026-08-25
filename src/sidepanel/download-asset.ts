@@ -99,7 +99,7 @@ export async function downloadSingleAsset(asset: AssetRecord): Promise<void> {
   } catch {
     triggerAnchorDownload(url, filename)
   } finally {
-    if (revoke) setTimeout(() => URL.revokeObjectURL(revoke), 4000)
+    if (revoke) revokeObjectUrlLater(revoke)
   }
 }
 
@@ -123,8 +123,13 @@ export async function downloadAllImagesZip(assets: AssetRecord[], hostname: stri
   } catch {
     triggerAnchorDownload(url, filename)
   } finally {
-    setTimeout(() => URL.revokeObjectURL(url), 4000)
+    revokeObjectUrlLater(url)
   }
+}
+
+/** Chrome downloads may still read the blob URL after `download()` resolves. */
+export function revokeObjectUrlLater(url: string, delayMs = 4000): void {
+  setTimeout(() => URL.revokeObjectURL(url), delayMs)
 }
 
 function chromeDownload(url: string, filename: string): Promise<void> {

@@ -1,5 +1,6 @@
-import { hashString } from '../shared/utils'
+import { ASSET_FETCH_CONCURRENCY, MAX_ASSET_BYTES, MAX_ASSETS, MAX_TOTAL_ASSET_BYTES } from '../shared/constants'
 import type { AssetRecord, AssetType } from '../shared/types'
+import { hashString } from '../shared/utils'
 import { extractCssUrls } from './css-urls'
 import { parseSrcset, pickBestSrcsetUrl } from './srcset'
 import { sanitizeSvg } from './svg-sanitize'
@@ -367,22 +368,38 @@ function serializeSvg(el: Element): string {
 }
 
 export async function materializeBlobAssets(assets: AssetRecord[]): Promise<void> {
-  await Promise.all(
-    assets.map(async (asset) => {
-      if (!asset.resolvedUrl.startsWith('blob:')) return
-      try {
-        const response = await fetch(asset.resolvedUrl)
-        const blob = await response.blob()
-        const dataUrl = await blobToDataUrl(blob)
-        asset.resolvedUrl = dataUrl
-        asset.sourceUrl = dataUrl
-        asset.mimeType = blob.type || asset.mimeType
-        asset.downloadStatus = 'downloaded'
-      } catch {
-        /* leave the original blob URL */
-      }
-    }),
-  )
+  const queue = assets.filter((asset) => asset.resolvedUrl.startsWith('blob:'))
+  let totalBytes = 0
+  let materialized = 0
+
+  for (let i = 0; i < queue.length; i += ASSET_FETCH_CONCURRENCY) {
+    if (materialized >= MAX_ASSETS || totalBytes >= MAX_TOTAL_ASSET_BYTES) break
+    const batch = queue.slice(i, i + ASSET_FETCH_CONCURRENCY)
+    const results = await Promise.all(
+      batch.map(async (asset) => {
+        try {
+          const response = await fetch(asset.resolvedUrl)
+          const blob = await response.blob()
+          if (blob.size > MAX_ASSET_BYTES) return null
+          const dataUrl = await blobToDataUrl(blob)
+          return { asset, blob, dataUrl }
+        } catch {
+          return null
+        }
+      }),
+    )
+    for (const result of results) {
+      if (!result) continue
+      if (materialized >= MAX_ASSETS) break
+      if (totalBytes + result.blob.size > MAX_TOTAL_ASSET_BYTES) break
+      totalBytes += result.blob.size
+      materialized += 1
+      result.asset.resolvedUrl = result.dataUrl
+      result.asset.sourceUrl = result.dataUrl
+      result.asset.mimeType = result.blob.type || result.asset.mimeType
+      result.asset.downloadStatus = 'downloaded'
+    }
+  }
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
