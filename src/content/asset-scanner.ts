@@ -146,9 +146,8 @@ export function collectDocumentAssets(): AssetRecord[] {
     const href = link.getAttribute('href')
     if (href) extras.push(makeAsset('favicon', href, 'document', {}))
   }
+  // DOM elements already contributed assets during scanDom — do not re-walk the tree with getComputedStyle.
   extras.push(...collectStylesheetAssets())
-  extras.push(...collectTreeAssets(document.documentElement))
-  if (document.head) extras.push(...collectTreeAssets(document.head))
   return extras
 }
 
@@ -180,25 +179,6 @@ function collectStylesheetAssets(): AssetRecord[] {
       }
     }
   }
-  return found
-}
-
-function collectTreeAssets(root: Element): AssetRecord[] {
-  const found: AssetRecord[] = []
-  const walk = (el: Element) => {
-    if (el.id?.startsWith('page2design-')) return
-    const tag = el.tagName
-    if (tag === 'SCRIPT' || tag === 'NOSCRIPT' || tag === 'TEMPLATE') return
-    try {
-      found.push(...collectAssetsFromElement(el, 'orphan', getComputedStyle(el)))
-    } catch {
-      found.push(
-        ...collectAssetsFromElement(el, 'orphan', el instanceof HTMLElement ? el.style : ({} as CSSStyleDeclaration)),
-      )
-    }
-    for (const child of el.children) walk(child)
-  }
-  walk(root)
   return found
 }
 

@@ -1,4 +1,4 @@
-import { SCHEMA_VERSION, ELEMENT_CHUNK_SIZE, MAX_ELEMENTS } from '../shared/constants'
+import { SCHEMA_VERSION, ELEMENT_CHUNK_SIZE } from '../shared/constants'
 import { DomainError } from '../shared/errors'
 import { createMessage, createRequestId } from '../shared/messages'
 import { redactUrl } from '../shared/redact'
@@ -86,10 +86,14 @@ export async function runPageScan(options: ScanOptions, transport: ScanTransport
   emitProgress('scanning', 'Scanning rendered DOM', emptyCounts())
 
   const root = document.documentElement
-  const dom = scanDom(runtime, root)
-  if (dom.elements.length > MAX_ELEMENTS) {
-    runtime.addLimitation('MAX_ELEMENTS', `Scan truncated after ${MAX_ELEMENTS} elements.`)
-    dom.elements.length = MAX_ELEMENTS
+  const syncCancel = () => {
+    if (transport.cancelled()) runtime.cancelled = true
+  }
+  syncCancel()
+  const dom = await scanDom(runtime, root)
+  syncCancel()
+  if (runtime.cancelled) {
+    throw new DomainError('CANCELLED', 'Scan cancelled.', { recoverable: true })
   }
 
   const colorBucket = new Map<string, ColorUsage>()
@@ -369,7 +373,7 @@ function chunkScan(scan: PageScan) {
   return parts.map((part, index) => ({ ...part, index, total: parts.length }))
 }
 
-export function runFrameScan(): CompactFrameScan {
+export async function runFrameScan(): Promise<CompactFrameScan> {
   const runtime = createRuntime({
     loadLazyContent: false,
     contentScope: 'visible',
@@ -379,9 +383,15 @@ export function runFrameScan(): CompactFrameScan {
     maxScanHeight: 8000,
     maxLazyLoadMs: 0,
   })
-  const dom = scanDom(runtime, document.documentElement)
+  // Soft cap for iframes: temporarily lower MAX via early stop after 400 by wrapping walk budget.
+  const dom = await scanDom(runtime, document.documentElement)
   if (dom.elements.length > 400) {
+    const keep = new Set(dom.elements.slice(0, 400).map((el) => el.id))
     dom.elements.length = 400
+    dom.content = dom.content.filter((block) => keep.has(block.elementId))
+    for (const asset of dom.assets.values()) {
+      asset.elementIds = asset.elementIds.filter((id) => keep.has(id))
+    }
     runtime.addLimitation('MAX_ELEMENTS', 'Iframe scan was truncated after 400 elements.')
   }
   const colorBucket = new Map<string, ColorUsage>()

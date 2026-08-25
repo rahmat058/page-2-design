@@ -21,11 +21,13 @@ export async function loadLazyContent(
   let truncated = false
   let reason: string | null = null
 
-  const maxY = Math.min(document.documentElement.scrollHeight, maxScanHeight)
   let y = 0
   const step = Math.max(window.innerHeight * 0.8, 400)
 
-  while (y < maxY) {
+  while (true) {
+    const maxY = Math.min(document.documentElement.scrollHeight, maxScanHeight)
+    if (y >= maxY) break
+
     if (runtime.cancelled) {
       window.scrollTo(startX, startY)
       return {

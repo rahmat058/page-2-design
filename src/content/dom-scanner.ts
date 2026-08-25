@@ -1,11 +1,11 @@
-import { SAFE_ATTRIBUTES, SKIP_TAGS } from '../shared/constants'
+import { SAFE_ATTRIBUTES, SKIP_TAGS, MAX_ELEMENTS, DOM_SCAN_YIELD_EVERY } from '../shared/constants'
 import { isSensitiveInput } from '../shared/redact'
 import type { AssetRecord, ContentBlock, InteractionRecord, ScannedElement } from '../shared/types'
 import { collectAssetsFromElement } from './asset-scanner'
 import { captureCanvasAsset } from './canvas-capture'
 import { collectContentFromElement } from './content-scanner'
 import { collectInteractions } from './layout-scanner'
-import { idFor, type ScanRuntime } from './scan-context'
+import { idFor, yieldToMain, type ScanRuntime } from './scan-context'
 import {
   classNamesOf,
   isDecorativeSvg,
@@ -31,7 +31,7 @@ export interface DomScanResult {
   idMap: WeakMap<Element, string>
 }
 
-export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
+export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomScanResult> {
   const elements: ScannedElement[] = []
   const styleRegistry: Record<string, Record<string, string>> = {}
   const assets = new Map<string, AssetRecord>()
@@ -39,9 +39,16 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
   const interactions: InteractionRecord[] = []
   const assigned = new WeakMap<Element, string>()
   const swiperSeen = new WeakMap<Element, Set<string>>()
+  let visited = 0
+  let truncated = false
 
-  const walk = (el: Element, parentId: string | null, childIndex: number) => {
-    if (runtime.cancelled) return
+  const walk = async (el: Element, parentId: string | null, childIndex: number) => {
+    if (runtime.cancelled || truncated) return
+    if (elements.length >= MAX_ELEMENTS) {
+      truncated = true
+      runtime.addLimitation('MAX_ELEMENTS', `Scan truncated after ${MAX_ELEMENTS} elements.`)
+      return
+    }
     if (SKIP_TAGS.has(el.tagName)) return
     if (
       isIgnoredHost({
@@ -51,6 +58,12 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
       })
     ) {
       return
+    }
+
+    visited += 1
+    if (visited % DOM_SCAN_YIELD_EVERY === 0) {
+      await yieldToMain()
+      if (runtime.cancelled) return
     }
 
     const computed = getComputedStyle(el)
@@ -137,8 +150,9 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
 
     let index = 0
     for (const child of el.children) {
+      if (runtime.cancelled || truncated) return
       if (shouldSkipChild(el, child, swiperSeen)) continue
-      walk(child, id, index)
+      await walk(child, id, index)
       index += 1
     }
 
@@ -146,14 +160,15 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
       const shadowRoot = openShadowRoot(el)
       if (shadowRoot) {
         for (const child of shadowRoot.children) {
-          walk(child, id, index)
+          if (runtime.cancelled || truncated) return
+          await walk(child, id, index)
           index += 1
         }
       }
     }
   }
 
-  walk(root, null, 0)
+  await walk(root, null, 0)
   return { elements, styleRegistry, assets, content, interactions, idMap: assigned }
 }
 

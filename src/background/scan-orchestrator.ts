@@ -8,17 +8,18 @@ import {
   stitchCanvasSize,
   VIEWPORT_PRESETS,
 } from '../shared/viewports'
-import { MAX_SCAN_HEIGHT } from '../shared/constants'
+import { MAX_SCAN_HEIGHT, MAX_SCREENSHOT_TILES } from '../shared/constants'
 import { normalizeScan } from '../normalize/normalize-scan'
 import { mergeFrameScan } from '../normalize/merge-frames'
 import { calculateCoverage } from '../validation/coverage'
 import { putScan, purgeStaleScans } from '../storage/indexed-db'
 import { readTabCssInformation } from './read-tab-css'
 import type { ExtensionMessage, ScanChunkMessage } from '../shared/messages'
-import type { CompactFrameScan, LayoutSnapshot, ScanOptions } from '../shared/types'
+import type { CompactFrameScan, LayoutSnapshot, PageScan, ScanOptions } from '../shared/types'
 import { DEFAULT_SCAN_OPTIONS } from '../shared/types'
 
 const RESTRICTED = /^(chrome|chrome-extension|edge|about|devtools|https:\/\/chrome\.google\.com\/webstore)/i
+const SESSION_KEY = (scanId: string) => `scanSession:${scanId}`
 
 interface Session {
   scanId: string
@@ -29,9 +30,14 @@ interface Session {
 }
 
 const sessions = new Map<string, Session>()
+let lastScanTabId: number | null = null
 
 export function getSession(scanId: string): Session | undefined {
   return sessions.get(scanId)
+}
+
+export function getLastScanTabId(): number | null {
+  return lastScanTabId
 }
 
 export function isRestrictedUrl(url: string | undefined): boolean {
@@ -60,6 +66,62 @@ export async function identifyActiveTab() {
   }
 }
 
+/** Prefer the scan session tab, then last scan tab, then the focused tab. */
+export async function resolveScanTabId(scanId?: string | null): Promise<number | null> {
+  if (scanId) {
+    const session = sessions.get(scanId) ?? (await restoreSession(scanId))
+    if (session?.tabId) return session.tabId
+  }
+  if (lastScanTabId != null) {
+    try {
+      await chrome.tabs.get(lastScanTabId)
+      return lastScanTabId
+    } catch {
+      lastScanTabId = null
+    }
+  }
+  const active = await identifyActiveTab()
+  return active.tabId
+}
+
+async function persistSession(session: Session): Promise<void> {
+  try {
+    await chrome.storage.session.set({
+      [SESSION_KEY(session.scanId)]: {
+        scanId: session.scanId,
+        tabId: session.tabId,
+        cancelled: session.cancelled,
+        chunks: session.chunks,
+        options: session.options,
+      },
+    })
+  } catch {
+    /* session storage quota — in-memory session still used while SW is alive */
+  }
+}
+
+async function restoreSession(scanId: string): Promise<Session | undefined> {
+  try {
+    const key = SESSION_KEY(scanId)
+    const stored = await chrome.storage.session.get(key)
+    const value = stored[key] as Session | undefined
+    if (!value?.scanId || !value.tabId) return undefined
+    sessions.set(scanId, value)
+    lastScanTabId = value.tabId
+    return value
+  } catch {
+    return undefined
+  }
+}
+
+async function clearPersistedSession(scanId: string): Promise<void> {
+  try {
+    await chrome.storage.session.remove(SESSION_KEY(scanId))
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function startScan(scanId: string, options: ScanOptions): Promise<void> {
   const tab = await identifyActiveTab()
   if (!tab.tabId) {
@@ -69,13 +131,16 @@ export async function startScan(scanId: string, options: ScanOptions): Promise<v
     throw new DomainError('RESTRICTED_URL', 'This page cannot be scanned.')
   }
 
-  sessions.set(scanId, {
+  const session: Session = {
     scanId,
     tabId: tab.tabId,
     cancelled: false,
     chunks: [],
     options: { ...DEFAULT_SCAN_OPTIONS, ...options },
-  })
+  }
+  sessions.set(scanId, session)
+  lastScanTabId = tab.tabId
+  await persistSession(session)
   await putScan({
     id: scanId,
     createdAt: Date.now(),
@@ -97,9 +162,11 @@ export async function startScan(scanId: string, options: ScanOptions): Promise<v
 }
 
 export async function cancelScan(scanId: string): Promise<void> {
-  const session = sessions.get(scanId)
+  const session = sessions.get(scanId) ?? (await restoreSession(scanId))
   if (session) {
     session.cancelled = true
+    sessions.set(scanId, session)
+    await persistSession(session)
     try {
       await chrome.tabs.sendMessage(
         session.tabId,
@@ -116,21 +183,34 @@ export async function cancelScan(scanId: string): Promise<void> {
     raw: null,
     normalized: null,
   })
+  sessions.delete(scanId)
+  await clearPersistedSession(scanId)
 }
 
 export function acceptChunk(message: ScanChunkMessage): void {
   const session = sessions.get(message.scanId)
   if (!session || session.cancelled) return
   session.chunks.push(message.payload)
+  void persistSession(session)
 }
 
 export async function completeScan(scanId: string): Promise<void> {
-  const session = sessions.get(scanId)
+  const session = sessions.get(scanId) ?? (await restoreSession(scanId))
   if (!session) {
     throw new DomainError('SCAN_FAILED', 'Scan session was lost.')
   }
+  if (session.cancelled) {
+    sessions.delete(scanId)
+    await clearPersistedSession(scanId)
+    throw new DomainError('CANCELLED', 'Scan cancelled.', { recoverable: true })
+  }
   let raw = assembleScan(session.chunks)
   raw = await mergeCrossOriginFrames(session.tabId, raw)
+  if (session.cancelled) {
+    sessions.delete(scanId)
+    await clearPersistedSession(scanId)
+    throw new DomainError('CANCELLED', 'Scan cancelled.', { recoverable: true })
+  }
   if (session.options.captureExtraViewports) {
     raw.viewportSnapshots = await captureExtraViewports(
       session.tabId,
@@ -159,6 +239,11 @@ export async function completeScan(scanId: string): Promise<void> {
   } catch {
     /* Keep whatever the content script captured. */
   }
+  if (session.cancelled) {
+    sessions.delete(scanId)
+    await clearPersistedSession(scanId)
+    throw new DomainError('CANCELLED', 'Scan cancelled.', { recoverable: true })
+  }
   const normalized = normalizeScan(raw)
   normalized.coverage = calculateCoverage(raw)
   await putScan({
@@ -169,32 +254,53 @@ export async function completeScan(scanId: string): Promise<void> {
     normalized,
   })
   sessions.delete(scanId)
+  await clearPersistedSession(scanId)
 }
 
-export async function captureScreenshots(_scanId: string): Promise<{
+/** Drop heavy fields from the UI message while keeping export/coverage usable. */
+export function slimScanForMessaging(raw: PageScan): PageScan {
+  return {
+    ...raw,
+    // Style signatures remain on elements; the full registry is the largest duplicate payload.
+    styleRegistry: {},
+  }
+}
+
+export async function captureScreenshots(scanId: string): Promise<{
   viewport: string | null
   fullPage: string | null
   truncated: boolean
   error: string | null
 }> {
-  const tab = await identifyActiveTab()
-  if (!tab.tabId || tab.restricted) {
+  const tabId = await resolveScanTabId(scanId)
+  if (!tabId) {
     return { viewport: null, fullPage: null, truncated: false, error: 'No capturable tab.' }
   }
-  const tabId = tab.tabId
   try {
+    const tab = await chrome.tabs.get(tabId)
+    if (isRestrictedUrl(tab.url)) {
+      return { viewport: null, fullPage: null, truncated: false, error: 'No capturable tab.' }
+    }
     await setMotionPaused(tabId, true)
     const metrics = await readScrollMetrics(tabId)
-    const windowId = (await chrome.tabs.get(tabId)).windowId
+    const windowId = tab.windowId
     await scrollTab(tabId, metrics.scrollX, 0)
     await delay(80)
-    const viewport = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' })
-    const positions = scrollPositions(metrics.scrollHeight, metrics.innerHeight, MAX_SCAN_HEIGHT)
+    const viewport = await chrome.tabs.captureVisibleTab(windowId, { format: 'jpeg', quality: 72 })
+    let positions = scrollPositions(metrics.scrollHeight, metrics.innerHeight, MAX_SCAN_HEIGHT)
+    let truncatedByTiles = false
+    if (positions.length > MAX_SCREENSHOT_TILES) {
+      truncatedByTiles = true
+      positions = positions.slice(0, MAX_SCREENSHOT_TILES)
+    }
     const tiles: { y: number; dataUrl: string }[] = []
     for (const y of positions) {
       await scrollTab(tabId, metrics.scrollX, y)
       await delay(90)
-      tiles.push({ y, dataUrl: await chrome.tabs.captureVisibleTab(windowId, { format: 'png' }) })
+      tiles.push({
+        y,
+        dataUrl: await chrome.tabs.captureVisibleTab(windowId, { format: 'jpeg', quality: 70 }),
+      })
     }
     await scrollTab(tabId, metrics.scrollX, metrics.scrollY)
     await setMotionPaused(tabId, false)
@@ -202,7 +308,7 @@ export async function captureScreenshots(_scanId: string): Promise<{
     return {
       viewport,
       fullPage: fullPage.dataUrl,
-      truncated: fullPage.truncated,
+      truncated: fullPage.truncated || truncatedByTiles,
       error: null,
     }
   } catch (error) {
@@ -413,7 +519,7 @@ async function stitchTiles(
     ctx.drawImage(bitmap, 0, Math.round(tile.y * dpr))
     bitmap.close()
   }
-  const out = await canvas.convertToBlob({ type: 'image/png' })
+  const out = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.72 })
   return { dataUrl: await blobToDataUrl(out), truncated: size.truncated }
 }
 
@@ -440,7 +546,6 @@ export async function ensureContentScript(tabId: number): Promise<void> {
   try {
     const pong = await chrome.tabs.sendMessage(tabId, createMessage({ type: 'PING', requestId: createRequestId() }))
     if (parseMessage(pong)) {
-      await injectAllFrames(tabId)
       return
     }
   } catch {

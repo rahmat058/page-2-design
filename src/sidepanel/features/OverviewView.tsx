@@ -18,6 +18,7 @@ import { createRequestId } from '../../shared/messages'
 
 export function OverviewView() {
   const design = useScanStore((s) => s.design)
+  const scanId = useScanStore((s) => s.scanId)
   const phase = useScanStore((s) => s.phase)
   const progressMessage = useScanStore((s) => s.progressMessage)
   const completedChunks = useScanStore((s) => s.completedChunks)
@@ -28,6 +29,7 @@ export function OverviewView() {
   const [liveCss, setLiveCss] = useState<CssInformation | null>(null)
 
   useEffect(() => {
+    if (phase !== 'ready' && phase !== 'complete') return
     let cancelled = false
     void (async () => {
       const response = await sendRuntime({ type: 'GET_CSS_INFO', requestId: createRequestId() })
@@ -36,7 +38,7 @@ export function OverviewView() {
     return () => {
       cancelled = true
     }
-  }, [phase, design])
+  }, [phase, scanId])
 
   const width =
     totalChunks && totalChunks > 0 ? Math.round((completedChunks / totalChunks) * 100) : phase === 'ready' ? 100 : 0

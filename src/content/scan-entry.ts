@@ -103,14 +103,21 @@ function init(): void {
         sendResponse({ ok: false })
         return false
       }
-      sendResponse(
-        createMessage({
-          type: 'SCAN_FRAME',
-          requestId: message.requestId,
-          payload: { frame: runFrameScan() },
-        }),
-      )
-      return false
+      void (async () => {
+        try {
+          const frame = await runFrameScan()
+          sendResponse(
+            createMessage({
+              type: 'SCAN_FRAME',
+              requestId: message.requestId,
+              payload: { frame },
+            }),
+          )
+        } catch {
+          sendResponse({ ok: false })
+        }
+      })()
+      return true
     }
 
     if (message.type === 'START_SCAN') {
