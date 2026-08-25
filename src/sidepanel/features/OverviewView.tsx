@@ -9,7 +9,7 @@ import { CountBadge } from '../components/CountBadge'
 import { coverageSummary } from '../../validation/coverage'
 import { EmptyState } from '../components/CopyButton'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
-import { emptyCssInformation } from '../../shared/types'
+import { emptyCssInformation, hasCssData } from '../../shared/types'
 import type { CssInformation } from '../../shared/types'
 import { formatCssBytes, formatCssLoadTime } from '../../shared/css-format'
 import { objectUrlForAsset } from '../download-asset'
@@ -292,8 +292,4 @@ function isLightHex(hex: string): boolean {
   const parsed = parseColor(hex)
   if (!parsed) return false
   return (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255 > 0.9
-}
-
-function hasCssData(css: CssInformation): boolean {
-  return css.styleRules > 0 || css.stylesheetCount > 0 || css.cssBytes > 0 || css.loadTimeMs != null
 }

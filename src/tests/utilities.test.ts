@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { extractCssUrls } from '../content/css-urls'
 import { parseSrcset, pickBestSrcsetUrl } from '../content/srcset'
-import { mergeAssets } from '../content/asset-scanner'
+import { isPlaceholderAssetUrl, mergeAssets } from '../content/asset-scanner'
 import { orderContent } from '../content/content-scanner'
 import {
   contentKindLabel,
@@ -67,6 +67,13 @@ describe('public asset URLs', () => {
 })
 
 describe('asset deduplication', () => {
+  it('treats lazy GIF shells and trackers as placeholders', () => {
+    expect(isPlaceholderAssetUrl('/nstatic/images/placeholder-image.gif')).toBe(true)
+    expect(isPlaceholderAssetUrl('https://cdn.example/loading.gif')).toBe(true)
+    expect(isPlaceholderAssetUrl('https://www.facebook.com/tr?id=1&ev=PageView')).toBe(true)
+    expect(isPlaceholderAssetUrl('https://rokbucket.rokomari.io/ProductNew20190903/130X186/ring-light.jpg')).toBe(false)
+  })
+
   it('merges the same resolved identity', () => {
     const merged = mergeAssets([
       {

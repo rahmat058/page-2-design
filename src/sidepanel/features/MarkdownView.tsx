@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useRef, useState, startTransition } from 'react'
 import { CircleHelp, Copy, Download, RefreshCw } from 'lucide-react'
 import { generateAgentsMarkdown, generateClaudeMarkdown, generateCursorRule } from '../../generators/agents-md'
 import { generateContentMarkdown } from '../../generators/content-md'
@@ -152,17 +152,54 @@ export function MarkdownView() {
   const design = useScanStore((s) => s.design)
   const raw = useScanStore((s) => s.raw)
   const phase = useScanStore((s) => s.phase)
+  const scanId = useScanStore((s) => s.scanId)
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const [group, setGroup] = useState<GroupId>('guide')
   const [fileId, setFileId] = useState<FileId>('agents')
   const [infoOpen, setInfoOpen] = useState(false)
+  const [markdown, setMarkdown] = useState('Refreshing from the page…')
+  const [generating, setGenerating] = useState(false)
+  const cacheRef = useRef<Map<string, string>>(new Map())
   const busy = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating'].includes(phase)
   const files = FILES.filter((file) => file.group === group)
   const selected = files.find((file) => file.id === fileId) ?? files[0] ?? FILES[0]
-  const markdown = useMemo(() => {
-    if (!design) return 'Refreshing from the page…'
-    return buildFile(selected, { design, raw })
-  }, [design, raw, selected])
+
+  useEffect(() => {
+    cacheRef.current.clear()
+  }, [scanId, design?.metadata.scannedAt])
+
+  useEffect(() => {
+    if (!design) {
+      setMarkdown('Refreshing from the page…')
+      setGenerating(false)
+      return
+    }
+    const key = `${scanId ?? design.metadata.scannedAt}:${selected.id}`
+    const cached = cacheRef.current.get(key)
+    if (cached) {
+      setMarkdown(cached)
+      setGenerating(false)
+      return
+    }
+    setGenerating(true)
+    setMarkdown('Generating preview…')
+    const pack: Pack = { design, raw }
+    const file = selected
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      startTransition(() => {
+        if (cancelled) return
+        const text = buildFile(file, pack)
+        cacheRef.current.set(key, text)
+        setMarkdown(text)
+        setGenerating(false)
+      })
+    }, 0)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [design, raw, selected, scanId])
 
   if (!design && !busy) return <ScanPrompt afterScan="Scan this page to generate the export markdown files." />
 
@@ -202,7 +239,7 @@ export function MarkdownView() {
               type="button"
               className="icon-btn md-tool"
               aria-label="Copy to clipboard"
-              disabled={!design}
+              disabled={!design || generating}
               onClick={() => void copyMarkdown(markdown, selected.path)}>
               <Copy {...STROKE} aria-hidden="true" />
               <span className="tip tip-below tip-end">Copy</span>
@@ -211,7 +248,7 @@ export function MarkdownView() {
               type="button"
               className="icon-btn md-tool"
               aria-label="Download file"
-              disabled={!design}
+              disabled={!design || generating}
               onClick={() => void downloadMarkdown(markdown, selected.name)}>
               <Download {...STROKE} aria-hidden="true" />
               <span className="tip tip-below tip-end">Download</span>

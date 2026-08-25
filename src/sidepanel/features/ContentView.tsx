@@ -22,6 +22,7 @@ import {
   TableBlockIcon,
 } from '../components/LucideIcons'
 import { contentKindLabel, groupContentBySection, panelContentBlocks } from '../content-groups'
+import { EMPTY_ASSETS, EMPTY_CONTENT, EMPTY_SECTIONS } from '../empty'
 import {
   assetDownloadName,
   assetPreviewUrl,
@@ -33,8 +34,8 @@ import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
 
 export function ContentView() {
-  const blocks = useScanStore((s) => s.design?.content ?? [])
-  const sections = useScanStore((s) => s.design?.sections ?? [])
+  const blocks = useScanStore((s) => s.design?.content ?? EMPTY_CONTENT)
+  const sections = useScanStore((s) => s.design?.sections ?? EMPTY_SECTIONS)
   const visible = useMemo(() => panelContentBlocks(blocks), [blocks])
   const groups = useMemo(() => groupContentBySection(visible, sections), [visible, sections])
   if (visible.length === 0) {
@@ -115,7 +116,7 @@ const ASSET_TABS = [
 ] as const
 
 export function AssetsView() {
-  const assets = useScanStore((s) => s.design?.assets ?? [])
+  const assets = useScanStore((s) => s.design?.assets ?? EMPTY_ASSETS)
   const unique = useMemo(() => uniqueVisualAssets(assets), [assets])
   const [mode, setMode] = useState<'grid' | 'list'>('grid')
   if (unique.length === 0) return <ScanPrompt afterScan="No assets were captured." />

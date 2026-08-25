@@ -574,3 +574,7 @@ export function emptyCounts(): ScanCounts {
 export function emptyCssInformation(): CssInformation {
   return { styleRules: 0, stylesheetCount: 0, cssBytes: 0, loadTimeMs: null }
 }
+
+export function hasCssData(css: CssInformation): boolean {
+  return css.styleRules > 0 || css.stylesheetCount > 0 || css.cssBytes > 0 || css.loadTimeMs != null
+}

@@ -1,5 +1,5 @@
-import { DB_NAME, DB_VERSION, INCOMPLETE_SCAN_MS, STALE_SCAN_MS } from '../shared/constants'
-import type { NormalizedDesign, PageScan, ScanPhase } from '../shared/types'
+import { DB_NAME, DB_VERSION, INCOMPLETE_SCAN_MS, MAX_STORED_SCANS, STALE_SCAN_MS } from '../shared/constants'
+import type { AssetRecord, NormalizedDesign, PageScan, ScanPhase } from '../shared/types'
 
 export interface ScanRecord {
   id: string
@@ -50,69 +50,138 @@ export async function openDb(): Promise<IDBDatabase> {
   })
 }
 
-export async function putScan(record: ScanRecord): Promise<void> {
+async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
   const db = await openDb()
-  const tx = db.transaction('scans', 'readwrite')
-  tx.objectStore('scans').put(record)
-  await txDone(tx)
+  try {
+    return await fn(db)
+  } finally {
+    db.close()
+  }
+}
+
+/** Drop heavy duplicates from durable storage; UI keeps in-memory full scan for export. */
+export function slimScanForStorage(raw: PageScan): PageScan {
+  return {
+    ...raw,
+    styleRegistry: {},
+    assets: raw.assets.map(slimAssetForStorage),
+  }
+}
+
+function slimAssetForStorage(asset: AssetRecord): AssetRecord {
+  let resolvedUrl = asset.resolvedUrl
+  let sourceUrl = asset.sourceUrl
+  let inlineSvg = asset.inlineSvg
+  if (resolvedUrl.startsWith('data:') && resolvedUrl.length > 2048) {
+    resolvedUrl = `${resolvedUrl.slice(0, 96)}…`
+  }
+  if (sourceUrl.startsWith('data:') && sourceUrl.length > 2048) {
+    sourceUrl = `${sourceUrl.slice(0, 96)}…`
+  }
+  if (inlineSvg && inlineSvg.length > 32_000) {
+    inlineSvg = `${inlineSvg.slice(0, 512)}…`
+  }
+  return { ...asset, resolvedUrl, sourceUrl, inlineSvg }
+}
+
+export async function putScan(record: ScanRecord): Promise<void> {
+  await withDb(async (db) => {
+    const stored: ScanRecord = {
+      ...record,
+      raw: record.raw ? slimScanForStorage(record.raw) : null,
+    }
+    const tx = db.transaction('scans', 'readwrite')
+    tx.objectStore('scans').put(stored)
+    await txDone(tx)
+  })
+  await enforceScanQuota()
 }
 
 export async function getScan(id: string): Promise<ScanRecord | null> {
-  const db = await openDb()
-  const tx = db.transaction('scans', 'readonly')
-  const record = await requestToPromise(tx.objectStore('scans').get(id))
-  return (record as ScanRecord | undefined) ?? null
+  return withDb(async (db) => {
+    const tx = db.transaction('scans', 'readonly')
+    const record = await requestToPromise(tx.objectStore('scans').get(id))
+    return (record as ScanRecord | undefined) ?? null
+  })
 }
 
 export async function putBlob(record: BlobRecord): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction('blobs', 'readwrite')
-  tx.objectStore('blobs').put(record)
-  await txDone(tx)
+  await withDb(async (db) => {
+    const tx = db.transaction('blobs', 'readwrite')
+    tx.objectStore('blobs').put(record)
+    await txDone(tx)
+  })
 }
 
 export async function getBlobsForScan(scanId: string): Promise<BlobRecord[]> {
-  const db = await openDb()
-  const tx = db.transaction('blobs', 'readonly')
-  const index = tx.objectStore('blobs').index('byScan')
-  const values = await requestToPromise(index.getAll(scanId))
-  return (values as BlobRecord[]) ?? []
+  return withDb(async (db) => {
+    const tx = db.transaction('blobs', 'readonly')
+    const index = tx.objectStore('blobs').index('byScan')
+    const values = await requestToPromise(index.getAll(scanId))
+    return (values as BlobRecord[]) ?? []
+  })
 }
 
 export async function deleteScanData(scanId: string): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(['scans', 'blobs'], 'readwrite')
-  tx.objectStore('scans').delete(scanId)
-  const index = tx.objectStore('blobs').index('byScan')
-  const blobs = (await requestToPromise(index.getAll(scanId))) as BlobRecord[]
-  for (const blob of blobs) {
-    tx.objectStore('blobs').delete(blob.id)
-  }
-  await txDone(tx)
+  await withDb(async (db) => {
+    const tx = db.transaction(['scans', 'blobs'], 'readwrite')
+    tx.objectStore('scans').delete(scanId)
+    const index = tx.objectStore('blobs').index('byScan')
+    const blobs = (await requestToPromise(index.getAll(scanId))) as BlobRecord[]
+    for (const blob of blobs) {
+      tx.objectStore('blobs').delete(blob.id)
+    }
+    await txDone(tx)
+  })
 }
 
 export async function clearAllScans(): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(['scans', 'blobs'], 'readwrite')
-  tx.objectStore('scans').clear()
-  tx.objectStore('blobs').clear()
-  await txDone(tx)
+  await withDb(async (db) => {
+    const tx = db.transaction(['scans', 'blobs'], 'readwrite')
+    tx.objectStore('scans').clear()
+    tx.objectStore('blobs').clear()
+    await txDone(tx)
+  })
 }
 
 export async function purgeStaleScans(now = Date.now()): Promise<void> {
-  const db = await openDb()
-  const tx = db.transaction(['scans', 'blobs'], 'readwrite')
-  const scans = (await requestToPromise(tx.objectStore('scans').getAll())) as ScanRecord[]
-  for (const scan of scans) {
-    const age = now - scan.createdAt
-    const incomplete = scan.status !== 'ready' && scan.status !== 'complete'
-    if (age > STALE_SCAN_MS || (incomplete && age > INCOMPLETE_SCAN_MS)) {
+  await withDb(async (db) => {
+    const tx = db.transaction(['scans', 'blobs'], 'readwrite')
+    const scans = (await requestToPromise(tx.objectStore('scans').getAll())) as ScanRecord[]
+    for (const scan of scans) {
+      const age = now - scan.createdAt
+      const incomplete = scan.status !== 'ready' && scan.status !== 'complete'
+      if (age > STALE_SCAN_MS || (incomplete && age > INCOMPLETE_SCAN_MS)) {
+        tx.objectStore('scans').delete(scan.id)
+        const blobs = (await requestToPromise(tx.objectStore('blobs').index('byScan').getAll(scan.id))) as BlobRecord[]
+        for (const blob of blobs) {
+          tx.objectStore('blobs').delete(blob.id)
+        }
+      }
+    }
+    await txDone(tx)
+  })
+  await enforceScanQuota()
+}
+
+/** Keep only the newest MAX_STORED_SCANS records. */
+export async function enforceScanQuota(): Promise<void> {
+  await withDb(async (db) => {
+    const tx = db.transaction(['scans', 'blobs'], 'readwrite')
+    const scans = (await requestToPromise(tx.objectStore('scans').getAll())) as ScanRecord[]
+    if (scans.length <= MAX_STORED_SCANS) {
+      await txDone(tx)
+      return
+    }
+    scans.sort((a, b) => b.createdAt - a.createdAt)
+    const drop = scans.slice(MAX_STORED_SCANS)
+    for (const scan of drop) {
       tx.objectStore('scans').delete(scan.id)
       const blobs = (await requestToPromise(tx.objectStore('blobs').index('byScan').getAll(scan.id))) as BlobRecord[]
       for (const blob of blobs) {
         tx.objectStore('blobs').delete(blob.id)
       }
     }
-  }
-  await txDone(tx)
+    await txDone(tx)
+  })
 }

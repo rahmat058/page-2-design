@@ -1,16 +1,32 @@
+import { DOM_SCAN_YIELD_EVERY, MAX_PSEUDOS, MAX_PSEUDO_STYLE_QUERIES } from '../shared/constants'
 import type { PseudoRecord } from '../shared/types'
 import { extractCssUrls } from './css-urls'
+import { yieldToMain } from './scan-context'
 import { pickComputedStyle } from './style-utils'
 
-export function scanPseudos(root: Element, idMap: WeakMap<Element, string>, limit = 400): PseudoRecord[] {
+export async function scanPseudos(
+  root: Element,
+  idMap: WeakMap<Element, string>,
+  limit = MAX_PSEUDOS,
+): Promise<PseudoRecord[]> {
   const records: PseudoRecord[] = []
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
   let node = walker.currentNode as Element | null
   let count = 0
-  while (node && count < limit) {
+  let styleQueries = 0
+  let visited = 0
+
+  while (node && count < limit && styleQueries < MAX_PSEUDO_STYLE_QUERIES) {
+    visited += 1
+    if (visited % DOM_SCAN_YIELD_EVERY === 0) {
+      await yieldToMain()
+    }
+
     const elementId = idMap.get(node)
     if (elementId) {
       for (const pseudo of ['::before', '::after'] as const) {
+        if (count >= limit || styleQueries >= MAX_PSEUDO_STYLE_QUERIES) break
+        styleQueries += 1
         const style = getComputedStyle(node, pseudo)
         const content = style.content
         if (!content || content === 'none' || content === 'normal') continue

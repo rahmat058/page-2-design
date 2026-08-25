@@ -1,4 +1,11 @@
-import { SCHEMA_VERSION, ELEMENT_CHUNK_SIZE } from '../shared/constants'
+import {
+  ASSET_CHUNK_SIZE,
+  CONTENT_CHUNK_SIZE,
+  ELEMENT_CHUNK_SIZE,
+  SCHEMA_VERSION,
+  STYLE_CHUNK_SIZE,
+  TOKEN_CHUNK_SIZE,
+} from '../shared/constants'
 import { DomainError } from '../shared/errors'
 import { createMessage, createRequestId } from '../shared/messages'
 import { redactUrl } from '../shared/redact'
@@ -150,7 +157,7 @@ export async function runPageScan(options: ScanOptions, transport: ScanTransport
     cssVariables,
     interactions: dom.interactions,
     content,
-    pseudos: scanPseudos(root, dom.idMap),
+    pseudos: await scanPseudos(root, dom.idMap),
     mediaQueries: readMediaQueries(runtime),
     cssInformation: await readCssInformation(),
     limitations: runtime.limitations,
@@ -328,10 +335,6 @@ function assignAssetPaths(assets: import('../shared/types').AssetRecord[]): void
 }
 
 function chunkScan(scan: PageScan) {
-  const elementChunks: (typeof scan.elements)[] = []
-  for (let i = 0; i < scan.elements.length; i += ELEMENT_CHUNK_SIZE) {
-    elementChunks.push(scan.elements.slice(i, i + ELEMENT_CHUNK_SIZE))
-  }
   const parts: { kind: string; index: number; total: number; data: unknown }[] = []
   parts.push({
     kind: 'meta',
@@ -340,37 +343,95 @@ function chunkScan(scan: PageScan) {
     data: { metadata: scan.metadata, page: scan.page, lazyLoad: scan.lazyLoad, cssInformation: scan.cssInformation },
   })
   parts.push({ kind: 'sections', index: 0, total: 0, data: scan.sections })
-  for (const chunk of elementChunks) {
-    parts.push({ kind: 'elements', index: 0, total: 0, data: chunk })
+
+  for (let i = 0; i < scan.elements.length; i += ELEMENT_CHUNK_SIZE) {
+    parts.push({ kind: 'elements', index: 0, total: 0, data: scan.elements.slice(i, i + ELEMENT_CHUNK_SIZE) })
   }
-  parts.push({ kind: 'styles', index: 0, total: 0, data: scan.styleRegistry })
-  parts.push({ kind: 'assets', index: 0, total: 0, data: scan.assets })
-  parts.push({
-    kind: 'tokens',
-    index: 0,
-    total: 0,
-    data: {
-      colors: scan.colors,
-      typography: scan.typography,
-      spacing: scan.spacing,
-      radii: scan.radii,
-      shadows: scan.shadows,
-      cssVariables: scan.cssVariables,
-    },
-  })
-  parts.push({
-    kind: 'content',
-    index: 0,
-    total: 0,
-    data: {
-      content: scan.content,
-      interactions: scan.interactions,
-      limitations: scan.limitations,
-      pseudos: scan.pseudos,
-      mediaQueries: scan.mediaQueries,
-    },
-  })
+
+  const styleEntries = Object.entries(scan.styleRegistry)
+  if (styleEntries.length === 0) {
+    parts.push({ kind: 'styles', index: 0, total: 0, data: {} })
+  } else {
+    for (let i = 0; i < styleEntries.length; i += STYLE_CHUNK_SIZE) {
+      parts.push({
+        kind: 'styles',
+        index: 0,
+        total: 0,
+        data: Object.fromEntries(styleEntries.slice(i, i + STYLE_CHUNK_SIZE)),
+      })
+    }
+  }
+
+  if (scan.assets.length === 0) {
+    parts.push({ kind: 'assets', index: 0, total: 0, data: [] })
+  } else {
+    for (let i = 0; i < scan.assets.length; i += ASSET_CHUNK_SIZE) {
+      parts.push({ kind: 'assets', index: 0, total: 0, data: scan.assets.slice(i, i + ASSET_CHUNK_SIZE) })
+    }
+  }
+
+  const tokenSlices: Record<string, unknown>[] = []
+  pushTokenSlices(tokenSlices, 'colors', scan.colors)
+  pushTokenSlices(tokenSlices, 'typography', scan.typography)
+  pushTokenSlices(tokenSlices, 'spacing', scan.spacing)
+  pushTokenSlices(tokenSlices, 'radii', scan.radii)
+  pushTokenSlices(tokenSlices, 'shadows', scan.shadows)
+  pushTokenSlices(tokenSlices, 'cssVariables', scan.cssVariables)
+  if (tokenSlices.length === 0) {
+    parts.push({
+      kind: 'tokens',
+      index: 0,
+      total: 0,
+      data: { colors: [], typography: [], spacing: [], radii: [], shadows: [], cssVariables: [] },
+    })
+  } else {
+    for (const data of tokenSlices) {
+      parts.push({ kind: 'tokens', index: 0, total: 0, data })
+    }
+  }
+
+  if (scan.content.length === 0) {
+    parts.push({
+      kind: 'content',
+      index: 0,
+      total: 0,
+      data: {
+        content: [],
+        interactions: scan.interactions,
+        limitations: scan.limitations,
+        pseudos: scan.pseudos,
+        mediaQueries: scan.mediaQueries,
+      },
+    })
+  } else {
+    for (let i = 0; i < scan.content.length; i += CONTENT_CHUNK_SIZE) {
+      const slice = scan.content.slice(i, i + CONTENT_CHUNK_SIZE)
+      parts.push({
+        kind: 'content',
+        index: 0,
+        total: 0,
+        data:
+          i === 0
+            ? {
+                content: slice,
+                interactions: scan.interactions,
+                limitations: scan.limitations,
+                pseudos: scan.pseudos,
+                mediaQueries: scan.mediaQueries,
+              }
+            : { content: slice },
+      })
+    }
+  }
+
   return parts.map((part, index) => ({ ...part, index, total: parts.length }))
+}
+
+function pushTokenSlices(out: Record<string, unknown>[], key: string, values: unknown[]): void {
+  if (values.length === 0) return
+  for (let i = 0; i < values.length; i += TOKEN_CHUNK_SIZE) {
+    out.push({ [key]: values.slice(i, i + TOKEN_CHUNK_SIZE) })
+  }
 }
 
 export async function runFrameScan(): Promise<CompactFrameScan> {

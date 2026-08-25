@@ -19,7 +19,7 @@ import {
   skipShadowWalk,
 } from './scan-filters'
 import { openShadowRoot } from './shadow'
-import { documentBounds, isVisible, pickComputedStyle, styleSignature } from './style-utils'
+import { pickComputedStyle, styleSignature, visibilityAndBounds } from './style-utils'
 import { captureVideoFrameAsset } from './video-capture'
 
 export interface DomScanResult {
@@ -67,7 +67,7 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
     }
 
     const computed = getComputedStyle(el)
-    const visibility = isVisible(el, computed)
+    const { visibility, bounds } = visibilityAndBounds(el, computed)
     const includeHidden = runtime.options.includeHiddenStructural
     if (skipHiddenSubtree(visibility.visible, includeHidden, isStructuralTag(el.tagName))) {
       return
@@ -137,7 +137,7 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
       classNames: classNamesOf(el),
       role: el.getAttribute('role'),
       visibility,
-      bounds: documentBounds(el),
+      bounds,
       styleSignature: signature,
       directText: directText(el),
       sectionId: null,

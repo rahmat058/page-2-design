@@ -9,6 +9,7 @@ import { CountBadge } from '../components/CountBadge'
 import { CopyButton, ScanPrompt } from '../components/CopyButton'
 import { InspectIcon, CopyIcon } from '../components/LucideIcons'
 import { CollectionShell } from '../components/Segmented'
+import { EMPTY_COLORS, EMPTY_TYPOGRAPHY } from '../empty'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
 
@@ -18,7 +19,7 @@ const COLOR_TABS = [
 ] as const
 
 export function ColorsView() {
-  const colors = useScanStore((s) => s.design?.tokens.colors ?? [])
+  const colors = useScanStore((s) => s.design?.tokens.colors ?? EMPTY_COLORS)
   const [tab, setTab] = useState<'palette' | 'categories'>('palette')
   const [inspectingId, setInspectingId] = useState<string | null>(null)
   if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />
@@ -161,7 +162,7 @@ async function cycleInspectColor(color: ColorToken, setInspectingId: (id: string
 }
 
 export function TypographyView() {
-  const tokens = useScanStore((s) => s.design?.tokens.typography ?? [])
+  const tokens = useScanStore((s) => s.design?.tokens.typography ?? EMPTY_TYPOGRAPHY)
   const [inspectingId, setInspectingId] = useState<string | null>(null)
   if (tokens.length === 0) return <ScanPrompt afterScan="No typography was captured." />
   const sections = groupTypographySections(tokens)

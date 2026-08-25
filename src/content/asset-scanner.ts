@@ -19,41 +19,41 @@ export function collectAssetsFromElement(el: Element, elementId: string, compute
       alt: img.alt || el.getAttribute('alt'),
     }
     const urls = imageUrlsFromElement(el, img)
-    for (const url of urls) found.push(makeAsset('image', url, elementId, extra))
+    for (const url of urls) pushAsset(found, 'image', url, elementId, extra)
   }
 
   if (tag === 'source') {
-    const srcset = el.getAttribute('srcset')
+    const srcset = el.getAttribute('srcset') || el.getAttribute('data-srcset')
     const urls = srcset ? parseSrcset(srcset).map((candidate) => candidate.url) : [el.getAttribute('src')]
     const best = srcset ? pickBestSrcsetUrl(srcset) : null
     for (const url of [best, ...urls]) {
-      if (url) found.push(makeAsset('image', url, elementId, {}))
+      pushAsset(found, 'image', url, elementId, {})
     }
   }
 
   if (tag === 'video') {
     const poster = (el as HTMLVideoElement).poster || el.getAttribute('poster')
-    if (poster) found.push(makeAsset('video-poster', poster, elementId, {}))
+    pushAsset(found, 'video-poster', poster, elementId, {})
   }
 
   if (tag === 'object') {
     const data = el.getAttribute('data')
-    if (data) found.push(makeAsset(guessType(data, 'image'), data, elementId, {}))
+    if (data) pushAsset(found, guessType(data, 'image'), data, elementId, {})
   }
 
   if (tag === 'embed') {
     const src = el.getAttribute('src')
-    if (src) found.push(makeAsset(guessType(src, 'image'), src, elementId, {}))
+    if (src) pushAsset(found, guessType(src, 'image'), src, elementId, {})
   }
 
   if (tag === 'input' && (el.getAttribute('type') ?? '').toLowerCase() === 'image') {
     const src = el.getAttribute('src')
-    if (src) found.push(makeAsset('image', src, elementId, { alt: el.getAttribute('alt') }))
+    pushAsset(found, 'image', src, elementId, { alt: el.getAttribute('alt') })
   }
 
   if (tag === 'image') {
     const href = el.getAttribute('href') || el.getAttribute('xlink:href')
-    if (href && !href.startsWith('#')) found.push(makeAsset('image', href, elementId, {}))
+    if (href && !href.startsWith('#')) pushAsset(found, 'image', href, elementId, {})
   }
 
   if (tag === 'use') {
@@ -121,13 +121,17 @@ export function collectAssetsFromElement(el: Element, elementId: string, compute
           ? 'background'
           : 'other'
     for (const url of extractCssUrls(computed.getPropertyValue(prop) || '')) {
-      found.push(makeAsset(guessType(url, type), url, elementId, {}))
+      pushAsset(found, guessType(url, type), url, elementId, {})
     }
   }
 
-  const lazy = el.getAttribute('data-src') || el.getAttribute('data-lazy-src')
+  const lazy =
+    el.getAttribute('data-src') ||
+    el.getAttribute('data-lazy-src') ||
+    el.getAttribute('data-original') ||
+    el.getAttribute('data-lazy')
   if (lazy && tag !== 'img') {
-    found.push(makeAsset('image', lazy, elementId, {}))
+    pushAsset(found, 'image', lazy, elementId, {})
   }
 
   return found
@@ -139,17 +143,29 @@ export function collectDocumentAssets(): AssetRecord[] {
     'meta[property="og:image"], meta[name="twitter:image"], meta[itemprop="image"]',
   )) {
     const content = meta.getAttribute('content')
-    if (content) extras.push(makeAsset('image', content, 'document', {}))
+    pushAsset(extras, 'image', content, 'document', {})
   }
   for (const link of document.querySelectorAll(
     'link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel="mask-icon"], link[rel="fluid-icon"]',
   )) {
     const href = link.getAttribute('href')
-    if (href) extras.push(makeAsset('favicon', href, 'document', {}))
+    pushAsset(extras, 'favicon', href, 'document', {})
   }
-  // DOM elements already contributed assets during scanDom — do not re-walk the tree with getComputedStyle.
+  // Full-document media harvest: scanDom skips hidden/zero-size nodes and can burn MAX_ELEMENTS
+  // on mega-menus before product grids (e.g. rokomari.com). data-src products must still be found.
+  extras.push(...collectAllMediaAssets())
   extras.push(...collectStylesheetAssets())
   return extras
+}
+
+/** Collect img/video/etc. URLs from the live DOM without visibility / element-budget gating. */
+function collectAllMediaAssets(): AssetRecord[] {
+  const found: AssetRecord[] = []
+  const nodes = document.querySelectorAll('img, source, video, object, embed, image, input[type="image"]')
+  for (const el of nodes) {
+    found.push(...collectAssetsFromElement(el, 'document-media', getComputedStyle(el)))
+  }
+  return found
 }
 
 function collectStylesheetAssets(): AssetRecord[] {
@@ -175,6 +191,7 @@ function collectStylesheetAssets(): AssetRecord[] {
       for (const prop of props) {
         const type = prop.includes('mask') || prop === 'content' || prop === 'cursor' ? 'icon' : 'background'
         for (const url of extractCssUrls(rule.style.getPropertyValue(prop) || '')) {
+          if (isPlaceholderAssetUrl(url)) continue
           found.push(makeAsset(guessType(url, type), url, 'stylesheet', {}))
         }
       }
@@ -216,18 +233,50 @@ function inlineSvgAsset(markup: string, elementId: string, el: Element): AssetRe
 function imageUrlsFromElement(el: Element, img: HTMLImageElement): string[] {
   const urls: string[] = []
   const push = (value: string | null | undefined) => {
-    if (value) urls.push(value)
+    const trimmed = value?.trim()
+    if (trimmed) urls.push(trimmed)
+  }
+  // Prefer lazy/real URLs first — many shops keep products in data-src while src is a tiny GIF.
+  push(el.getAttribute('data-src'))
+  push(el.getAttribute('data-lazy-src'))
+  push(el.getAttribute('data-original'))
+  push(el.getAttribute('data-lazy'))
+  push(el.getAttribute('data-url'))
+  const lazySrcset = el.getAttribute('data-srcset') || el.getAttribute('data-lazy-srcset')
+  if (lazySrcset) {
+    push(pickBestSrcsetUrl(lazySrcset))
+    for (const candidate of parseSrcset(lazySrcset)) push(candidate.url)
   }
   push(img.currentSrc)
   push(img.src)
   push(el.getAttribute('src'))
-  push(el.getAttribute('data-src'))
-  const srcset = el.getAttribute('srcset') || el.getAttribute('data-srcset')
+  const srcset = el.getAttribute('srcset')
   if (srcset) {
     push(pickBestSrcsetUrl(srcset))
     for (const candidate of parseSrcset(srcset)) push(candidate.url)
   }
-  return [...new Set(urls)]
+  const unique = [...new Set(urls)]
+  const real = unique.filter((url) => !isPlaceholderAssetUrl(url))
+  return real.length > 0 ? real : unique
+}
+
+/** Tiny trackers, lazy GIF shells, and blank pixels — drop when a real URL exists. */
+export function isPlaceholderAssetUrl(url: string): boolean {
+  const lower = url.trim().toLowerCase()
+  if (!lower) return true
+  if (
+    /placeholder|spacer|transparent\.|blank\.|pixel\.|1x1|clear\.gif|loading\.gif|lazy\.(gif|png|svg)|preview\.gif/i.test(
+      lower,
+    )
+  ) {
+    return true
+  }
+  if (/\/nstatic\/images\/placeholder/i.test(lower)) return true
+  if (lower.startsWith('data:image/gif;base64,r0lgod')) return true
+  if (/facebook\.com\/tr\?|googletagmanager|google-analytics|doubleclick\.|adservice\./i.test(lower)) {
+    return true
+  }
+  return false
 }
 
 function guessType(url: string, fallback: AssetType): AssetType {
@@ -262,6 +311,18 @@ function makeAsset(type: AssetType, rawUrl: string, elementId: string, extra: Pa
     inlineSvg: extra.inlineSvg ?? null,
     alt: extra.alt ?? null,
   }
+}
+
+function pushAsset(
+  found: AssetRecord[],
+  type: AssetType,
+  rawUrl: string | null | undefined,
+  elementId: string,
+  extra: Partial<AssetRecord>,
+): void {
+  if (!rawUrl?.trim()) return
+  if (isPlaceholderAssetUrl(rawUrl) || isPlaceholderAssetUrl(resolveUrl(rawUrl))) return
+  found.push(makeAsset(type, rawUrl, elementId, extra))
 }
 
 export function resolveUrl(url: string): string {
@@ -457,7 +518,8 @@ function assetRank(asset: AssetRecord): number {
     (asset.intrinsicWidth ?? 0) * (asset.intrinsicHeight ?? 0) ||
     (asset.renderedWidth ?? 0) * (asset.renderedHeight ?? 0)
   const downloaded = asset.downloadStatus === 'downloaded' ? 1_000_000_000 : 0
-  return area + downloaded + widthHint(asset.resolvedUrl)
+  const placeholder = isPlaceholderAssetUrl(asset.resolvedUrl) ? -1_000_000_000 : 0
+  return area + downloaded + widthHint(asset.resolvedUrl) + placeholder
 }
 
 function widthHint(url: string): number {

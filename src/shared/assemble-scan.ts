@@ -68,13 +68,26 @@ export function assembleScan(chunks: { kind: string; data: unknown }[]): PageSca
     } else if (chunk.kind === 'elements') {
       scan.elements.push(...(chunk.data as PageScan['elements']))
     } else if (chunk.kind === 'styles') {
-      scan.styleRegistry = chunk.data as PageScan['styleRegistry']
+      Object.assign(scan.styleRegistry, chunk.data as PageScan['styleRegistry'])
     } else if (chunk.kind === 'assets') {
-      scan.assets = chunk.data as PageScan['assets']
+      scan.assets.push(...(chunk.data as PageScan['assets']))
     } else if (chunk.kind === 'tokens') {
-      Object.assign(scan, data)
+      if (Array.isArray(data.colors)) scan.colors.push(...(data.colors as PageScan['colors']))
+      if (Array.isArray(data.typography)) scan.typography.push(...(data.typography as PageScan['typography']))
+      if (Array.isArray(data.spacing)) scan.spacing.push(...(data.spacing as PageScan['spacing']))
+      if (Array.isArray(data.radii)) scan.radii.push(...(data.radii as PageScan['radii']))
+      if (Array.isArray(data.shadows)) scan.shadows.push(...(data.shadows as PageScan['shadows']))
+      if (Array.isArray(data.cssVariables)) {
+        scan.cssVariables.push(...(data.cssVariables as PageScan['cssVariables']))
+      }
     } else if (chunk.kind === 'content') {
-      Object.assign(scan, data)
+      if (Array.isArray(data.content)) {
+        scan.content.push(...(data.content as PageScan['content']))
+      }
+      if (data.interactions) scan.interactions = data.interactions as PageScan['interactions']
+      if (data.limitations) scan.limitations = data.limitations as PageScan['limitations']
+      if (data.pseudos) scan.pseudos = data.pseudos as PageScan['pseudos']
+      if (data.mediaQueries) scan.mediaQueries = data.mediaQueries as PageScan['mediaQueries']
     }
   }
   return scan

@@ -16,7 +16,7 @@ import { putScan, purgeStaleScans } from '../storage/indexed-db'
 import { readTabCssInformation } from './read-tab-css'
 import type { ExtensionMessage, ScanChunkMessage } from '../shared/messages'
 import type { CompactFrameScan, LayoutSnapshot, PageScan, ScanOptions } from '../shared/types'
-import { DEFAULT_SCAN_OPTIONS } from '../shared/types'
+import { DEFAULT_SCAN_OPTIONS, hasCssData } from '../shared/types'
 
 const RESTRICTED = /^(chrome|chrome-extension|edge|about|devtools|https:\/\/chrome\.google\.com\/webstore)/i
 const SESSION_KEY = (scanId: string) => `scanSession:${scanId}`
@@ -263,10 +263,12 @@ export async function completeScan(scanId: string): Promise<void> {
     ]
   }
   raw.coverage = calculateCoverage(raw)
-  try {
-    raw.cssInformation = await readTabCssInformation(session.tabId)
-  } catch {
-    /* Keep whatever the content script captured. */
+  if (!hasCssData(raw.cssInformation)) {
+    try {
+      raw.cssInformation = await readTabCssInformation(session.tabId)
+    } catch {
+      /* Keep whatever the content script captured. */
+    }
   }
   if (session.cancelled) {
     sessions.delete(scanId)
@@ -574,7 +576,7 @@ function delay(ms: number): Promise<void> {
 export async function ensureContentScript(tabId: number): Promise<void> {
   try {
     const pong = await chrome.tabs.sendMessage(tabId, createMessage({ type: 'PING', requestId: createRequestId() }))
-    if (parseMessage(pong)) {
+    if (parseMessage(pong)?.type === 'PONG') {
       return
     }
   } catch {
@@ -584,7 +586,7 @@ export async function ensureContentScript(tabId: number): Promise<void> {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     try {
       const pong = await chrome.tabs.sendMessage(tabId, createMessage({ type: 'PING', requestId: createRequestId() }))
-      if (parseMessage(pong)) return
+      if (parseMessage(pong)?.type === 'PONG') return
     } catch {
       await delay(100)
     }
