@@ -28,8 +28,6 @@ export function App() {
   const phase = useScanStore((s) => s.phase)
   const view = useScanStore((s) => s.view)
   const hostname = useScanStore((s) => s.hostname)
-  const title = useScanStore((s) => s.title)
-  const url = useScanStore((s) => s.url)
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const design = useScanStore((s) => s.design)
   const counts = useScanStore((s) => s.counts)
@@ -119,14 +117,8 @@ export function App() {
                   Export All
                 </Button>
               ) : null
-            }>
-            {view === 'overview' ? (
-              <>
-                <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
-                {url ? <p className="page-url">{url}</p> : null}
-              </>
-            ) : null}
-          </PageHead>
+            }
+          />
           {tabRestricted ? <p className="banner">This tab cannot be scanned. Open an http(s) page.</p> : null}
           <main className="main">
             <div key={view} className="fade-pane">

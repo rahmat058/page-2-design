@@ -37,6 +37,9 @@ export interface PageMetadata {
   url: string
   urlRedacted: boolean
   title: string
+  ogTitle: string
+  ogImage: string
+  ogUrl: string
   language: string
   direction: 'ltr' | 'rtl'
   scannedAt: string

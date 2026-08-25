@@ -1,13 +1,15 @@
+import { useEffect, useRef, useState } from 'react'
 import { Copy } from 'lucide-react'
 import { Button } from '../components/Button'
 import { Checkbox } from '../components/Checkbox'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
-import type { ColorToken } from '../../shared/types'
+import type { AssetRecord, ColorToken } from '../../shared/types'
 import { CountBadge } from '../components/CountBadge'
 import { coverageSummary } from '../../validation/coverage'
 import { EmptyState } from '../components/CopyButton'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
+import { objectUrlForAsset } from '../download-asset'
 
 export function OverviewView() {
   const design = useScanStore((s) => s.design)
@@ -42,6 +44,8 @@ export function OverviewView() {
         </section>
       ) : null}
       {error ? <p className="badge error">{error}</p> : null}
+
+      <OverviewIntro />
 
       {design ? (
         <>
@@ -143,6 +147,64 @@ export function OverviewView() {
         ) : null}
       </details>
     </>
+  )
+}
+
+function OverviewIntro() {
+  const design = useScanStore((s) => s.design)
+  const tabTitle = useScanStore((s) => s.title)
+  const tabUrl = useScanStore((s) => s.url)
+  const hostname = useScanStore((s) => s.hostname)
+  const meta = design?.metadata
+  const title = meta?.ogTitle || meta?.title || tabTitle || hostname || 'Open a website, then scan'
+  const href = meta?.ogUrl || meta?.url || tabUrl || ''
+  const image = meta?.ogImage || ''
+  const asset = image
+    ? design?.assets.find((item) => item.resolvedUrl === image || item.sourceUrl === image)
+    : undefined
+
+  return (
+    <section className="overview-intro">
+      {image ? <OgImage src={image} asset={asset} /> : null}
+      <h2 className="overview-intro-title">{title}</h2>
+      {href ? (
+        <a className="overview-intro-link" href={href} target="_blank" rel="noreferrer">
+          {href}
+        </a>
+      ) : null}
+    </section>
+  )
+}
+
+function OgImage({ src, asset }: { src: string; asset?: AssetRecord }) {
+  const [url, setUrl] = useState(src)
+  const [hidden, setHidden] = useState(false)
+  const triedAsset = useRef(false)
+
+  useEffect(() => {
+    setUrl(src)
+    setHidden(false)
+    triedAsset.current = false
+  }, [src])
+
+  if (hidden) return null
+  return (
+    <img
+      className="overview-intro-image"
+      src={url}
+      alt=""
+      onError={() => {
+        if (!triedAsset.current && asset) {
+          triedAsset.current = true
+          void objectUrlForAsset(asset).then((next) => {
+            if (next) setUrl(next)
+            else setHidden(true)
+          })
+          return
+        }
+        setHidden(true)
+      }}
+    />
   )
 }
 

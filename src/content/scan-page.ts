@@ -13,7 +13,7 @@ import type {
   ShadowUsage,
   TypographyUsage,
 } from '../shared/types'
-import { collectDocumentAssets, materializeBlobAssets, mergeAssets } from './asset-scanner'
+import { collectDocumentAssets, materializeBlobAssets, mergeAssets, resolveUrl } from './asset-scanner'
 import { collectColors, colorUsages } from './color-scanner'
 import { scanPseudos } from './pseudo-scanner'
 import { orderContent } from './content-scanner'
@@ -200,10 +200,14 @@ function readMetadata() {
     : matchMedia('(prefers-color-scheme: light)').matches
       ? 'light'
       : 'no-preference'
+  const og = readOpenGraph()
   return {
     url,
     urlRedacted: redacted,
     title: document.title,
+    ogTitle: og.title,
+    ogImage: og.image,
+    ogUrl: og.url,
     language: document.documentElement.lang || document.documentElement.getAttribute('lang') || 'unknown',
     direction: (document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr') as 'ltr' | 'rtl',
     scannedAt: new Date().toISOString(),
@@ -218,6 +222,32 @@ function readMetadata() {
     restoredScrollY: window.scrollY,
     hostname: location.hostname || 'page',
   }
+}
+
+function readOpenGraph(): { title: string; image: string; url: string } {
+  const title =
+    metaContent('meta[property="og:title"]') ||
+    metaContent('meta[name="twitter:title"]') ||
+    document.title.trim()
+  const image =
+    metaContent('meta[property="og:image"]') ||
+    metaContent('meta[property="og:image:url"]') ||
+    metaContent('meta[name="twitter:image"]') ||
+    metaContent('meta[name="twitter:image:src"]') ||
+    metaContent('meta[itemprop="image"]')
+  const url =
+    metaContent('meta[property="og:url"]') ||
+    document.querySelector('link[rel="canonical"]')?.getAttribute('href')?.trim() ||
+    location.href
+  return {
+    title,
+    image: image ? resolveUrl(image) : '',
+    url: url ? resolveUrl(url) : location.href,
+  }
+}
+
+function metaContent(selector: string): string {
+  return document.querySelector(selector)?.getAttribute('content')?.trim() || ''
 }
 
 function readCssVariables(): CssVariableRecord[] {
