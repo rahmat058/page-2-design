@@ -137,7 +137,7 @@ export function AssetsView() {
         <VirtualList
           className="asset-list"
           count={unique.length}
-          itemHeight={72}
+          itemHeight={68}
           maxHeight={520}
           renderItem={(index) => {
             const asset = unique[index]
