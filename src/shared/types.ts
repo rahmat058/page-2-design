@@ -1,6 +1,14 @@
+/**
+ * Shared scan and design-system types: raw PageScan chunks, NormalizedDesign,
+ * tokens, assets, coverage, and related option/progress shapes.
+ */
 import { SCHEMA_VERSION } from './constants'
 
 export type { SCHEMA_VERSION }
+
+// ---------------------------------------------------------------------------
+// Scan lifecycle & options
+// ---------------------------------------------------------------------------
 
 export type ScanPhase =
   | 'idle'
@@ -32,6 +40,10 @@ export interface ExportOptions {
   selectedAssetIds: string[]
   includeScreenshots: boolean
 }
+
+// ---------------------------------------------------------------------------
+// Page geometry & scanned DOM
+// ---------------------------------------------------------------------------
 
 export interface PageMetadata {
   url: string
@@ -108,6 +120,10 @@ export interface PageSection {
   confidence: number
   provenance: 'semantic' | 'inferred'
 }
+
+// ---------------------------------------------------------------------------
+// Assets, style usage, content, CSS
+// ---------------------------------------------------------------------------
 
 export type AssetType = 'image' | 'background' | 'icon' | 'svg' | 'video-poster' | 'favicon' | 'font' | 'other'
 
@@ -258,6 +274,10 @@ export interface CssInformation {
   loadTimeMs: number | null
 }
 
+// ---------------------------------------------------------------------------
+// Raw page scan & design tokens
+// ---------------------------------------------------------------------------
+
 export interface PageScan {
   schemaVersion: string
   metadata: PageMetadata
@@ -336,6 +356,10 @@ export interface DesignToken {
   count: number
   properties: string[]
 }
+
+// ---------------------------------------------------------------------------
+// Normalized design & sections
+// ---------------------------------------------------------------------------
 
 export type SectionRole =
   | 'header'
@@ -526,6 +550,10 @@ export interface MediaSubstitution {
   label: string
   aspectRatio: string
 }
+
+// ---------------------------------------------------------------------------
+// Progress, defaults, empty factories
+// ---------------------------------------------------------------------------
 
 export interface ScanCounts {
   elements: number

@@ -1,3 +1,7 @@
+/**
+ * Depth-first DOM walker that builds ScannedElement records, style signatures,
+ * content blocks, interactions, and per-element assets within the scan budget.
+ */
 import { SAFE_ATTRIBUTES, SKIP_TAGS, MAX_ELEMENTS, DOM_SCAN_YIELD_EVERY } from '../shared/constants'
 import { isSensitiveInput } from '../shared/redact'
 import type { AssetRecord, ContentBlock, InteractionRecord, ScannedElement } from '../shared/types'
@@ -21,6 +25,10 @@ import {
 import { openShadowRoot } from './shadow'
 import { pickComputedStyle, styleSignature, visibilityAndBounds } from './style-utils'
 import { captureVideoFrameAsset } from './video-capture'
+
+// ---------------------------------------------------------------------------
+// DOM walk
+// ---------------------------------------------------------------------------
 
 export interface DomScanResult {
   elements: ScannedElement[]
@@ -172,6 +180,10 @@ export async function scanDom(runtime: ScanRuntime, root: Element): Promise<DomS
   await walk(root, null, 0)
   return { elements, styleRegistry, assets, content, interactions, idMap: assigned }
 }
+
+// ---------------------------------------------------------------------------
+// Walk helpers / filters
+// ---------------------------------------------------------------------------
 
 function shouldSkipChild(
   parent: Element,

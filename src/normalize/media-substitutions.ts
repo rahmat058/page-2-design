@@ -1,3 +1,7 @@
+/**
+ * Maps live media elements (video, iframe, canvas, embeds) to static image or
+ * sized-placeholder substitutions for the rebuild package.
+ */
 import type { AssetRecord, MediaSubstitution, MediaSubstitutionKind, ScannedElement } from '../shared/types'
 import { publicUrlFromAssetPath } from '../export/package-paths'
 

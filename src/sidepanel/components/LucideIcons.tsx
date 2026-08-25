@@ -1,3 +1,4 @@
+/** Thin Lucide icon wrappers and panel-specific icon aliases. */
 import {
   Accessibility,
   AlignLeft,

@@ -1,9 +1,17 @@
+/**
+ * Infers page sections from landmarks and visual bands, then associates each
+ * scanned element to a section via ancestry (geometry is a fallback only).
+ */
 import type { BoundingBox, PageSection, ScannedElement } from '../shared/types'
 
 const SEMANTIC = new Set(['header', 'nav', 'main', 'footer', 'aside', 'section', 'article'])
 const LANDMARK_ROLES = new Set(['banner', 'navigation', 'main', 'contentinfo', 'complementary'])
 const SKIP_TAGS = new Set(['html', 'head', 'body', 'script', 'style', 'link', 'meta'])
 const MAX_SECTIONS = 28
+
+// ---------------------------------------------------------------------------
+// Detection & association
+// ---------------------------------------------------------------------------
 
 export function detectSections(
   elements: ScannedElement[],
@@ -91,6 +99,10 @@ export function associateSections(elements: ScannedElement[], sections: PageSect
 
   return elements.map((el) => ({ ...el, sectionId: resolve(el.id) }))
 }
+
+// ---------------------------------------------------------------------------
+// Visual banding & landmarks
+// ---------------------------------------------------------------------------
 
 function visualBands(
   root: ScannedElement,
@@ -189,6 +201,10 @@ function isFooter(el: ScannedElement): boolean {
 function isMain(el: ScannedElement): boolean {
   return el.tagName === 'main' || el.role === 'main'
 }
+
+// ---------------------------------------------------------------------------
+// Section records & geometry
+// ---------------------------------------------------------------------------
 
 function toSection(
   el: ScannedElement,

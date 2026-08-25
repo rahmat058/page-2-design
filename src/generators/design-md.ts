@@ -1,9 +1,17 @@
+/**
+ * Generates docs/DESIGN.md — the primary rebuild specification covering
+ * structure, tokens, assets, media stand-ins, and acceptance notes.
+ */
 import { SCHEMA_VERSION } from '../shared/constants'
 import { PKG, publicUrlFromAssetPath } from '../export/package-paths'
 import type { NormalizedDesign } from '../shared/types'
 import { sectionComposition } from '../normalize/layout-pattern'
 import { escapeMarkdown, escapeTableCell, mdTable } from '../normalize/markdown-escape'
 import { coverageSummary } from '../validation/coverage'
+
+// ---------------------------------------------------------------------------
+// DESIGN.md assembly
+// ---------------------------------------------------------------------------
 
 export function generateDesignMarkdown(design: NormalizedDesign): string {
   const m = design.metadata
@@ -200,6 +208,10 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Markdown helpers
+// ---------------------------------------------------------------------------
+
 function heading(level: number, text: string): string {
   return `${'#'.repeat(level)} ${escapeMarkdown(text)}`
 }
@@ -208,6 +220,10 @@ function dim(width: number | null, height: number | null): string {
   if (width == null && height == null) return 'not measured'
   return `${width ?? '?'}×${height ?? '?'}`
 }
+
+// ---------------------------------------------------------------------------
+// Structure and markup blocks
+// ---------------------------------------------------------------------------
 
 function mediaSubstitutionBlock(design: NormalizedDesign): string {
   const media = design.media ?? []
@@ -338,6 +354,10 @@ function landmarkReconstruction(design: NormalizedDesign): string {
     })
     .join('\n\n')
 }
+
+// ---------------------------------------------------------------------------
+// Component and style notes
+// ---------------------------------------------------------------------------
 
 function buttonMatchNotes(design: NormalizedDesign): string {
   const fills = design.tokens.colors

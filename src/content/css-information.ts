@@ -1,3 +1,7 @@
+/**
+ * Inventories page stylesheets from the content-script context: rule counts,
+ * byte estimates, and blocked cross-origin sheet hrefs.
+ */
 import type { CssInformation } from '../shared/types'
 import { emptyCssInformation } from '../shared/types'
 import { countTopLevelCssRules } from '../shared/count-css-rules'

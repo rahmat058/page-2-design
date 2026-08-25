@@ -1,3 +1,6 @@
+/**
+ * Collapses numeric spacing/radius usages into frequency-ranked design tokens.
+ */
 import type { DesignToken, NumericUsage } from '../shared/types'
 
 export function frequencyTokens(usages: NumericUsage[], prefix: string, minCount = 2): DesignToken[] {

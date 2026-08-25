@@ -1,3 +1,6 @@
+/**
+ * Top chrome: inspect toggle, overflow menu, dock/close, and scan shortcuts.
+ */
 import { useRef } from 'react'
 import type { PanelView } from '../store/useScanStore'
 import { Switch } from './Switch'

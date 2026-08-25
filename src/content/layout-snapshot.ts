@@ -1,3 +1,7 @@
+/**
+ * Captures a lightweight layout snapshot (viewport metrics, matching media,
+ * coarse section bands) for breakpoint / screenshot workflows.
+ */
 import type { LayoutSnapshot, ViewportSectionSnapshot } from '../shared/types'
 
 export function captureLayoutSnapshot(label: string): LayoutSnapshot {

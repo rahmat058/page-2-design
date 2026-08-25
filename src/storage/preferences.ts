@@ -1,3 +1,6 @@
+/**
+ * Loads and saves sidepanel scan preferences via chrome.storage.local.
+ */
 import { DEFAULT_SCAN_OPTIONS, type ScanOptions } from '../shared/types'
 
 export interface Preferences extends ScanOptions {

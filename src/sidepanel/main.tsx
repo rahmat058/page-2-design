@@ -1,3 +1,6 @@
+/**
+ * React entry for the extension side panel / overlay iframe.
+ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'

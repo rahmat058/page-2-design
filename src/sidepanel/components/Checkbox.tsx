@@ -1,3 +1,6 @@
+/**
+ * Labeled checkbox control for scan options and export selection.
+ */
 import type { InputHTMLAttributes, ReactNode } from 'react'
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {

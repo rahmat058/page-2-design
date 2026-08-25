@@ -1,3 +1,7 @@
+/**
+ * Infers section composition (role, pattern, columns, blocks, outline) from
+ * geometry, styles, and content; also packages sections into NormalizedSection.
+ */
 import { publicUrlFromAssetPath } from '../export/package-paths'
 import { buildDomOutline, utilityClassesFor } from './dom-outline'
 import type {

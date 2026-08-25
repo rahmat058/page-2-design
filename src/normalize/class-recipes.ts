@@ -1,5 +1,13 @@
+/**
+ * Builds CSS recipes for project-defined classes by intersecting measured
+ * styles, and detects which class names need custom CSS in a fresh Tailwind app.
+ */
 import type { ClassRecipe, ScannedElement } from '../shared/types'
 import { meaningfulClasses } from './dom-outline'
+
+// ---------------------------------------------------------------------------
+// Recipe property allowlist
+// ---------------------------------------------------------------------------
 
 /**
  * Declarations worth reproducing, in the order they read best as CSS. Anything outside this list
@@ -52,6 +60,10 @@ const RECIPE_PROPERTIES = [
 ]
 
 const MAX_DECLARATIONS = 22
+
+// ---------------------------------------------------------------------------
+// Tailwind utility recognition
+// ---------------------------------------------------------------------------
 
 /** Variants like `xl:`, `hover:`, `max-[425px]:`, `group-hover:` sit in front of the utility. */
 const VARIANT = /^[a-z0-9-]+(-\[[^\]]*\])?:|^\[[^\]]*\]:/i
@@ -346,6 +358,10 @@ const TAILWIND_PALETTE = new Set([
   '9xl',
 ])
 
+// ---------------------------------------------------------------------------
+// Project-class detection
+// ---------------------------------------------------------------------------
+
 /**
  * A class the rebuild has to define itself. Two kinds qualify: names that are not utilities at all
  * (`main-container`, `btn-xl`, `card-shadow`) and utility-shaped names whose value is a project theme
@@ -385,6 +401,10 @@ function splitColorScale(value: string): [string, string | null] {
   const match = /^(.*)-(\d+)$/.exec(value)
   return match ? [match[1] ?? value, match[2] ?? null] : [value, null]
 }
+
+// ---------------------------------------------------------------------------
+// Recipe construction
+// ---------------------------------------------------------------------------
 
 export interface RecipeOptions {
   maxClasses?: number

@@ -1,3 +1,7 @@
+/**
+ * Computes scan coverage metrics (elements, text, assets, screenshots) and a
+ * short human-readable coverage summary for DESIGN.md.
+ */
 import type { PageScan, ScanCoverage } from '../shared/types'
 
 export function calculateCoverage(

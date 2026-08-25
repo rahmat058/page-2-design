@@ -1,3 +1,7 @@
+/**
+ * Serializes a captured DOM subtree into an HTML-like outline for rebuild specs,
+ * substituting static stand-ins for live media and filtering generated class names.
+ */
 import type { AssetRecord, ScannedElement } from '../shared/types'
 import { publicUrlFromAssetPath } from '../export/package-paths'
 

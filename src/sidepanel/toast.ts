@@ -1,3 +1,6 @@
+/**
+ * Ephemeral toast store for short copy/download confirmations in the panel.
+ */
 import { create } from 'zustand'
 
 interface ToastState {

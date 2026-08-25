@@ -1,5 +1,13 @@
+/**
+ * In-page inspect overlay: hover/click highlight box, element card, and cycling
+ * color/typography hit markers driven by side-panel messages.
+ */
 import { colorIsExact, isFullyTransparent, parseColor } from '../normalize/colors'
 import { createMessage, createRequestId, type InspectedAsset, type InspectedElement } from '../shared/messages'
+
+// ---------------------------------------------------------------------------
+// Mode state
+// ---------------------------------------------------------------------------
 
 const BOX_ID = 'page2design-inspect-box'
 const CARD_ID = 'page2design-inspect-card'
@@ -62,6 +70,10 @@ export function setInspectContextMenu(next: boolean): void {
   }
   refreshHoverCard()
 }
+
+// ---------------------------------------------------------------------------
+// Highlight box & pointer handlers
+// ---------------------------------------------------------------------------
 
 function ensureBox(): HTMLDivElement {
   if (box?.isConnected) return box
@@ -136,6 +148,10 @@ function scheduleInspect(el: Element, locked: boolean): void {
     if (pendingEl) emitInspect(pendingEl, locked)
   })
 }
+
+// ---------------------------------------------------------------------------
+// Element describe / emit
+// ---------------------------------------------------------------------------
 
 function emitInspect(el: Element, locked: boolean): void {
   if (!locked && (lockedEl || el === lastEl)) return
@@ -263,6 +279,10 @@ function effectiveBackground(el: Element): string | null {
   }
   return null
 }
+
+// ---------------------------------------------------------------------------
+// Color & typography hit cycling
+// ---------------------------------------------------------------------------
 
 export function highlightColorOnPage(payload: {
   hex?: string | null
@@ -422,6 +442,10 @@ function isOverlay(el: Element): boolean {
     el.id === HIT_ID,
   )
 }
+
+// ---------------------------------------------------------------------------
+// Hover card UI
+// ---------------------------------------------------------------------------
 
 function hideHoverCard(remove: boolean): void {
   lastCardKey = null
@@ -661,6 +685,10 @@ function primaryFont(stack: string): string {
 function formatPx(value: number): string {
   return Number.isInteger(value) ? String(value) : String(value)
 }
+
+// ---------------------------------------------------------------------------
+// Inspected asset helpers
+// ---------------------------------------------------------------------------
 
 function collectInspectedAsset(el: Element, style: CSSStyleDeclaration, rect: DOMRect): InspectedAsset | null {
   const renderedWidth = Math.round(rect.width)

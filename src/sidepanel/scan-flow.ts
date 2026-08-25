@@ -1,3 +1,6 @@
+/**
+ * Side-panel scan orchestration: refresh tab info, start/cancel, load stored scans, clear data.
+ */
 import { createRequestId, createScanId } from '../shared/messages'
 import { userFacingError } from '../shared/errors'
 import { sendRuntime } from './chrome-api'

@@ -1,3 +1,7 @@
+/**
+ * Generates SKILL.md describing how an agent should recreate the scanned page
+ * from the export package files and hard reconstruction rules.
+ */
 import type { NormalizedDesign } from '../shared/types'
 import { PKG } from '../export/package-paths'
 import { escapeMarkdown } from '../normalize/markdown-escape'

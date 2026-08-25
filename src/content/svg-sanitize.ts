@@ -1,3 +1,7 @@
+/**
+ * Strips unsafe SVG tags/attrs before inlining, and optionally removes text
+ * nodes so icons stay decorative in exports.
+ */
 const UNSAFE_SVG_TAGS = new Set(['script', 'foreignobject', 'iframe', 'object', 'embed', 'link', 'meta'])
 const UNSAFE_ATTR = /^(on|href|xlink:href|src)$/i
 

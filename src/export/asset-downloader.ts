@@ -1,6 +1,14 @@
+/**
+ * Downloads selected scan assets with concurrency and size budgets, writing
+ * bytes into local ZIP paths; also decodes data URLs and base64 payloads.
+ */
 import { ASSET_FETCH_CONCURRENCY, MAX_ASSET_BYTES, MAX_ASSETS, MAX_TOTAL_ASSET_BYTES } from '../shared/constants'
 import type { AssetRecord } from '../shared/types'
 import { buildAssetPath, extensionFromMimeOrUrl } from './filename'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export interface FetchedAsset {
   id: string
@@ -12,6 +20,10 @@ export interface FetchedAsset {
 export type AssetFetchFn = (
   url: string,
 ) => Promise<{ bytes: Uint8Array | null; mimeType: string | null; error: string | null }>
+
+// ---------------------------------------------------------------------------
+// Download pipeline
+// ---------------------------------------------------------------------------
 
 export async function downloadAssets(
   assets: AssetRecord[],
@@ -94,6 +106,10 @@ export async function downloadAssets(
 
   return { assets: updated, files }
 }
+
+// ---------------------------------------------------------------------------
+// Encoding helpers
+// ---------------------------------------------------------------------------
 
 export function base64ToBytes(base64: string): Uint8Array {
   const binary = atob(base64)

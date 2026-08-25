@@ -1,3 +1,7 @@
+/**
+ * Assembles the Page2Design ZIP export: agent docs, DESIGN.md, prompts,
+ * JSON references, screenshots, and downloaded asset bytes.
+ */
 import JSZip from 'jszip'
 import type { NormalizedDesign, PageScan } from '../shared/types'
 import { generateAgentsMarkdown, generateClaudeMarkdown, generateCursorRule } from '../generators/agents-md'
@@ -16,6 +20,10 @@ import { generateSkillMarkdown } from '../generators/skill-md'
 import { assertSafeZipPath, exportFolderName, zipDownloadName } from './filename'
 import { PKG } from './package-paths'
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 export interface ZipInput {
   raw: PageScan
   design: NormalizedDesign
@@ -29,6 +37,10 @@ export interface ZipResult {
   folder: string
   paths: string[]
 }
+
+// ---------------------------------------------------------------------------
+// ZIP assembly
+// ---------------------------------------------------------------------------
 
 export async function buildExportZip(input: ZipInput): Promise<ZipResult> {
   const folder = exportFolderName(input.design.metadata.hostname, input.design.metadata.scannedAt)

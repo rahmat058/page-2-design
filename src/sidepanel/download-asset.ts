@@ -1,3 +1,6 @@
+/**
+ * Asset preview URLs, byte fetch (page or service worker), and single/zip downloads.
+ */
 import JSZip from 'jszip'
 import type { AssetRecord } from '../shared/types'
 import { uniqueVisualAssets } from '../content/asset-scanner'
@@ -5,6 +8,10 @@ import { downloadAssets } from '../export/asset-downloader'
 import { extensionFromMimeOrUrl, sanitizeFilename } from '../export/filename'
 import { createRequestId } from '../shared/messages'
 import { sendRuntime } from './chrome-api'
+
+// ---------------------------------------------------------------------------
+// Naming & preview
+// ---------------------------------------------------------------------------
 
 export function assetDownloadName(asset: AssetRecord): string {
   const ext = asset.inlineSvg ? 'svg' : extensionFromMimeOrUrl(asset.mimeType, asset.resolvedUrl, 'png')
@@ -33,6 +40,10 @@ export function estimateAssetSize(asset: AssetRecord): string | null {
 export function isVisualAsset(asset: AssetRecord): boolean {
   return asset.type !== 'font'
 }
+
+// ---------------------------------------------------------------------------
+// Fetch & object URLs
+// ---------------------------------------------------------------------------
 
 export async function fetchAssetBytes(
   url: string,
@@ -79,6 +90,10 @@ export async function objectUrlForAsset(asset: AssetRecord): Promise<string | nu
   const type = result.mimeType || guessMime(asset)
   return URL.createObjectURL(new Blob([result.bytes as BlobPart], { type }))
 }
+
+// ---------------------------------------------------------------------------
+// Downloads
+// ---------------------------------------------------------------------------
 
 export async function downloadSingleAsset(asset: AssetRecord): Promise<void> {
   const filename = assetDownloadName(asset)
@@ -131,6 +146,10 @@ export async function downloadAllImagesZip(assets: AssetRecord[], hostname: stri
 export function revokeObjectUrlLater(url: string, delayMs = 4000): void {
   setTimeout(() => URL.revokeObjectURL(url), delayMs)
 }
+
+// ---------------------------------------------------------------------------
+// Binary helpers
+// ---------------------------------------------------------------------------
 
 function chromeDownload(url: string, filename: string): Promise<void> {
   return new Promise((resolve, reject) => {

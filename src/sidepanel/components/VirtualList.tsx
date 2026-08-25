@@ -1,3 +1,6 @@
+/**
+ * Windowed list and LazyMount helpers for long content/asset collections.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 interface Props {

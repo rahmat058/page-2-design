@@ -1,3 +1,7 @@
+/**
+ * Scrolls the page within time/height budgets to trigger lazy-loaded media and
+ * infinite sections before the DOM walk, then restores the original scroll.
+ */
 import type { ScanRuntime } from './scan-context'
 import { yieldToMain } from './scan-context'
 

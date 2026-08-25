@@ -1,3 +1,6 @@
+/**
+ * Shared primary/secondary button used across panel actions.
+ */
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 

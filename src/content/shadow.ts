@@ -1,3 +1,7 @@
+/**
+ * Shadow DOM access helpers: open/closed root piercing via chrome.dom when
+ * available, plus a simple custom-element tag check.
+ */
 export function openShadowRoot(el: Element): ShadowRoot | null {
   try {
     const pierce = chrome.dom?.openOrClosedShadowRoot

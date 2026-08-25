@@ -1,3 +1,6 @@
+/**
+ * Copy affordances plus empty/scan-prompt placeholders used by result tabs.
+ */
 import type { ReactNode } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { startScan } from '../scan-flow'

@@ -1,3 +1,7 @@
+/**
+ * Live element inspector: styles, box model, HTML source, and asset download for the
+ * currently highlighted page node.
+ */
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Code2, Copy, Download } from 'lucide-react'
 import { Button } from '../components/Button'
@@ -10,6 +14,10 @@ import { extensionFromMimeOrUrl, sanitizeFilename } from '../../export/filename'
 import { fetchAssetBytes, revokeObjectUrlLater } from '../download-asset'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
+
+// ---------------------------------------------------------------------------
+// Inspector panel
+// ---------------------------------------------------------------------------
 
 export function InspectorView() {
   const inspected = useScanStore((s) => s.inspected)
@@ -152,6 +160,10 @@ export function InspectorView() {
     </section>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Inspected image detail
+// ---------------------------------------------------------------------------
 
 function InspectedImageDetail({
   inspected,
@@ -315,6 +327,10 @@ async function downloadInspectedAsset(asset: InspectedAsset): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Box model & property rows
+// ---------------------------------------------------------------------------
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
@@ -400,6 +416,10 @@ function ColorCard({ name, hex, onCopy }: { name: string; hex: string; onCopy: (
     </div>
   )
 }
+
+// ---------------------------------------------------------------------------
+// HTML pretty-print & syntax tokens
+// ---------------------------------------------------------------------------
 
 function formatNum(value: number): string {
   return Number.isInteger(value) ? String(value) : String(value)

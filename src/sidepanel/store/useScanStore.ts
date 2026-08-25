@@ -1,8 +1,15 @@
+/**
+ * Zustand store for scan phase, design data, panel navigation, and inspect state.
+ */
 import { create } from 'zustand'
 import type { NormalizedDesign, PageScan, ScanCounts, ScanLimitation, ScanOptions, ScanPhase } from '../../shared/types'
 import { DEFAULT_SCAN_OPTIONS, emptyCounts } from '../../shared/types'
 import type { InspectedElement } from '../../shared/messages'
 import { mergeAssets, uniqueVisualAssets } from '../../content/asset-scanner'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export type PanelView =
   | 'overview'
@@ -59,6 +66,10 @@ interface ScanStore {
   setInspected: (inspected: InspectedElement | null) => void
   reset: () => void
 }
+
+// ---------------------------------------------------------------------------
+// Store
+// ---------------------------------------------------------------------------
 
 export const useScanStore = create<ScanStore>((set) => ({
   phase: 'idle',

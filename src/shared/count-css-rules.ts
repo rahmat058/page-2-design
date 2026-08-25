@@ -1,3 +1,7 @@
+/**
+ * Counts top-level CSS rules in stylesheet text (mirrors cssRules.length semantics).
+ */
+
 export function countStyleRulesInCss(cssText: string): number {
   return countTopLevelCssRules(cssText)
 }

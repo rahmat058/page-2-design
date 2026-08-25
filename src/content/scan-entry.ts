@@ -1,3 +1,7 @@
+/**
+ * Content-script entry: single injection guard, message listener, and dispatch to scan /
+ * overlay / inspect handlers. Runs in every frame; top-frame only for full page scans.
+ */
 import { parseMessage, createMessage, createRequestId } from '../shared/messages'
 import type { ScanOptions } from '../shared/types'
 import { DEFAULT_SCAN_OPTIONS } from '../shared/types'
@@ -9,6 +13,10 @@ import { closeOverlay, toggleOverlay } from './overlay-host'
 import { highlightColorOnPage, setInspectContextMenu, setInspectMode } from './inspect-mode'
 
 declare const self: Window & typeof globalThis & { __PAGE2DESIGN_INJECTED__?: boolean }
+
+// ---------------------------------------------------------------------------
+// Bootstrap / messaging
+// ---------------------------------------------------------------------------
 
 if (!self.__PAGE2DESIGN_INJECTED__) {
   self.__PAGE2DESIGN_INJECTED__ = true
@@ -186,6 +194,10 @@ function init(): void {
 
   chrome.runtime.sendMessage(createMessage({ type: 'CONTENT_READY', requestId: createRequestId() }))
 }
+
+// ---------------------------------------------------------------------------
+// Same-origin asset fetch (page context)
+// ---------------------------------------------------------------------------
 
 async function fetchAsset(url: string): Promise<{
   url: string

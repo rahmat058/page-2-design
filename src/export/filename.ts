@@ -1,3 +1,7 @@
+/**
+ * Safe filename/hostname sanitization, export folder naming, MIME→extension
+ * mapping, asset path allocation, and ZIP path traversal guards.
+ */
 const ILLEGAL = /[<>:"/\\|?*\u0000-\u001f]/g // eslint-disable-line no-control-regex
 const RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
 

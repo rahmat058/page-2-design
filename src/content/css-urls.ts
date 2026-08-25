@@ -1,3 +1,6 @@
+/**
+ * Parses `url(...)` tokens from CSS property values and detects CSS `none`.
+ */
 export function extractCssUrls(value: string): string[] {
   const urls: string[] = []
   const re = /url\(\s*(['"]?)(.*?)\1\s*\)/gi

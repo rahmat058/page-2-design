@@ -1,3 +1,6 @@
+/**
+ * Content and assets tabs: section-grouped text blocks and grid/list visual assets.
+ */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { AssetRecord, ContentBlock } from '../../shared/types'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
@@ -33,6 +36,10 @@ import {
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
 
+// ---------------------------------------------------------------------------
+// Content view
+// ---------------------------------------------------------------------------
+
 export function ContentView() {
   const blocks = useScanStore((s) => s.design?.content ?? EMPTY_CONTENT)
   const sections = useScanStore((s) => s.design?.sections ?? EMPTY_SECTIONS)
@@ -66,6 +73,10 @@ export function ContentView() {
     </div>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Content row helpers
+// ---------------------------------------------------------------------------
 
 function ContentRow({ block }: { block: ContentBlock }) {
   const label = contentKindLabel(block)
@@ -110,6 +121,10 @@ async function copyBlock(block: ContentBlock): Promise<void> {
   useToastStore.getState().showToast(`${contentKindLabel(block)} copied`)
 }
 
+// ---------------------------------------------------------------------------
+// Assets view
+// ---------------------------------------------------------------------------
+
 const ASSET_TABS = [
   { value: 'grid', label: 'Grid', icon: <GridViewIcon /> },
   { value: 'list', label: 'List', icon: <ListViewIcon /> },
@@ -148,6 +163,10 @@ export function AssetsView() {
     </CollectionShell>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Asset tiles & previews
+// ---------------------------------------------------------------------------
 
 function AssetTile({ asset, index }: { asset: AssetRecord; index: number }) {
   const size = estimateAssetSize(asset)

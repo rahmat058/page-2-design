@@ -1,3 +1,7 @@
+/**
+ * Generates BUILD_PAGE.md and VALIDATE_PAGE.md prompts for implementing and
+ * visually checking a recreated page against the export package.
+ */
 import type { NormalizedDesign } from '../shared/types'
 import { PKG } from '../export/package-paths'
 

@@ -1,3 +1,6 @@
+/**
+ * Redacts sensitive URL query/hash tokens and flags sensitive form inputs before capture.
+ */
 import { SENSITIVE_QUERY_KEYS } from './constants'
 
 export function redactUrl(rawUrl: string): { url: string; redacted: boolean } {

@@ -1,3 +1,7 @@
+/**
+ * Policy for which asset URLs may be fetched during scan/export (same-site / brand hosts).
+ */
+
 /** Allow same-origin, same-site brand hosts, and data/blob URLs. Block unrelated third parties. */
 export function isAllowedAssetFetchUrl(assetUrl: string, pageUrl: string): boolean {
   const trimmed = assetUrl.trim()

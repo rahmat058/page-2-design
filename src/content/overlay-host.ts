@@ -1,3 +1,7 @@
+/**
+ * Mounts the floating side-panel iframe overlay in the page and positions /
+ * resizes the host around the viewport margin.
+ */
 import { OVERLAY_WIDTH } from '../shared/constants'
 
 const HOST_ID = 'page2design-overlay-root'

@@ -1,3 +1,12 @@
+/**
+ * Color parsing, contrast helpers, role inference, and page palette grouping
+ * used while normalizing scanned CSS color usage into design tokens.
+ */
+
+// ---------------------------------------------------------------------------
+// Types and named CSS colors
+// ---------------------------------------------------------------------------
+
 export interface ParsedColor {
   r: number
   g: number
@@ -33,6 +42,10 @@ const NAMED: Record<string, [number, number, number]> = {
   orange: [255, 165, 0],
   transparent: [0, 0, 0],
 }
+
+// ---------------------------------------------------------------------------
+// Parsing
+// ---------------------------------------------------------------------------
 
 export function parseColor(input: string): ParsedColor | null {
   const original = input.trim()
@@ -183,6 +196,10 @@ function parseHue(raw: string): number {
   return Number.parseFloat(raw) % 360
 }
 
+// ---------------------------------------------------------------------------
+// Color-space conversions
+// ---------------------------------------------------------------------------
+
 function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
   const hn = ((h % 360) + 360) % 360
   const c = (1 - Math.abs(2 * l - 1)) * s
@@ -301,6 +318,10 @@ function round4(n: number): number {
   return Math.round(n * 10000) / 10000
 }
 
+// ---------------------------------------------------------------------------
+// Contrast and role inference
+// ---------------------------------------------------------------------------
+
 export function relativeLuminance(hex: string): number | null {
   const parsed = parseColor(hex)
   if (!parsed) return null
@@ -406,6 +427,10 @@ export function colorIsExact(value: string, targetHex: string): boolean {
   if (a.a < 0.08 || Math.abs(a.a - b.a) > 0.05) return false
   return colorDistance(a, b) < 2.5
 }
+
+// ---------------------------------------------------------------------------
+// Page palette grouping
+// ---------------------------------------------------------------------------
 
 export function pagePaletteGroups(
   colors: Array<{

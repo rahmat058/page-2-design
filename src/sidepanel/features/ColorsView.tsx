@@ -1,3 +1,6 @@
+/**
+ * Colors, typography, and layout result tabs for the scanned design tokens.
+ */
 import { useState } from 'react'
 import { isDarkHex, parseColor, pagePaletteGroups } from '../../normalize/colors'
 import { createRequestId } from '../../shared/messages'

@@ -1,3 +1,6 @@
+/**
+ * Merges streamed scan chunks into a complete PageScan for storage and the panel.
+ */
 import { SCHEMA_VERSION } from './constants'
 import { emptyCoverage, emptyCssInformation } from './types'
 import type { PageScan } from './types'

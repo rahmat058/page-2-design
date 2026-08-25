@@ -1,3 +1,6 @@
+/**
+ * Developer / about tab: author profile and link to the project repository.
+ */
 import { useState, type SVGProps } from 'react'
 import { Globe, MapPin, Star } from 'lucide-react'
 

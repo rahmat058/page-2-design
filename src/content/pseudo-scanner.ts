@@ -1,3 +1,7 @@
+/**
+ * Samples ::before / ::after computed styles for elements that use generated
+ * content or decorative pseudo boxes, within query budget caps.
+ */
 import { DOM_SCAN_YIELD_EVERY, MAX_PSEUDOS, MAX_PSEUDO_STYLE_QUERIES } from '../shared/constants'
 import type { PseudoRecord } from '../shared/types'
 import { extractCssUrls } from './css-urls'

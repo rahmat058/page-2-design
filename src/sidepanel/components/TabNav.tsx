@@ -1,3 +1,6 @@
+/**
+ * Horizontal tab list for switching among scan result views (legacy/alternate nav).
+ */
 import { useScanStore, type PanelView } from '../store/useScanStore'
 
 const TABS: { id: PanelView; label: string }[] = [

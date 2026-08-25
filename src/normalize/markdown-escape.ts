@@ -1,3 +1,6 @@
+/**
+ * Escapes Markdown special characters and builds pipe tables for generated docs.
+ */
 export function escapeMarkdown(text: string): string {
   return String(text ?? '').replace(/[\\`*_{}[\]()#+\-.!|<>]/g, (ch) => `\\${ch}`)
 }

@@ -1,5 +1,13 @@
+/**
+ * IndexedDB persistence for scan records and binary blobs, including slim
+ * storage, stale purge, and newest-N quota enforcement.
+ */
 import { DB_NAME, DB_VERSION, INCOMPLETE_SCAN_MS, MAX_STORED_SCANS, STALE_SCAN_MS } from '../shared/constants'
 import type { AssetRecord, NormalizedDesign, PageScan, ScanPhase } from '../shared/types'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export interface ScanRecord {
   id: string
@@ -16,6 +24,10 @@ export interface BlobRecord {
   mimeType: string
   bytes: ArrayBuffer
 }
+
+// ---------------------------------------------------------------------------
+// IDB helpers
+// ---------------------------------------------------------------------------
 
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -59,6 +71,10 @@ async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Slimming for durable storage
+// ---------------------------------------------------------------------------
+
 /** Drop heavy duplicates from durable storage; UI keeps in-memory full scan for export. */
 export function slimScanForStorage(raw: PageScan): PageScan {
   return {
@@ -83,6 +99,10 @@ function slimAssetForStorage(asset: AssetRecord): AssetRecord {
   }
   return { ...asset, resolvedUrl, sourceUrl, inlineSvg }
 }
+
+// ---------------------------------------------------------------------------
+// Scan and blob CRUD
+// ---------------------------------------------------------------------------
 
 export async function putScan(record: ScanRecord): Promise<void> {
   await withDb(async (db) => {
@@ -143,6 +163,10 @@ export async function clearAllScans(): Promise<void> {
     await txDone(tx)
   })
 }
+
+// ---------------------------------------------------------------------------
+// Retention and quota
+// ---------------------------------------------------------------------------
 
 export async function purgeStaleScans(now = Date.now()): Promise<void> {
   await withDb(async (db) => {

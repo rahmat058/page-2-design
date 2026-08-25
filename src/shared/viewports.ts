@@ -1,3 +1,7 @@
+/**
+ * Viewport presets and media-query width matching for multi-viewport layout capture.
+ */
+
 export interface ViewportPreset {
   name: string
   width: number

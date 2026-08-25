@@ -1,3 +1,7 @@
+/**
+ * Serializes normalized design slices into JSON reference payloads
+ * (tokens, layout, scan summary, asset manifest, limitations).
+ */
 import { SCHEMA_VERSION } from '../shared/constants'
 import { publicUrlFromAssetPath } from '../export/package-paths'
 import type { NormalizedDesign, PageScan } from '../shared/types'

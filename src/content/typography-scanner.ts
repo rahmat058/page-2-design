@@ -1,3 +1,7 @@
+/**
+ * Builds typography token signatures from font/size/weight/line-height styles
+ * and aggregates TypographyUsage maps for the scan.
+ */
 import type { TypographyUsage } from '../shared/types'
 import { hashString } from '../shared/utils'
 

@@ -1,3 +1,7 @@
+/**
+ * Domain errors and serialization helpers for user-facing scan/export failure messages.
+ */
+
 export class DomainError extends Error {
   readonly code: string
   readonly recoverable: boolean

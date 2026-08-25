@@ -1,3 +1,7 @@
+/**
+ * Per-scan runtime: options, cancel flag, limitation list, element id counter,
+ * and a yieldToMain helper for cooperative DOM walks.
+ */
 import type { ScanLimitation, ScanOptions } from '../shared/types'
 
 export interface ScanRuntime {

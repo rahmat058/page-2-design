@@ -1,3 +1,7 @@
+/**
+ * Heuristically clusters scanned elements into reusable component patterns
+ * (buttons, cards, nav links, inputs) for the normalized design.
+ */
 import type { ComponentPattern, ScannedElement } from '../shared/types'
 
 export function inferComponents(

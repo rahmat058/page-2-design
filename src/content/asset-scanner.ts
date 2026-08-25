@@ -1,9 +1,17 @@
+/**
+ * Discovers image/SVG/icon/font assets from elements and the document, then
+ * dedupes by visual identity, materializes blob: URLs, and merges duplicates.
+ */
 import { ASSET_FETCH_CONCURRENCY, MAX_ASSET_BYTES, MAX_ASSETS, MAX_TOTAL_ASSET_BYTES } from '../shared/constants'
 import type { AssetRecord, AssetType } from '../shared/types'
 import { hashString } from '../shared/utils'
 import { extractCssUrls } from './css-urls'
 import { parseSrcset, pickBestSrcsetUrl } from './srcset'
 import { sanitizeSvg } from './svg-sanitize'
+
+// ---------------------------------------------------------------------------
+// Per-element collection
+// ---------------------------------------------------------------------------
 
 export function collectAssetsFromElement(el: Element, elementId: string, computed: CSSStyleDeclaration): AssetRecord[] {
   const found: AssetRecord[] = []
@@ -137,6 +145,10 @@ export function collectAssetsFromElement(el: Element, elementId: string, compute
   return found
 }
 
+// ---------------------------------------------------------------------------
+// Document-wide harvest
+// ---------------------------------------------------------------------------
+
 export function collectDocumentAssets(): AssetRecord[] {
   const extras: AssetRecord[] = []
   for (const meta of document.querySelectorAll(
@@ -199,6 +211,10 @@ function collectStylesheetAssets(): AssetRecord[] {
   }
   return found
 }
+
+// ---------------------------------------------------------------------------
+// Construction helpers
+// ---------------------------------------------------------------------------
 
 function wrapSymbolAsSvg(symbol: Element): string | null {
   const viewBox = symbol.getAttribute('viewBox') || '0 0 24 24'
@@ -325,6 +341,10 @@ function pushAsset(
   found.push(makeAsset(type, rawUrl, elementId, extra))
 }
 
+// ---------------------------------------------------------------------------
+// URL identity & canonicalize
+// ---------------------------------------------------------------------------
+
 export function resolveUrl(url: string): string {
   try {
     return new URL(url, document.baseURI).toString()
@@ -427,6 +447,10 @@ function serializeSvg(el: Element): string {
   }
   return sanitizeSvg(new XMLSerializer().serializeToString(clone))
 }
+
+// ---------------------------------------------------------------------------
+// Blob materialization & merge
+// ---------------------------------------------------------------------------
 
 export async function materializeBlobAssets(assets: AssetRecord[]): Promise<void> {
   const queue = assets.filter((asset) => asset.resolvedUrl.startsWith('blob:'))

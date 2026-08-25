@@ -1,3 +1,6 @@
+/**
+ * Generate Markdown / JSON pack for agents: file picker, preview, copy, and download.
+ */
 import { useEffect, useRef, useState, startTransition } from 'react'
 import { CircleHelp, Copy, Download, RefreshCw } from 'lucide-react'
 import { generateAgentsMarkdown, generateClaudeMarkdown, generateCursorRule } from '../../generators/agents-md'
@@ -22,6 +25,10 @@ import { startScan } from '../scan-flow'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
 import type { NormalizedDesign, PageScan } from '../../shared/types'
+
+// ---------------------------------------------------------------------------
+// File catalog
+// ---------------------------------------------------------------------------
 
 const STROKE = { size: 14, strokeWidth: 1.75 } as const
 
@@ -147,6 +154,10 @@ const FILES = [
 
 type FileId = (typeof FILES)[number]['id']
 const PREVIEW_CHARS = 120_000
+
+// ---------------------------------------------------------------------------
+// Markdown view
+// ---------------------------------------------------------------------------
 
 export function MarkdownView() {
   const design = useScanStore((s) => s.design)
@@ -282,6 +293,10 @@ export function MarkdownView() {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Build, preview, clipboard, download
+// ---------------------------------------------------------------------------
+
 function buildFile(file: (typeof FILES)[number], pack: Pack): string {
   try {
     return file.build(pack)
@@ -314,6 +329,10 @@ async function refreshMarkdown(): Promise<void> {
   useToastStore.getState().showToast('Refreshing from page…')
   await startScan()
 }
+
+// ---------------------------------------------------------------------------
+// How-to panel
+// ---------------------------------------------------------------------------
 
 function MarkdownInfoPanel({ onClose }: { onClose: () => void }) {
   return (

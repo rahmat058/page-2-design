@@ -1,3 +1,6 @@
+/**
+ * Parses HTML srcset strings and picks the highest-resolution candidate URL.
+ */
 export interface SrcsetCandidate {
   url: string
   descriptor: string

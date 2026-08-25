@@ -1,3 +1,7 @@
+/**
+ * Top-level page and iframe scan pipelines: lazy-load, DOM walk, token collection,
+ * section association, then chunked SCAN_CHUNK transport back to the service worker.
+ */
 import {
   ASSET_CHUNK_SIZE,
   CONTENT_CHUNK_SIZE,
@@ -32,6 +36,10 @@ import { readCssInformation } from './css-information'
 import { associateSections, detectSections } from './section-detector'
 import { collectTypography, typographyUsages } from './typography-scanner'
 import { emptyCoverage } from '../shared/types'
+
+// ---------------------------------------------------------------------------
+// Page scan pipeline
+// ---------------------------------------------------------------------------
 
 export interface ScanTransport {
   send(message: unknown): void
@@ -198,6 +206,10 @@ export async function runPageScan(options: ScanOptions, transport: ScanTransport
   return scan
 }
 
+// ---------------------------------------------------------------------------
+// Metadata & stylesheet helpers
+// ---------------------------------------------------------------------------
+
 function emptyCounts() {
   return { elements: 0, textBlocks: 0, images: 0, colors: 0, typography: 0 }
 }
@@ -310,6 +322,10 @@ function readMediaQueries(runtime: {
   }
   return observations.slice(0, 80)
 }
+
+// ---------------------------------------------------------------------------
+// Chunking / transport
+// ---------------------------------------------------------------------------
 
 function assignAssetPaths(assets: import('../shared/types').AssetRecord[]): void {
   const used = new Set<string>()
@@ -433,6 +449,10 @@ function pushTokenSlices(out: Record<string, unknown>[], key: string, values: un
     out.push({ [key]: values.slice(i, i + TOKEN_CHUNK_SIZE) })
   }
 }
+
+// ---------------------------------------------------------------------------
+// Compact iframe scan
+// ---------------------------------------------------------------------------
 
 export async function runFrameScan(): Promise<CompactFrameScan> {
   const runtime = createRuntime({

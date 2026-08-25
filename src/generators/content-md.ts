@@ -1,3 +1,6 @@
+/**
+ * Generates CONTENT.md with exact captured copy grouped by page region.
+ */
 import type { ContentBlock, NormalizedSection } from '../shared/types'
 import { escapeMarkdown } from '../normalize/markdown-escape'
 import { sectionComposition } from '../normalize/layout-pattern'

@@ -1,3 +1,7 @@
+/**
+ * Routes extension messages from the side panel / content scripts to orchestrator
+ * actions (scan lifecycle, screenshots, CSS info, overlay/inspect relays).
+ */
 import { parseMessage, createMessage, createRequestId } from '../shared/messages'
 import { userFacingError, serializeError } from '../shared/errors'
 import { clearAllScans, getScan } from '../storage/indexed-db'
@@ -15,6 +19,10 @@ import {
 } from './scan-orchestrator'
 import { readTabCssInformation } from './read-tab-css'
 import { emptyCssInformation } from '../shared/types'
+
+// ---------------------------------------------------------------------------
+// Message dispatch
+// ---------------------------------------------------------------------------
 
 export function routeMessage(
   raw: unknown,

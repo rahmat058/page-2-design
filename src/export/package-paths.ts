@@ -1,3 +1,7 @@
+/**
+ * Canonical paths inside the export package (docs, prompts, assets) and the
+ * public URL rewrite used after copying assets into an app `public/` folder.
+ */
 export const PKG = {
   agents: 'AGENTS.md',
   claude: 'CLAUDE.md',

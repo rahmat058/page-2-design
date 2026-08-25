@@ -1,3 +1,7 @@
+/**
+ * Picks allowlisted computed style props, builds style signatures, and derives
+ * visibility plus document-space bounds from a single getBoundingClientRect.
+ */
 import { STYLE_ALLOWLIST } from '../shared/constants'
 import type { BoundingBox, VisibilityInfo } from '../shared/types'
 import { hashString } from '../shared/utils'

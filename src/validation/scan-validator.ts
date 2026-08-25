@@ -1,3 +1,7 @@
+/**
+ * Lightweight sanity checks on raw and normalized scans, plus secret leakage
+ * detection against known sensitive strings.
+ */
 import type { NormalizedDesign, PageScan } from '../shared/types'
 
 export function validateScan(raw: PageScan): string[] {

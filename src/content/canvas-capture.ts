@@ -1,3 +1,7 @@
+/**
+ * Captures a PNG data-URL snapshot of a canvas element for asset export when
+ * the canvas is not tainted and stays under the size cap.
+ */
 import { hashString } from '../shared/utils'
 import type { AssetRecord } from '../shared/types'
 

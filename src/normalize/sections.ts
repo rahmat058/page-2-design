@@ -1,3 +1,7 @@
+/**
+ * Attaches composition, token links, and layout metadata to raw page sections
+ * to produce NormalizedSection records.
+ */
 import type {
   AssetRecord,
   ColorToken,

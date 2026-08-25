@@ -1,3 +1,6 @@
+/**
+ * Primary bottom navigation between overview, content, tokens, markdown, and export.
+ */
 import { useScanStore, type PanelView } from '../store/useScanStore'
 import {
   AssetsIcon,

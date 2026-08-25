@@ -1,3 +1,6 @@
+/**
+ * Accessible on/off switch for inspect mode and similar panel toggles.
+ */
 import type { ReactNode } from 'react'
 
 interface Props {

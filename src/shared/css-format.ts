@@ -1,3 +1,7 @@
+/**
+ * Compact display formatting for CSS byte size and load time in the overview UI.
+ */
+
 export function formatCssBytes(bytes: number): string {
   if (bytes < 1024) return `${Math.max(0, Math.round(bytes))}B`
   return `${Math.round(bytes / 1024)}kb`

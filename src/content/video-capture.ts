@@ -1,3 +1,6 @@
+/**
+ * Captures a still frame from `<video>` when poster is missing, for rebuild as a static image asset.
+ */
 import { hashString } from '../shared/utils'
 import type { AssetRecord } from '../shared/types'
 

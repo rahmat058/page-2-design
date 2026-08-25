@@ -1,3 +1,6 @@
+/**
+ * Export tab: select assets and build a downloadable ZIP of the design package.
+ */
 import { useState } from 'react'
 import { sendRuntime } from '../chrome-api'
 import { createRequestId, createScanId } from '../../shared/messages'

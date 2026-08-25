@@ -1,3 +1,7 @@
+/**
+ * Groups scanned typography usages into named type tokens with inferred
+ * display/heading/body/caption roles and license-review flags.
+ */
 import type { TypographyToken, TypographyUsage } from '../shared/types'
 import { looksProprietaryFont } from '../content/typography-scanner'
 

@@ -1,3 +1,7 @@
+/**
+ * Turns a raw PageScan into a NormalizedDesign: tokens, sections, components,
+ * coverage, outline, and media stand-ins used by export generators.
+ */
 import { SCHEMA_VERSION } from '../shared/constants'
 import { mergeAssets } from '../content/asset-scanner'
 import type { ColorToken, NormalizedDesign, PageScan } from '../shared/types'
@@ -13,6 +17,10 @@ import { buildAssetPath } from '../export/filename'
 import { buildDomOutline, utilityClassesFor } from './dom-outline'
 import { collectMediaSubstitutions } from './media-substitutions'
 import { buildClassRecipes } from './class-recipes'
+
+// ---------------------------------------------------------------------------
+// Public entry
+// ---------------------------------------------------------------------------
 
 export function normalizeScan(raw: PageScan): NormalizedDesign {
   const colorTokens = groupColors(raw)
@@ -121,6 +129,10 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Document outline
+// ---------------------------------------------------------------------------
+
 function buildDocumentOutline(raw: PageScan, assets: NormalizedDesign['assets']): string {
   const root =
     raw.elements.find((el) => el.tagName === 'body') ??
@@ -129,6 +141,10 @@ function buildDocumentOutline(raw: PageScan, assets: NormalizedDesign['assets'])
   if (!root) return ''
   return buildDomOutline(root.id, raw.elements, assets, { maxNodes: 1200, maxDepth: 16 })
 }
+
+// ---------------------------------------------------------------------------
+// Color token grouping
+// ---------------------------------------------------------------------------
 
 function groupColors(raw: PageScan): ColorToken[] {
   const tokens: ColorToken[] = []

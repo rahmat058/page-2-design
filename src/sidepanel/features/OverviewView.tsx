@@ -1,3 +1,6 @@
+/**
+ * Overview tab: page intro, scan progress/options, coverage, palette, and CSS stats.
+ */
 import { useEffect, useRef, useState } from 'react'
 import { Copy } from 'lucide-react'
 import { Button } from '../components/Button'
@@ -15,6 +18,10 @@ import { formatCssBytes, formatCssLoadTime } from '../../shared/css-format'
 import { objectUrlForAsset } from '../download-asset'
 import { sendRuntime } from '../chrome-api'
 import { createRequestId } from '../../shared/messages'
+
+// ---------------------------------------------------------------------------
+// Overview
+// ---------------------------------------------------------------------------
 
 export function OverviewView() {
   const design = useScanStore((s) => s.design)
@@ -191,6 +198,10 @@ export function OverviewView() {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Intro & OG image
+// ---------------------------------------------------------------------------
+
 function OverviewIntro() {
   const design = useScanStore((s) => s.design)
   const tabTitle = useScanStore((s) => s.title)
@@ -266,6 +277,10 @@ function OgImage({ src, asset }: { src: string; asset?: AssetRecord }) {
     />
   )
 }
+
+// ---------------------------------------------------------------------------
+// Palette & typography helpers
+// ---------------------------------------------------------------------------
 
 function primaryFont(stack: string | undefined): string {
   if (!stack) return '—'

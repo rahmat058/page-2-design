@@ -1,3 +1,7 @@
+/**
+ * Extracts ordered text/content blocks from elements, respecting contentScope
+ * (main vs full page) and skipping sensitive form fields.
+ */
 import { isSensitiveInput } from '../shared/redact'
 import type { ContentBlock, ContentScope } from '../shared/types'
 import type { ScanRuntime } from './scan-context'

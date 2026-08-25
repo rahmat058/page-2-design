@@ -1,3 +1,7 @@
+/**
+ * Privileged CSS inventory for a tab: injects inspect-css.js and optionally
+ * fetches stylesheet bodies the content script could not read cross-origin.
+ */
 import type { CssInformation } from '../shared/types'
 import { emptyCssInformation } from '../shared/types'
 import { countTopLevelCssRules } from '../shared/count-css-rules'

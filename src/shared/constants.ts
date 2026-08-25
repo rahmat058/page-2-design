@@ -1,3 +1,12 @@
+/**
+ * Cross-cutting limits, schema versions, and allowlists used by scanning,
+ * messaging, storage, and the side panel overlay.
+ */
+
+// ---------------------------------------------------------------------------
+// Identity, storage, retention
+// ---------------------------------------------------------------------------
+
 export const SCHEMA_VERSION = '1.0.0'
 export const MESSAGE_SCHEMA_VERSION = '1.0.0'
 export const EXTENSION_NAME = 'Page2Design'
@@ -5,6 +14,11 @@ export const DB_NAME = 'page2design'
 export const DB_VERSION = 1
 export const STALE_SCAN_MS = 24 * 60 * 60 * 1000
 export const INCOMPLETE_SCAN_MS = 60 * 60 * 1000
+
+// ---------------------------------------------------------------------------
+// Scan / export limits & chunk sizes
+// ---------------------------------------------------------------------------
+
 export const ELEMENT_CHUNK_SIZE = 40
 export const ASSET_FETCH_CONCURRENCY = 4
 export const MAX_ASSETS = 500
@@ -25,6 +39,11 @@ export const MAX_STORED_SCANS = 8
 export const MAX_CROSS_ORIGIN_FRAMES = 8
 export const OVERLAY_WIDTH = 336
 export const OVERLAY_WIDE_WIDTH = 560
+
+// ---------------------------------------------------------------------------
+// Privacy & DOM capture allowlists
+// ---------------------------------------------------------------------------
+
 export const SENSITIVE_QUERY_KEYS = [
   'token',
   'access_token',
@@ -43,6 +62,10 @@ export const SENSITIVE_QUERY_KEYS = [
   'code',
   'otp',
 ]
+
+// ---------------------------------------------------------------------------
+// Captured computed styles
+// ---------------------------------------------------------------------------
 
 export const STYLE_ALLOWLIST = [
   'display',
@@ -133,6 +156,10 @@ export const STYLE_ALLOWLIST = [
   'fill',
   'stroke',
 ] as const
+
+// ---------------------------------------------------------------------------
+// Attribute / input / tag filters
+// ---------------------------------------------------------------------------
 
 export const SAFE_ATTRIBUTES = new Set([
   'id',

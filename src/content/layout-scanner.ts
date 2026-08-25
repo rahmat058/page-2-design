@@ -1,3 +1,7 @@
+/**
+ * Collects spacing, radius, and shadow numeric tokens plus interaction hints
+ * (links, buttons, inputs) from computed styles during the page scan.
+ */
 import type { InteractionRecord, NumericUsage, ShadowUsage } from '../shared/types'
 import { parsePx } from './style-utils'
 

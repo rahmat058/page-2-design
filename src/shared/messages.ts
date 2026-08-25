@@ -1,3 +1,7 @@
+/**
+ * Extension message protocol: typed payloads, request IDs, and parse/create helpers
+ * shared by the side panel, content scripts, and service worker.
+ */
 import { MESSAGE_SCHEMA_VERSION } from './constants'
 import type { SerializedError } from './errors'
 import { isRecord, asString } from './utils'
@@ -13,6 +17,10 @@ import type {
   ScanPhase,
   ScanProgress,
 } from './types'
+
+// ---------------------------------------------------------------------------
+// Message type names
+// ---------------------------------------------------------------------------
 
 export type MessageType =
   | 'PING'
@@ -50,6 +58,10 @@ export type MessageType =
   | 'HIGHLIGHT_COLOR_RESULT'
   | 'GET_CSS_INFO'
   | 'CSS_INFO'
+
+// ---------------------------------------------------------------------------
+// Message interfaces
+// ---------------------------------------------------------------------------
 
 interface MessageBase {
   schemaVersion: string
@@ -233,6 +245,10 @@ export interface SetInspectContextMenuMessage extends MessageBase {
   payload: { enabled: boolean }
 }
 
+// ---------------------------------------------------------------------------
+// Inspect payloads
+// ---------------------------------------------------------------------------
+
 export interface BoxSides {
   top: number
   right: number
@@ -310,6 +326,10 @@ export interface CssInfoMessage extends MessageBase {
   type: 'CSS_INFO'
   payload: CssInformation
 }
+
+// ---------------------------------------------------------------------------
+// Union, validation, and factories
+// ---------------------------------------------------------------------------
 
 export type ExtensionMessage =
   | PingMessage

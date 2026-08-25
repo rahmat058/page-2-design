@@ -1,3 +1,6 @@
+/**
+ * Groups scanned content blocks by section and formats them for copy-all in the panel.
+ */
 import type { ContentBlock } from '../shared/types'
 
 export interface ContentSectionGroup {

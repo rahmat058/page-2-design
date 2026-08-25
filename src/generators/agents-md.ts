@@ -1,6 +1,14 @@
+/**
+ * Builds agent-facing instruction files (AGENTS.md, CLAUDE.md, Cursor rule)
+ * that steer reconstruction from the export package.
+ */
 import type { NormalizedDesign } from '../shared/types'
 import { PKG } from '../export/package-paths'
 import { escapeMarkdown } from '../normalize/markdown-escape'
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function viewports(design: NormalizedDesign): string {
   const captured = design.responsive
@@ -8,6 +16,10 @@ function viewports(design: NormalizedDesign): string {
     .map((item) => `${item.label ?? 'viewport'} ${item.viewportWidth}×${item.viewportHeight}`)
   return captured.join(', ') || `${design.page.viewportWidth}×${design.page.viewportHeight}`
 }
+
+// ---------------------------------------------------------------------------
+// AGENTS.md
+// ---------------------------------------------------------------------------
 
 export function generateAgentsMarkdown(design: NormalizedDesign): string {
   const title = escapeMarkdown(design.metadata.title || design.metadata.hostname)
@@ -72,6 +84,10 @@ Start here. Then follow the files in order. Do not skip \`${PKG.design}\`.
 `
 }
 
+// ---------------------------------------------------------------------------
+// CLAUDE.md
+// ---------------------------------------------------------------------------
+
 export function generateClaudeMarkdown(design: NormalizedDesign): string {
   const title = escapeMarkdown(design.metadata.title || design.metadata.hostname)
   return `# Claude Code instructions
@@ -88,6 +104,10 @@ Recreate the scanned page **${title}**.
 8. Do not invent missing sections, assets, or testimonials. Do not substitute a generic landing layout.
 `
 }
+
+// ---------------------------------------------------------------------------
+// Cursor rule
+// ---------------------------------------------------------------------------
 
 export function generateCursorRule(design: NormalizedDesign): string {
   return `---

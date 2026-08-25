@@ -1,3 +1,7 @@
+/**
+ * Merges a same-origin iframe CompactFrameScan into the parent PageScan with
+ * remapped IDs so nested frame content participates in normalization.
+ */
 import type { AssetRecord, CompactFrameScan, PageScan } from '../shared/types'
 
 export function mergeFrameScan(parent: PageScan, frame: CompactFrameScan, index: number): PageScan {

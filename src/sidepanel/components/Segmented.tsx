@@ -1,3 +1,6 @@
+/**
+ * Segmented control and CollectionShell layout used by multi-mode result tabs.
+ */
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 export interface SegmentedOption<T extends string> {

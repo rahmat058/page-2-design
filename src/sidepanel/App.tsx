@@ -1,3 +1,7 @@
+/**
+ * Side panel root: wires scan store, runtime messages, chrome chrome, and feature views.
+ * Also handles overlay resize and inspect-mode toggling.
+ */
 import { useEffect, useState } from 'react'
 import { createRequestId } from '../shared/messages'
 import { userFacingError } from '../shared/errors'
@@ -24,8 +28,16 @@ import { copyContentPlain, groupContentBySection, panelContentBlocks } from './c
 import type { NormalizedDesign } from '../shared/types'
 import { OVERLAY_WIDE_WIDTH, OVERLAY_WIDTH } from '../shared/constants'
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting']
 const OVERLAY = typeof window !== 'undefined' && window !== window.top
+
+// ---------------------------------------------------------------------------
+// App shell
+// ---------------------------------------------------------------------------
 
 export function App() {
   const phase = useScanStore((s) => s.phase)
@@ -190,6 +202,10 @@ export function App() {
     await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() })
   }
 }
+
+// ---------------------------------------------------------------------------
+// Boot & view helpers
+// ---------------------------------------------------------------------------
 
 let autoScanStarted = false
 

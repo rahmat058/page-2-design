@@ -1,3 +1,6 @@
+/**
+ * Thin chrome.runtime wrappers that stamp schema versions and parse ExtensionMessage replies.
+ */
 import { createMessage, createRequestId, parseMessage } from '../shared/messages'
 import type { ExtensionMessage } from '../shared/messages'
 

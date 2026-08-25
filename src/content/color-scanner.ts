@@ -1,3 +1,7 @@
+/**
+ * Aggregates solid and gradient color usages from element styles and CSS
+ * variables into ColorUsage token maps for the scan payload.
+ */
 import { parseColor } from '../normalize/colors'
 import type { ColorUsage } from '../shared/types'
 

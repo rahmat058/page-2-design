@@ -1,3 +1,6 @@
+/**
+ * Page title row with optional count badge and trailing action slot.
+ */
 import type { ReactNode } from 'react'
 import { CountBadge } from './CountBadge'
 

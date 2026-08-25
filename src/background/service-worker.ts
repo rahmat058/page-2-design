@@ -1,7 +1,15 @@
+/**
+ * MV3 service worker: lifecycle hooks, message fan-out, and toolbar action that
+ * toggles the in-page overlay (or opens the side panel on restricted URLs).
+ */
 import { purgeStaleScans } from '../storage/indexed-db'
 import { routeMessage } from './message-router'
 import { createMessage, createRequestId } from '../shared/messages'
 import { ensureContentScript, isRestrictedUrl } from './scan-orchestrator'
+
+// ---------------------------------------------------------------------------
+// Lifecycle
+// ---------------------------------------------------------------------------
 
 function configureActionClick(): void {
   void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
@@ -18,6 +26,10 @@ chrome.runtime.onStartup.addListener(() => {
 })
 
 configureActionClick()
+
+// ---------------------------------------------------------------------------
+// Messaging & action click
+// ---------------------------------------------------------------------------
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return routeMessage(message, sender, sendResponse)

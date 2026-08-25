@@ -1,3 +1,6 @@
+/**
+ * Toast host that renders the current message from useToastStore.
+ */
 import { useToastStore } from '../toast'
 
 export function Toast() {

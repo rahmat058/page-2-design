@@ -1,3 +1,7 @@
+/**
+ * Background scan orchestration: sessions, content-script injection, chunk
+ * assembly, normalization, screenshots, and privileged asset fetches.
+ */
 import { createMessage, createRequestId, parseMessage } from '../shared/messages'
 import { DomainError, serializeError } from '../shared/errors'
 import { assembleScan } from '../shared/assemble-scan'
@@ -18,6 +22,10 @@ import { readTabCssInformation } from './read-tab-css'
 import type { ExtensionMessage, ScanChunkMessage } from '../shared/messages'
 import type { CompactFrameScan, LayoutSnapshot, PageScan, ScanOptions } from '../shared/types'
 import { DEFAULT_SCAN_OPTIONS, hasCssData } from '../shared/types'
+
+// ---------------------------------------------------------------------------
+// Session / tab resolution
+// ---------------------------------------------------------------------------
 
 const RESTRICTED = /^(chrome|chrome-extension|edge|about|devtools|https:\/\/chrome\.google\.com\/webstore)/i
 const SESSION_KEY = (scanId: string) => `scanSession:${scanId}`
@@ -122,6 +130,10 @@ async function clearPersistedSession(scanId: string): Promise<void> {
     /* ignore */
   }
 }
+
+// ---------------------------------------------------------------------------
+// Scan lifecycle
+// ---------------------------------------------------------------------------
 
 export async function startScan(scanId: string, options: ScanOptions): Promise<void> {
   const tab = await identifyActiveTab()
@@ -298,6 +310,10 @@ export function slimScanForMessaging(raw: PageScan): PageScan {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Screenshots
+// ---------------------------------------------------------------------------
+
 export async function captureScreenshots(scanId: string): Promise<{
   viewport: string | null
   fullPage: string | null
@@ -357,6 +373,10 @@ export async function captureScreenshots(scanId: string): Promise<{
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Asset fetch
+// ---------------------------------------------------------------------------
 
 export async function fetchAssetBytes(
   url: string,
@@ -421,6 +441,10 @@ async function fallbackContentFetch(
     return { base64: null, mimeType: null, error: previous }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Frame merge / viewports
+// ---------------------------------------------------------------------------
 
 async function mergeCrossOriginFrames(tabId: number, raw: ReturnType<typeof assembleScan>) {
   const frames = await chrome.scripting.executeScript({
@@ -508,6 +532,10 @@ async function requestLayoutSnapshot(tabId: number, label: string): Promise<Layo
     return null
   }
 }
+
+// ---------------------------------------------------------------------------
+// Tab scripting helpers
+// ---------------------------------------------------------------------------
 
 async function setMotionPaused(tabId: number, paused: boolean): Promise<void> {
   await chrome.scripting.executeScript({
@@ -598,6 +626,10 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+// ---------------------------------------------------------------------------
+// Content script injection
+// ---------------------------------------------------------------------------
 
 export async function ensureContentScript(tabId: number): Promise<void> {
   try {

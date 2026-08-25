@@ -1,3 +1,7 @@
+/**
+ * Small shared helpers: hashing, clamping, type guards, and string coercion for messaging.
+ */
+
 export function hashString(input: string): string {
   let hash = 2166136261
   for (let i = 0; i < input.length; i += 1) {
