@@ -67,5 +67,9 @@ export function limitationsJson(design: NormalizedDesign): unknown {
 }
 
 export function prettyJson(value: unknown): string {
-  return `${JSON.stringify(value, null, 2)}\n`
+  try {
+    return `${JSON.stringify(value, null, 2)}\n`
+  } catch (error) {
+    return `${JSON.stringify({ error: error instanceof Error ? error.message : String(error) }, null, 2)}\n`
+  }
 }

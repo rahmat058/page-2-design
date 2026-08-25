@@ -9,6 +9,9 @@ import { groupTypography } from './typography'
 import { calculateCoverage } from '../validation/coverage'
 import { orderContent } from '../content/content-scanner'
 import { buildAssetPath } from '../export/filename'
+import { buildDomOutline, utilityClassesFor } from './dom-outline'
+import { collectMediaSubstitutions } from './media-substitutions'
+import { buildClassRecipes } from './class-recipes'
 
 export function normalizeScan(raw: PageScan): NormalizedDesign {
   const colorTokens = groupColors(raw)
@@ -31,7 +34,16 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
     localPath: asset.localPath || buildAssetPath(asset.type, asset.id, asset.mimeType, asset.resolvedUrl, usedPaths),
   }))
 
-  const sections = normalizeSections(raw.sections, colorTokens, typeTokens)
+  const sections = normalizeSections(
+    raw.sections,
+    colorTokens,
+    typeTokens,
+    raw.elements,
+    raw.content,
+    assets,
+    raw.styleRegistry,
+    raw.page.viewportWidth,
+  )
   const components = inferComponents(raw.elements, raw.styleRegistry)
   const content = orderContent(raw.content)
   const coverage = calculateCoverage(raw, { screenshotAvailable: false })
@@ -100,7 +112,20 @@ export function normalizeScan(raw: PageScan): NormalizedDesign {
     coverage,
     page: raw.page,
     styleRegistry: raw.styleRegistry,
+    documentOutline: buildDocumentOutline(raw, assets),
+    utilityClasses: utilityClassesFor(raw.elements, 60),
+    media: collectMediaSubstitutions(raw.elements, assets),
+    classRecipes: buildClassRecipes(raw.elements, raw.styleRegistry),
   }
+}
+
+function buildDocumentOutline(raw: PageScan, assets: NormalizedDesign['assets']): string {
+  const root =
+    raw.elements.find((el) => el.tagName === 'body') ??
+    raw.elements.find((el) => el.parentId === null) ??
+    raw.elements[0]
+  if (!root) return ''
+  return buildDomOutline(root.id, raw.elements, assets, { maxNodes: 1200, maxDepth: 16 })
 }
 
 function groupColors(raw: PageScan): ColorToken[] {

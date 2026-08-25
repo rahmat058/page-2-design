@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CircleHelp, Copy, Download, RefreshCw } from 'lucide-react'
 import { generateAgentsMarkdown, generateClaudeMarkdown, generateCursorRule } from '../../generators/agents-md'
 import { generateContentMarkdown } from '../../generators/content-md'
@@ -65,7 +65,7 @@ const FILES = [
     path: PKG.content,
     name: 'CONTENT.md',
     hint: 'Copy',
-    build: (p: Pack) => generateContentMarkdown(p.design.content),
+    build: (p: Pack) => generateContentMarkdown(p.design.content ?? [], p.design.sections ?? []),
   },
   {
     id: 'tokens',
@@ -110,6 +110,7 @@ const FILES = [
 ] as const
 
 type FileId = (typeof FILES)[number]['id']
+const PREVIEW_CHARS = 120_000
 
 export function MarkdownView() {
   const design = useScanStore((s) => s.design)
@@ -121,11 +122,13 @@ export function MarkdownView() {
   const [infoOpen, setInfoOpen] = useState(false)
   const busy = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating'].includes(phase)
   const files = FILES.filter((file) => file.group === group)
-  const selected = FILES.find((file) => file.id === fileId) ?? FILES[0]
+  const selected = files.find((file) => file.id === fileId) ?? files[0] ?? FILES[0]
+  const markdown = useMemo(() => {
+    if (!design) return 'Refreshing from the page…'
+    return buildFile(selected, { design, raw })
+  }, [design, raw, selected])
 
   if (!design && !busy) return <ScanPrompt afterScan="Scan this page to generate the export markdown files." />
-
-  const markdown = design ? selected.build({ design, raw }) : 'Refreshing from the page…'
 
   return (
     <CollectionShell
@@ -197,11 +200,25 @@ export function MarkdownView() {
               <span className="tip tip-below tip-end">Info</span>
             </button>
           </div>
-          <pre className="md-preview" tabIndex={0}>{markdown}</pre>
+          <pre className="md-preview" tabIndex={0}>{previewText(markdown)}</pre>
         </div>
       </div>
     </CollectionShell>
   )
+}
+
+function buildFile(file: (typeof FILES)[number], pack: Pack): string {
+  try {
+    return file.build(pack)
+  } catch (error) {
+    const detail = error instanceof Error ? error.stack || error.message : String(error)
+    return `# Could not generate ${file.path}\n\n${detail}\n`
+  }
+}
+
+function previewText(markdown: string): string {
+  if (markdown.length <= PREVIEW_CHARS) return markdown
+  return `${markdown.slice(0, PREVIEW_CHARS)}\n\n… Preview truncated. Download the file to read the rest.\n`
 }
 
 async function copyMarkdown(markdown: string, path: string): Promise<void> {
@@ -248,16 +265,23 @@ function MarkdownInfoPanel({ onClose }: { onClose: () => void }) {
             <code>fonts</code> into <code>public/</code> (Vite, CRA, Next.js). Use <code>/images/...</code> URLs.
           </li>
           <li>
-            <strong>Docs.</strong> Read <code>docs/DESIGN.md</code> for header, sections, footer, button color, image
-            size, shadow, and motion. Then <code>docs/prompts/BUILD_PAGE.md</code>.
+            <strong>Docs.</strong> <code>docs/DESIGN.md</code> section 5 carries the page&rsquo;s{' '}
+            <em>captured markup</em> — real tags, real class names, real text. Header, footer, and every section use
+            that same tree. Port it node for node (reuse Tailwind classes verbatim), then colors, type, image size,
+            and motion last.
+          </li>
+          <li>
+            <strong>Media.</strong> <code>&lt;video&gt;</code> and <code>&lt;canvas&gt;</code> are captured as still
+            images; <code>&lt;iframe&gt;</code> and <code>&lt;cal-inline&gt;</code> become sized placeholders. The rebuild
+            keeps those stand-ins instead of replaying media or recreating an embed&rsquo;s interior.
           </li>
           <li>
             <strong>References.</strong> Exact copy, tokens, layout, scan, asset manifest, and limitations under{' '}
             <code>docs/references/</code>.
           </li>
           <li>
-            <strong>Build.</strong> Keep the stack. Prefer Tailwind arbitrary values. Semantic HTML, captured alt text,
-            reserved image width/height. Validate with <code>docs/prompts/VALIDATE_PAGE.md</code> and screenshots.
+            <strong>Build.</strong> Keep the stack. Prefer Tailwind. Match each section’s markup before adding animation.
+            Validate with <code>docs/prompts/VALIDATE_PAGE.md</code> and screenshots.
           </li>
         </ol>
       </div>

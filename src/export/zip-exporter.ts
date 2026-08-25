@@ -50,7 +50,7 @@ export async function buildExportZip(input: ZipInput): Promise<ZipResult> {
   add(PKG.design, generateDesignMarkdown(input.design))
   add(PKG.buildPrompt, generateBuildPrompt(input.design))
   add(PKG.validatePrompt, generateValidatePrompt(input.design))
-  add(PKG.content, generateContentMarkdown(input.design.content))
+  add(PKG.content, generateContentMarkdown(input.design.content, input.design.sections))
   add(PKG.tokens, prettyJson(designTokensJson(input.design)))
   add(PKG.layout, prettyJson(layoutJson(input.design)))
   add(PKG.scan, prettyJson(scanJson(input.raw)))

@@ -309,7 +309,8 @@ export function LayoutView() {
             <div key={section.id}>
               <strong>{section.name}</strong>
               <div className="muted">
-                {section.provenance} · confidence {section.confidence} · {section.bounds.width}×{section.bounds.height}
+                {section.composition?.role ?? 'section'} · {section.composition?.pattern ?? 'stack'} ·{' '}
+                {section.composition?.columns ?? 1} col · {section.bounds.width}×{section.bounds.height}
               </div>
             </div>
           ))}

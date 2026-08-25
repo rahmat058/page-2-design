@@ -178,6 +178,43 @@ export function sampleDesign(): NormalizedDesign {
         typographyTokenIds: ['type_1'],
         confidence: 0.9,
         provenance: 'semantic',
+        composition: {
+          role: 'hero',
+          roleInferred: true,
+          pattern: 'left-stack',
+          patternInferred: true,
+          columns: 1,
+          rows: 2,
+          align: 'start',
+          display: 'block',
+          flexDirection: '',
+          justifyContent: '',
+          alignItems: '',
+          gridTemplateColumns: '',
+          gap: '',
+          textAlign: 'start',
+          blocks: [
+            {
+              kind: 'heading',
+              order: 0,
+              text: 'Measured design, not guessed style',
+              assetId: null,
+              publicSrc: null,
+              bounds: { x: 0, y: 80, width: 880, height: 48 },
+            },
+            {
+              kind: 'image',
+              order: 1,
+              text: 'Blue hero graphic',
+              assetId: 'asset_1',
+              publicSrc: '/images/asset_1.png',
+              bounds: { x: 0, y: 140, width: 420, height: 262 },
+            },
+          ],
+          domOutline:
+            '<main class="mx-auto max-w-5xl px-6">\n  <h1 class="text-[42px] font-bold">Measured design, not guessed style</h1>\n  <img class="rounded-2xl" src="/images/asset_1.png" width="420" height="262" alt="Blue hero graphic" />\n</main>',
+          utilityClasses: ['mx-auto', 'max-w-5xl', 'px-6', 'rounded-2xl'],
+        },
       },
     ],
     components: [
@@ -297,5 +334,8 @@ export function sampleDesign(): NormalizedDesign {
     },
     page: raw.page,
     styleRegistry: raw.styleRegistry,
+    documentOutline:
+      '<body class="bg-[#F6F3EE]">\n  <main class="mx-auto max-w-5xl px-6">\n    <h1 class="text-[42px] font-bold">Measured design, not guessed style</h1>\n  </main>\n</body>',
+    utilityClasses: ['mx-auto', 'max-w-5xl', 'px-6'],
   }
 }

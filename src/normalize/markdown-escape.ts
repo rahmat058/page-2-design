@@ -1,9 +1,12 @@
 export function escapeMarkdown(text: string): string {
-  return text.replace(/[\\`*_{}[\]()#+\-.!|<>]/g, (ch) => `\\${ch}`)
+  return String(text ?? '').replace(/[\\`*_{}[\]()#+\-.!|<>]/g, (ch) => `\\${ch}`)
 }
 
 export function escapeTableCell(text: string): string {
-  return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').trim()
+  return String(text ?? '')
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ')
+    .trim()
 }
 
 export function mdTable(headers: string[], rows: string[][]): string {

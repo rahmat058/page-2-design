@@ -23,6 +23,34 @@ describe('markdown generators', () => {
     expect(md).toContain('420×262')
     expect(md).toContain('w-[420px] h-[262px]')
     expect(md).toContain('Copy `assets/` into the app `public/` folder')
+    expect(md).toContain('generic SaaS')
+    expect(md).toContain('max-w-5xl')
+    expect(md).toContain('Captured document markup')
+    expect(md).toContain('port it node for node')
+    expect(md).toContain('keep the scanned tags')
+    expect(md).not.toContain('Recreate as')
+  })
+
+  it('does not tell agents to invent landmark tags over captured markup', () => {
+    const agents = generateAgentsMarkdown(design)
+    expect(agents).toContain('same captured tree as every other region')
+    expect(agents).not.toContain('Use semantic HTML: `<header>`')
+    expect(agents).toContain('<cal-inline>')
+
+    const cursor = generateCursorRule(design)
+    expect(cursor).toContain('Do not replace a captured `div` with a guessed landmark')
+    expect(cursor).not.toContain('Use semantic HTML')
+
+    const skill = generateSkillMarkdown(design)
+    expect(skill).toContain('keep scanned tags, including inner `div` wrappers')
+    expect(skill).toContain('<cal-inline>')
+
+    const build = generateBuildPrompt(design)
+    expect(build).toContain('Header, footer, and every section use the same captured tree')
+    expect(build.match(/^6\./gm)?.length).toBe(1)
+    expect(build).toContain('\n7. Keep the static stand-ins')
+    expect(build).toContain('<cal-inline>')
+    expect(generateValidatePrompt(design)).toContain('<cal-inline>')
   })
 
   it('keeps SKILL.md procedural and under 500 lines', () => {
@@ -40,9 +68,10 @@ describe('markdown generators', () => {
     expect(generateBuildPrompt(design)).toContain('docs/prompts/VALIDATE_PAGE.md')
     expect(generateClaudeMarkdown(design)).toContain('Claude Code')
     expect(generateCursorRule(design)).toContain('alwaysApply: false')
-    expect(generateContentMarkdown(design.content)).toContain('Measured design, not guessed style')
+    expect(generateContentMarkdown(design.content, design.sections)).toContain('Measured design, not guessed style')
     expect(generateBuildPrompt(design)).toContain('Inspect the target repository')
     expect(generateValidatePrompt(design)).toContain('Font loading and typography')
+    expect(generateValidatePrompt(design)).toContain('Section count, order, role, pattern')
   })
 })
 

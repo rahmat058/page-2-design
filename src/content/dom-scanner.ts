@@ -1,14 +1,26 @@
 import { SAFE_ATTRIBUTES, SKIP_TAGS } from '../shared/constants'
 import { isSensitiveInput } from '../shared/redact'
-import type { AssetRecord, ScannedElement } from '../shared/types'
+import type { AssetRecord, ContentBlock, InteractionRecord, ScannedElement } from '../shared/types'
 import { collectAssetsFromElement } from './asset-scanner'
 import { captureCanvasAsset } from './canvas-capture'
 import { collectContentFromElement } from './content-scanner'
 import { collectInteractions } from './layout-scanner'
 import { idFor, type ScanRuntime } from './scan-context'
-import { isCustomElement, openShadowRoot } from './shadow'
+import {
+  classNamesOf,
+  isDecorativeSvg,
+  isIgnoredHost,
+  isMarqueeClone,
+  isOpaqueEmbedTag,
+  isStructuralTag,
+  isSwiperClone,
+  marqueeKindIndex,
+  skipHiddenSubtree,
+  skipShadowWalk,
+} from './scan-filters'
+import { openShadowRoot } from './shadow'
 import { documentBounds, isVisible, pickComputedStyle, styleSignature } from './style-utils'
-import type { ContentBlock, InteractionRecord } from '../shared/types'
+import { captureVideoFrameAsset } from './video-capture'
 
 export interface DomScanResult {
   elements: ScannedElement[]
@@ -26,32 +38,26 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
   const content: ContentBlock[] = []
   const interactions: InteractionRecord[] = []
   const assigned = new WeakMap<Element, string>()
+  const swiperSeen = new WeakMap<Element, Set<string>>()
 
   const walk = (el: Element, parentId: string | null, childIndex: number) => {
     if (runtime.cancelled) return
     if (SKIP_TAGS.has(el.tagName)) return
-    if (el.id?.startsWith('page2design-')) return
-
-    const shadowRoot = openShadowRoot(el)
-    if (!shadowRoot && isCustomElement(el) && !el.shadowRoot) {
-      runtime.addLimitation('SHADOW_DOM', `Could not open a shadow root on <${el.tagName.toLowerCase()}>.`, 'warning')
+    if (
+      isIgnoredHost({
+        id: el.id,
+        tagName: el.tagName,
+        attributes: { 'data-react-aria-top-layer': el.getAttribute('data-react-aria-top-layer') },
+      })
+    ) {
+      return
     }
 
     const computed = getComputedStyle(el)
     const visibility = isVisible(el, computed)
     const includeHidden = runtime.options.includeHiddenStructural
-    if (!visibility.visible) {
-      if (computed.display === 'none' && !(includeHidden && isStructural(el))) {
-        return
-      }
-      if (!includeHidden && !isStructural(el) && visibility.reason !== 'visibility:hidden') {
-        let indexHidden = 0
-        for (const child of el.children) {
-          walk(child, parentId, indexHidden)
-          indexHidden += 1
-        }
-        return
-      }
+    if (skipHiddenSubtree(visibility.visible, includeHidden, isStructuralTag(el.tagName))) {
+      return
     }
 
     const id = idFor(runtime)
@@ -61,6 +67,7 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
     styleRegistry[signature] = picked
 
     const attrs = safeAttributes(el)
+    peekCalEmbedSrc(el, attrs)
     const elementAssets = collectAssetsFromElement(el, id, computed)
     for (const asset of elementAssets) {
       const existing = assets.get(asset.id)
@@ -91,6 +98,22 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
       }
     }
 
+    if (el instanceof HTMLVideoElement && elementAssets.length === 0) {
+      const frameAsset = captureVideoFrameAsset(el, id)
+      if (frameAsset) {
+        const existing = assets.get(frameAsset.id)
+        if (existing) existing.elementIds.push(id)
+        else assets.set(frameAsset.id, frameAsset)
+        elementAssets.push(frameAsset)
+      } else {
+        runtime.addLimitation(
+          'VIDEO',
+          `<video> on ${id} has no poster and its frame could not be read. Rebuild it as a sized placeholder.`,
+          'warning',
+        )
+      }
+    }
+
     elements.push({
       id,
       parentId,
@@ -98,7 +121,7 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
       tagName: el.tagName.toLowerCase(),
       attributes: attrs,
       elementId: el.id || null,
-      classNames: [...el.classList],
+      classNames: classNamesOf(el),
       role: el.getAttribute('role'),
       visibility,
       bounds: documentBounds(el),
@@ -108,37 +131,24 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
       assetIds: elementAssets.map((a) => a.id),
     })
 
+    const opaque = isOpaqueEmbedTag(el.tagName)
+    const particleSvg = isDecorativeSvg(el.tagName, el.querySelectorAll('circle').length)
+    if (opaque || particleSvg) return
+
     let index = 0
     for (const child of el.children) {
+      if (shouldSkipChild(el, child, swiperSeen)) continue
       walk(child, id, index)
       index += 1
     }
 
-    if (shadowRoot) {
-      for (const child of shadowRoot.children) {
-        walk(child, id, index)
-        index += 1
-      }
-    }
-
-    if (el instanceof HTMLIFrameElement) {
-      try {
-        const doc = el.contentDocument
-        if (doc?.documentElement) {
-          walk(doc.documentElement, id, index)
-        } else {
-          runtime.addLimitation(
-            'CROSS_ORIGIN_IFRAME',
-            `Iframe ${el.src || el.id || id} will be scanned from its own frame when host access allows.`,
-            'info',
-          )
+    if (!skipShadowWalk(el.tagName)) {
+      const shadowRoot = openShadowRoot(el)
+      if (shadowRoot) {
+        for (const child of shadowRoot.children) {
+          walk(child, id, index)
+          index += 1
         }
-      } catch {
-        runtime.addLimitation(
-          'CROSS_ORIGIN_IFRAME',
-          `Iframe ${el.src || el.id || id} is cross-origin in this document.`,
-          'info',
-        )
       }
     }
   }
@@ -147,8 +157,35 @@ export function scanDom(runtime: ScanRuntime, root: Element): DomScanResult {
   return { elements, styleRegistry, assets, content, interactions, idMap: assigned }
 }
 
-function isStructural(el: Element): boolean {
-  return /^(HEADER|NAV|MAIN|FOOTER|ASIDE|SECTION|ARTICLE)$/.test(el.tagName)
+function shouldSkipChild(parent: Element, child: Element, swiperSeen: WeakMap<Element, Set<string>>): boolean {
+  const parentClasses = classNamesOf(parent)
+  const childClasses = classNamesOf(child)
+  const kindIndex = marqueeKindIndex(parentClasses, childClasses, {
+    marquee: indexAmongClass(parent, child, 'rfm-marquee'),
+    child: indexAmongClass(parent, child, 'rfm-child'),
+  })
+  if (isMarqueeClone(parentClasses, childClasses, kindIndex)) return true
+
+  if (parentClasses.includes('swiper-wrapper') && childClasses.includes('swiper-slide')) {
+    let seen = swiperSeen.get(parent)
+    if (!seen) {
+      seen = new Set()
+      swiperSeen.set(parent, seen)
+    }
+    return isSwiperClone(seen, child.getAttribute('data-swiper-slide-index'))
+  }
+  return false
+}
+
+function indexAmongClass(parent: Element, child: Element, token: string): number {
+  return [...parent.children].filter((node) => classNamesOf(node).includes(token)).indexOf(child)
+}
+
+/** Copy the inner calendar iframe URL onto the host so the placeholder can label it. */
+function peekCalEmbedSrc(el: Element, attrs: Record<string, string>): void {
+  if (el.tagName.toLowerCase() !== 'cal-inline' || attrs.src) return
+  const src = el.querySelector('iframe')?.getAttribute('src')
+  if (src) attrs.src = src.slice(0, 500)
 }
 
 function safeAttributes(el: Element): Record<string, string> {

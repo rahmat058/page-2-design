@@ -329,6 +329,65 @@ export interface DesignToken {
   properties: string[]
 }
 
+export type SectionRole =
+  | 'header'
+  | 'nav'
+  | 'hero'
+  | 'logo-row'
+  | 'feature-grid'
+  | 'split'
+  | 'gallery'
+  | 'testimonials'
+  | 'faq'
+  | 'pricing'
+  | 'cta'
+  | 'footer'
+  | 'band'
+
+export type SectionPattern =
+  | 'header-bar'
+  | 'centered-stack'
+  | 'left-stack'
+  | 'split-media-right'
+  | 'split-media-left'
+  | 'grid'
+  | 'row'
+  | 'masonry'
+  | 'accordion-list'
+  | 'footer-columns'
+  | 'stack'
+
+export interface SectionBlock {
+  kind: 'heading' | 'paragraph' | 'cta' | 'link' | 'image' | 'card' | 'nav-item' | 'other'
+  order: number
+  text: string
+  assetId: string | null
+  publicSrc: string | null
+  bounds: BoundingBox
+}
+
+export interface SectionComposition {
+  role: SectionRole
+  roleInferred: boolean
+  pattern: SectionPattern
+  patternInferred: boolean
+  columns: number
+  rows: number
+  align: 'start' | 'center' | 'end'
+  display: string
+  flexDirection: string
+  justifyContent: string
+  alignItems: string
+  gridTemplateColumns: string
+  gap: string
+  textAlign: string
+  blocks: SectionBlock[]
+  /** Real captured markup for this region: tags, utility classes, text, images. */
+  domOutline: string
+  /** Frequent non-generated class names inside this region. */
+  utilityClasses: string[]
+}
+
 export interface NormalizedSection {
   id: string
   name: string
@@ -344,6 +403,7 @@ export interface NormalizedSection {
   typographyTokenIds: string[]
   confidence: number
   provenance: 'semantic' | 'inferred'
+  composition: SectionComposition
 }
 
 export interface ComponentPattern {
@@ -419,6 +479,43 @@ export interface NormalizedDesign {
   coverage: ScanCoverage
   page: PageGeometry
   styleRegistry: Record<string, Record<string, string>>
+  /** Real captured markup for the whole document. */
+  documentOutline?: string
+  /** Frequent non-generated class names across the page. */
+  utilityClasses?: string[]
+  /** Media the rebuild must not reproduce live: video, embeds, canvas. */
+  media?: MediaSubstitution[]
+  /** CSS behind the source project's own class names, so the rebuild can define them. */
+  classRecipes?: ClassRecipe[]
+}
+
+/**
+ * A class name the source page defines itself (`main-container`, `btn-xl`, `bg-background-9`) with the
+ * CSS it resolves to, measured from the elements using it. Without these the class names are inert in
+ * a fresh project and containers, buttons, and theme colours all collapse to defaults.
+ */
+export interface ClassRecipe {
+  className: string
+  /** How many visible elements carry the class. */
+  uses: number
+  sampleTags: string[]
+  declarations: Record<string, string>
+}
+
+export type MediaSubstitutionKind = 'video' | 'iframe' | 'canvas' | 'embed'
+
+/** A live-media element and the static stand-in the rebuild should render instead. */
+export interface MediaSubstitution {
+  elementId: string
+  sectionId: string | null
+  kind: MediaSubstitutionKind
+  bounds: BoundingBox
+  /** Public `/images/...` URL of a poster, still frame, or captured pixels, when one exists. */
+  posterSrc: string | null
+  /** Host of the embed or media source, e.g. `youtube.com`. */
+  origin: string | null
+  label: string
+  aspectRatio: string
 }
 
 export interface ScanCounts {
