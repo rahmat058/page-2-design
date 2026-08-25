@@ -56,11 +56,7 @@ function groupBySection(blocks: ContentBlock[], sections: NormalizedSection[]) {
       const section = byId.get(key)
       const composition = section ? sectionComposition(section) : null
       return {
-        title: section
-          ? `${section.name} (${composition?.role ?? 'band'})`
-          : key === 'ungrouped'
-            ? 'Ungrouped'
-            : key,
+        title: section ? `${section.name} (${composition?.role ?? 'band'})` : key === 'ungrouped' ? 'Ungrouped' : key,
         role: composition?.role ?? '',
         pattern: composition?.pattern ?? '',
         blocks: buckets.get(key) ?? [],

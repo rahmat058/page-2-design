@@ -139,8 +139,7 @@ function unwrap(root: ScannedElement, visible: ScannedElement[]): ScannedElement
     const kids = visible.filter((el) => el.parentId === current.id)
     if (kids.length !== 1) return current
     const only = kids[0]!
-    const fills =
-      only.bounds.height >= current.bounds.height * 0.72 && only.bounds.width >= current.bounds.width * 0.72
+    const fills = only.bounds.height >= current.bounds.height * 0.72 && only.bounds.width >= current.bounds.width * 0.72
     if (!fills) return current
     current = only
   }
@@ -224,7 +223,9 @@ function suggestedName(el: ScannedElement): string {
   if (el.tagName === 'main' || el.role === 'main') return 'Main'
   if (el.tagName === 'footer' || el.role === 'contentinfo') return 'Footer'
   if (el.tagName === 'aside') return 'Aside'
-  const classHint = el.classNames.find((name) => /hero|header|footer|nav|feature|pricing|faq|gallery|testimonial/i.test(name))
+  const classHint = el.classNames.find((name) =>
+    /hero|header|footer|nav|feature|pricing|faq|gallery|testimonial/i.test(name),
+  )
   if (classHint) return classHint
   return `Region y=${el.bounds.y}`
 }

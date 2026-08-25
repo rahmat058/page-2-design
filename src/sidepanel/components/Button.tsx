@@ -20,9 +20,7 @@ export function Button({
   type = 'button',
   ...props
 }: Props) {
-  const classes = ['ui-btn', `ui-btn-${variant}`, size === 'sm' ? 'ui-btn-sm' : '', className]
-    .filter(Boolean)
-    .join(' ')
+  const classes = ['ui-btn', `ui-btn-${variant}`, size === 'sm' ? 'ui-btn-sm' : '', className].filter(Boolean).join(' ')
 
   return (
     <button type={type} className={classes} {...props}>

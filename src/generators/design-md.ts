@@ -134,7 +134,13 @@ export function generateDesignMarkdown(design: NormalizedDesign): string {
     heading(2, '11. Buttons and controls'),
     mdTable(
       ['Name', 'Kind', 'Confidence', 'Count', 'Notes'],
-      design.components.map((c) => [c.name, c.kind, String(c.confidence), String(c.elementIds?.length ?? 0), c.notes ?? '']),
+      design.components.map((c) => [
+        c.name,
+        c.kind,
+        String(c.confidence),
+        String(c.elementIds?.length ?? 0),
+        c.notes ?? '',
+      ]),
     ),
     buttonMatchNotes(design),
     heading(2, '12. Motion'),
@@ -316,7 +322,9 @@ function landmarkReconstruction(design: NormalizedDesign): string {
         '- Port the captured markup below. Header, footer, and every section use the same captured tree — keep the tags as scanned.',
         `- Bounds ${section.bounds.width}×${section.bounds.height} at ${section.bounds.x},${section.bounds.y}. Background: ${section.background}.`,
         `- Display \`${c.display}\`${c.flexDirection ? `, flex-direction \`${c.flexDirection}\`` : ''}${c.gridTemplateColumns ? `, grid-template-columns \`${c.gridTemplateColumns}\`` : ''}${c.gap ? `, gap \`${c.gap}\`` : ''}${c.textAlign ? `, text-align \`${c.textAlign}\`` : ''}.`,
-        colors.length ? `- Colors: ${colors.join('; ')}.` : '- Colors: use page tokens only where this region needs them.',
+        colors.length
+          ? `- Colors: ${colors.join('; ')}.`
+          : '- Colors: use page tokens only where this region needs them.',
         types.length ? `- Type: ${types.join('; ')}.` : '- Type: inherit captured typography tokens.',
         c.utilityClasses.length ? `- Classes used here: \`${c.utilityClasses.join(' ')}\`` : '',
         `- Blocks (${c.blocks.length}):`,
@@ -399,16 +407,13 @@ function motionBlock(design: NormalizedDesign): string {
     const hasTransition = Boolean(property && property !== 'none')
     const hasAnimation = Boolean(animation && animation !== 'none')
     if (!hasTransition && !hasAnimation) continue
-    rows.push([
-      signature.slice(0, 8),
-      property || 'none',
-      duration || '',
-      animation || 'none',
-      animationDuration || '',
-    ])
+    rows.push([signature.slice(0, 8), property || 'none', duration || '', animation || 'none', animationDuration || ''])
   }
   if (rows.length === 0) {
     return '_No transition or animation names were captured on sampled elements. Do not invent motion._'
   }
-  return mdTable(['Style id', 'transition-property', 'transition-duration', 'animation-name', 'animation-duration'], rows)
+  return mdTable(
+    ['Style id', 'transition-property', 'transition-duration', 'animation-name', 'animation-duration'],
+    rows,
+  )
 }

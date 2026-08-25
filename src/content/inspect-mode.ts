@@ -242,7 +242,10 @@ function weightLabel(value: string): string {
 function rgbToHex(value: string): string {
   const parsed = parseColor(value)
   if (!parsed) return value
-  const hex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
+  const hex = (n: number) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, '0')
   return `#${hex(parsed.r)}${hex(parsed.g)}${hex(parsed.b)}`.toUpperCase()
 }
 
@@ -412,10 +415,10 @@ function clearColorHit(): void {
 function isOverlay(el: Element): boolean {
   return Boolean(
     el.closest?.('#page2design-overlay-root') ||
-      el.id === 'page2design-overlay-root' ||
-      el.id === BOX_ID ||
-      el.id === CARD_ID ||
-      el.id === HIT_ID,
+    el.id === 'page2design-overlay-root' ||
+    el.id === BOX_ID ||
+    el.id === CARD_ID ||
+    el.id === HIT_ID,
   )
 }
 
@@ -461,7 +464,8 @@ function showHoverCard(el: Element, rect: DOMRect): void {
     const textSwatch = host.querySelector('[data-p2d="text-swatch"]') as HTMLElement | null
     const bgSwatch = host.querySelector('[data-p2d="bg-swatch"]') as HTMLElement | null
     if (textSwatch) textSwatch.style.setProperty('background', color, 'important')
-    if (bgSwatch) bgSwatch.style.setProperty('background', background === 'transparent' ? '#ffffff' : background, 'important')
+    if (bgSwatch)
+      bgSwatch.style.setProperty('background', background === 'transparent' ? '#ffffff' : background, 'important')
   }
   host.style.setProperty('display', 'block', 'important')
   const cardW = host.offsetWidth || 300

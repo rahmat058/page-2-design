@@ -1,4 +1,4 @@
-(function () {
+;(function () {
   if (location.protocol === 'chrome-extension:') {
     return {
       stylesheetCount: 0,
@@ -52,10 +52,7 @@
     for (var e = 0; e < entries.length; e += 1) {
       var entry = entries[e]
       var name = entry.name
-      var isCss =
-        hrefs.indexOf(name) !== -1 ||
-        blockedHrefs.indexOf(name) !== -1 ||
-        entry.initiatorType === 'css'
+      var isCss = hrefs.indexOf(name) !== -1 || blockedHrefs.indexOf(name) !== -1 || entry.initiatorType === 'css'
       if (!isCss) continue
       foundTiming = true
       totalDuration += entry.duration

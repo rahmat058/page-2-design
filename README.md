@@ -47,10 +47,10 @@ For scan pipeline, folders, messages, ZIP layout, and privacy — see **[ARCHITE
 
 ## Prerequisites
 
-| Requirement | Version / notes        |
-| ----------- | ---------------------- |
-| **Node.js** | 18+ (repo uses npm)    |
-| **Chrome**  | Current stable, MV3    |
+| Requirement | Version / notes     |
+| ----------- | ------------------- |
+| **Node.js** | 18+ (repo uses npm) |
+| **Chrome**  | Current stable, MV3 |
 
 ---
 
@@ -95,18 +95,18 @@ npm run dev
 
 ## Scripts
 
-| Command             | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| `npm run dev`       | Watch-build `dist` (sidepanel + background + content) |
-| `npm run build`     | Typecheck, then production `dist`                |
-| `npm run typecheck` | `tsc --noEmit`                                   |
-| `npm run lint`      | ESLint                                           |
-| `npm run lint:fix`  | ESLint with `--fix`                              |
-| `npm test`          | Vitest unit tests                                |
-| `npm run test:watch`| Vitest watch                                     |
-| `npm run format`    | Prettier                                         |
-| `npm run commit`    | Commitizen prompt (emoji + conventional header)  |
-| `npm run icons`     | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
+| Command              | Description                                                           |
+| -------------------- | --------------------------------------------------------------------- |
+| `npm run dev`        | Watch-build `dist` (sidepanel + background + content)                 |
+| `npm run build`      | Typecheck, then production `dist`                                     |
+| `npm run typecheck`  | `tsc --noEmit`                                                        |
+| `npm run lint`       | ESLint                                                                |
+| `npm run lint:fix`   | ESLint with `--fix`                                                   |
+| `npm test`           | Vitest unit tests                                                     |
+| `npm run test:watch` | Vitest watch                                                          |
+| `npm run format`     | Prettier                                                              |
+| `npm run commit`     | Commitizen prompt (emoji + conventional header)                       |
+| `npm run icons`      | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
 
 ---
 
@@ -134,15 +134,15 @@ Unit tests cover colors, filenames, generators, ZIP paths, viewport helpers, sca
 4. Leave **Load lazy content** and extra viewport capture on
 5. Click **Scan page**. The browser window should stay the same size
 
-| View        | What should appear                                           |
-| ----------- | ------------------------------------------------------------ |
+| View        | What should appear                                                            |
+| ----------- | ----------------------------------------------------------------------------- |
 | Overview    | Hostname, phase `ready`, element/text/color counts, coverage, CSS Information |
-| Content     | Heading **Measured design, not guessed style**               |
-| Images      | Hero graphic                                                 |
-| Icons & SVG | Diamond icon                                                 |
-| Colors      | Blue accent, paper background                                |
-| Typography  | Georgia-style heading                                        |
-| Layout      | Header / main / footer-style sections                        |
+| Content     | Heading **Measured design, not guessed style**                                |
+| Images      | Hero graphic                                                                  |
+| Icons & SVG | Diamond icon                                                                  |
+| Colors      | Blue accent, paper background                                                 |
+| Typography  | Georgia-style heading                                                         |
+| Layout      | Header / main / footer-style sections                                         |
 
 **Privacy check:** search the inspector (and later the ZIP) for `super-secret-password-123` and `hidden-auth-token`. Those must **not** appear. The visible placeholder `Your name` may appear.
 

@@ -154,10 +154,7 @@ function blockKind(block: ContentBlock): SectionBlock['kind'] {
 function significantChildren(section: PageSection, members: ScannedElement[]): ScannedElement[] {
   const direct = members.filter(
     (el) =>
-      el.parentId === section.rootElementId &&
-      el.visibility.visible &&
-      el.bounds.width >= 48 &&
-      el.bounds.height >= 32,
+      el.parentId === section.rootElementId && el.visibility.visible && el.bounds.width >= 48 && el.bounds.height >= 32,
   )
   if (direct.length >= 2) return direct
   return members
@@ -193,13 +190,18 @@ function inferGeometry(
     }
   }
 
-  const xs = uniqueBuckets(kids.map((el) => el.bounds.x), 48)
-  const ys = uniqueBuckets(kids.map((el) => el.bounds.y), 36)
+  const xs = uniqueBuckets(
+    kids.map((el) => el.bounds.x),
+    48,
+  )
+  const ys = uniqueBuckets(
+    kids.map((el) => el.bounds.y),
+    36,
+  )
   const widths = kids.map((el) => el.bounds.width)
   const avgW = widths.reduce((sum, w) => sum + w, 0) / widths.length
   const similarCells = widths.every((w) => Math.abs(w - avgW) / Math.max(avgW, 1) < 0.28)
-  const irregularSizes =
-    kids.length >= 4 && Math.max(...widths) > Math.min(...widths) * 1.55
+  const irregularSizes = kids.length >= 4 && Math.max(...widths) > Math.min(...widths) * 1.55
 
   const mid = section.bounds.x + width / 2
   const left = kids.filter((el) => el.bounds.x + el.bounds.width / 2 < mid)
@@ -243,7 +245,7 @@ function inferRole(
   count: number,
 ): SectionRole {
   const name = section.name.toLowerCase()
-  if (/\b(nav|navbar|menu)\b/.test(name) || section.provenance === 'semantic' && /nav/.test(name)) return 'nav'
+  if (/\b(nav|navbar|menu)\b/.test(name) || (section.provenance === 'semantic' && /nav/.test(name))) return 'nav'
   if (/\b(header|masthead|topbar)\b/.test(name) || /^header$/i.test(section.name)) return 'header'
   if (/\b(footer|colophon)\b/.test(name) || /^footer$/i.test(section.name)) return 'footer'
   if (/\bhero|banner\b/.test(name)) return 'hero'
@@ -260,9 +262,10 @@ function inferRole(
   if (section.bounds.y < 140 && section.bounds.height <= 140 && links.length >= 2) {
     return name.includes('nav') ? 'nav' : 'header'
   }
-  if (index >= count - 1 && (links.length >= 5 || section.bounds.y > 800 && links.length >= 3)) return 'footer'
+  if (index >= count - 1 && (links.length >= 5 || (section.bounds.y > 800 && links.length >= 3))) return 'footer'
   if (index <= 2 && section.bounds.height >= 280 && headings.length >= 1 && images.length <= 8) return 'hero'
-  if (geometry.columns >= 4 && geometry.rows === 1 && images.length >= 4 && section.bounds.height <= 220) return 'logo-row'
+  if (geometry.columns >= 4 && geometry.rows === 1 && images.length >= 4 && section.bounds.height <= 220)
+    return 'logo-row'
   if (geometry.mediaSide !== 'none' && (images.length >= 1 || headings.length >= 1)) return 'split'
   if (geometry.irregularSizes && images.length >= 4) return 'gallery'
   if (geometry.similarCells && geometry.columns >= 2 && (images.length >= 2 || headings.length >= 3)) {
@@ -281,7 +284,8 @@ function inferPattern(role: SectionRole, geometry: Geometry, blocks: SectionBloc
   if (role === 'gallery') return geometry.irregularSizes ? 'masonry' : 'grid'
   if (role === 'feature-grid' || role === 'testimonials' || role === 'pricing') return 'grid'
   if (role === 'faq') return 'accordion-list'
-  if (role === 'split' || geometry.mediaSide === 'right') return geometry.mediaSide === 'left' ? 'split-media-left' : 'split-media-right'
+  if (role === 'split' || geometry.mediaSide === 'right')
+    return geometry.mediaSide === 'left' ? 'split-media-left' : 'split-media-right'
   if (role === 'hero' && geometry.align === 'center') return 'centered-stack'
   if (role === 'hero') return 'left-stack'
   if (geometry.columns >= 3 && geometry.similarCells) return 'grid'

@@ -228,9 +228,7 @@ function readMetadata() {
 
 function readOpenGraph(): { title: string; image: string; url: string } {
   const title =
-    metaContent('meta[property="og:title"]') ||
-    metaContent('meta[name="twitter:title"]') ||
-    document.title.trim()
+    metaContent('meta[property="og:title"]') || metaContent('meta[name="twitter:title"]') || document.title.trim()
   const image =
     metaContent('meta[property="og:image"]') ||
     metaContent('meta[property="og:image:url"]') ||

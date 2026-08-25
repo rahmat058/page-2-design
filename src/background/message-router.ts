@@ -126,8 +126,7 @@ export function routeMessage(
       }
       case 'GET_CSS_INFO': {
         const tab = await identifyActiveTab()
-        const payload =
-          tab.tabId && !tab.restricted ? await readTabCssInformation(tab.tabId) : emptyCssInformation()
+        const payload = tab.tabId && !tab.restricted ? await readTabCssInformation(tab.tabId) : emptyCssInformation()
         sendResponse(createMessage({ type: 'CSS_INFO', requestId: message.requestId, payload }))
         return
       }

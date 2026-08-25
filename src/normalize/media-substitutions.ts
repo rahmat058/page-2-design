@@ -8,10 +8,7 @@ const MEDIA_TAGS = new Set<string>(['video', 'iframe', 'canvas', 'cal-inline'])
  * markup produces a broken imitation of someone else's UI. Each one becomes a still image when we
  * captured pixels, or a correctly sized placeholder when we could not.
  */
-export function collectMediaSubstitutions(
-  elements: ScannedElement[],
-  assets: AssetRecord[],
-): MediaSubstitution[] {
+export function collectMediaSubstitutions(elements: ScannedElement[], assets: AssetRecord[]): MediaSubstitution[] {
   const assetById = new Map(assets.map((asset) => [asset.id, asset]))
 
   return elements
@@ -29,11 +26,7 @@ export function collectMediaSubstitutions(
         kind,
         bounds: el.bounds,
         posterSrc:
-          kind === 'iframe' || kind === 'embed'
-            ? null
-            : poster
-              ? publicUrlFromAssetPath(poster.localPath)
-              : null,
+          kind === 'iframe' || kind === 'embed' ? null : poster ? publicUrlFromAssetPath(poster.localPath) : null,
         origin: hostOf(source),
         label: labelFor(el, kind, source),
         aspectRatio: aspectRatioOf(el.bounds.width, el.bounds.height),

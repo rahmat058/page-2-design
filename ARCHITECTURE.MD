@@ -28,12 +28,12 @@ For install, test, and everyday use — see **[README.md](./README.md)**.
      (DOM scan)     (scan cache)    (React inspector)
 ```
 
-| Area            | Runs in                         | Role                                                                 |
-| --------------- | ------------------------------- | -------------------------------------------------------------------- |
-| Overlay / panel | `sidepanel.html` in iframe/SW   | React UI — scan, inspect, generate markdown, export                  |
-| Content script  | Isolated world on the page      | DOM walk, overlay host, inspect mode, chunked `PageScan`             |
-| Service worker  | `background.js`                 | Orchestrate scan, assemble chunks, normalize, screenshots, downloads |
-| Shared          | imported by all three bundles   | Types, messages, constants, redaction, viewport helpers              |
+| Area            | Runs in                       | Role                                                                 |
+| --------------- | ----------------------------- | -------------------------------------------------------------------- |
+| Overlay / panel | `sidepanel.html` in iframe/SW | React UI — scan, inspect, generate markdown, export                  |
+| Content script  | Isolated world on the page    | DOM walk, overlay host, inspect mode, chunked `PageScan`             |
+| Service worker  | `background.js`               | Orchestrate scan, assemble chunks, normalize, screenshots, downloads |
+| Shared          | imported by all three bundles | Types, messages, constants, redaction, viewport helpers              |
 
 ---
 
@@ -84,11 +84,11 @@ Page2Design/
 
 Three Vite builds write into `dist/`:
 
-| Config                      | Output                         |
-| --------------------------- | ------------------------------ |
-| `vite.config.ts`            | `sidepanel.html` + UI assets   |
-| `vite.background.config.ts` | `background.js`                |
-| `vite.content.config.ts`    | `content.js` (IIFE)            |
+| Config                      | Output                       |
+| --------------------------- | ---------------------------- |
+| `vite.config.ts`            | `sidepanel.html` + UI assets |
+| `vite.background.config.ts` | `background.js`              |
+| `vite.content.config.ts`    | `content.js` (IIFE)          |
 
 `npm run build` typechecks, then runs all three. Load **`dist`**, not the repo root, in `chrome://extensions`.
 
@@ -96,11 +96,11 @@ Three Vite builds write into `dist/`:
 
 ## Runtime surfaces
 
-| Surface        | When                                                         | Shell                                      |
-| -------------- | ------------------------------------------------------------ | ------------------------------------------ |
-| Overlay        | Toolbar click on a normal `http(s)` page                     | Iframe hosted by `overlay-host.ts`         |
-| Side panel     | Restricted URLs, or **Open side panel** from overlay chrome  | `chrome.sidePanel` → `sidepanel.html`      |
-| Content script | Injected with `chrome.scripting.executeScript` (all frames)  | Isolated world; top frame owns full scan   |
+| Surface        | When                                                        | Shell                                    |
+| -------------- | ----------------------------------------------------------- | ---------------------------------------- |
+| Overlay        | Toolbar click on a normal `http(s)` page                    | Iframe hosted by `overlay-host.ts`       |
+| Side panel     | Restricted URLs, or **Open side panel** from overlay chrome | `chrome.sidePanel` → `sidepanel.html`    |
+| Content script | Injected with `chrome.scripting.executeScript` (all frames) | Isolated world; top frame owns full scan |
 
 Overlay width is `OVERLAY_WIDTH` (336px). Generate Markdown widens to `OVERLAY_WIDE_WIDTH` (560px).
 
@@ -134,19 +134,19 @@ sidepanel  loadScan() → Zustand store → Overview / Colors / …
 
 ### Content scan (`src/content/scan-page.ts`)
 
-| Step              | Module                         | Notes                                              |
-| ----------------- | ------------------------------ | -------------------------------------------------- |
-| Lazy content      | `lazy-load.ts`                 | Optional; capped by `MAX_LAZY_LOAD_MS` (12s)       |
-| DOM + styles      | `dom-scanner.ts`               | Allowlisted computed styles; max `MAX_ELEMENTS`    |
-| Filters           | `scan-filters.ts`              | Skip noise, embeds, hidden flatten                 |
-| Colors / type     | `color-scanner`, `typography-scanner` | Frequency + area                                   |
-| Layout numbers    | `layout-scanner.ts`            | Spacing, radius, shadow                            |
-| Assets            | `asset-scanner.ts`             | Images, icons, SVG, fonts; blob materialize        |
-| Content blocks    | `content-scanner.ts`           | Headings, text, links — no password/hidden values  |
-| Sections          | `section-detector.ts`          | Header / main / footer from captured tags          |
-| CSS variables     | `readCssVariables()`           | `:root` custom properties                          |
-| Media queries     | `readMediaQueries()`           | From readable `cssRules`                           |
-| Transport         | `chunkScan()`                  | 40 elements per chunk (`ELEMENT_CHUNK_SIZE`)       |
+| Step           | Module                                | Notes                                             |
+| -------------- | ------------------------------------- | ------------------------------------------------- |
+| Lazy content   | `lazy-load.ts`                        | Optional; capped by `MAX_LAZY_LOAD_MS` (12s)      |
+| DOM + styles   | `dom-scanner.ts`                      | Allowlisted computed styles; max `MAX_ELEMENTS`   |
+| Filters        | `scan-filters.ts`                     | Skip noise, embeds, hidden flatten                |
+| Colors / type  | `color-scanner`, `typography-scanner` | Frequency + area                                  |
+| Layout numbers | `layout-scanner.ts`                   | Spacing, radius, shadow                           |
+| Assets         | `asset-scanner.ts`                    | Images, icons, SVG, fonts; blob materialize       |
+| Content blocks | `content-scanner.ts`                  | Headings, text, links — no password/hidden values |
+| Sections       | `section-detector.ts`                 | Header / main / footer from captured tags         |
+| CSS variables  | `readCssVariables()`                  | `:root` custom properties                         |
+| Media queries  | `readMediaQueries()`                  | From readable `cssRules`                          |
+| Transport      | `chunkScan()`                         | 40 elements per chunk (`ELEMENT_CHUNK_SIZE`)      |
 
 Default options (`DEFAULT_SCAN_OPTIONS`): lazy content **on**, nav/footer **on**, extra viewports **on**, hidden structure **off**.
 
@@ -161,16 +161,16 @@ Default options (`DEFAULT_SCAN_OPTIONS`): lazy content **on**, nav/footer **on**
 
 ### Normalization (`src/normalize/`)
 
-| Module                 | Output                                              |
-| ---------------------- | --------------------------------------------------- |
-| `colors.ts`            | Color tokens, roles, near-duplicates, gradients     |
-| `typography.ts`        | Grouped type tokens                                 |
-| `spacing.ts`           | Frequency spacing / radius tokens                   |
-| `sections.ts`          | Named regions + composition                         |
-| `components.ts`        | Repeated component patterns                         |
-| `class-recipes.ts`     | Project class names + measured CSS                  |
-| `dom-outline.ts`       | Captured markup tree for `DESIGN.md` section 5      |
-| `media-substitutions.ts` | Video / iframe / canvas → static stand-ins        |
+| Module                   | Output                                          |
+| ------------------------ | ----------------------------------------------- |
+| `colors.ts`              | Color tokens, roles, near-duplicates, gradients |
+| `typography.ts`          | Grouped type tokens                             |
+| `spacing.ts`             | Frequency spacing / radius tokens               |
+| `sections.ts`            | Named regions + composition                     |
+| `components.ts`          | Repeated component patterns                     |
+| `class-recipes.ts`       | Project class names + measured CSS              |
+| `dom-outline.ts`         | Captured markup tree for `DESIGN.md` section 5  |
+| `media-substitutions.ts` | Video / iframe / canvas → static stand-ins      |
 
 ---
 
@@ -180,16 +180,16 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 
 ### Bottom nav
 
-| View           | Feature module        | Purpose                                      |
-| -------------- | --------------------- | -------------------------------------------- |
-| Overview       | `OverviewView.tsx`    | Intro, type pair, palette, contrast, CSS info |
-| Content        | `ContentView.tsx`     | Grouped text / links                         |
-| Colors         | `ColorsView.tsx`      | Palette, peeper, highlight on page           |
-| Typography     | `ColorsView.tsx`      | Type cards                                   |
-| Assets         | `ContentView.tsx`     | Images / icons / SVG                         |
-| Generate Markdown | `MarkdownView.tsx` | Live preview of ZIP markdown / JSON          |
-| Export         | `ExportView.tsx`      | Asset picker + Download ZIP                  |
-| Developer      | `DeveloperView.tsx`   | Author profile and repo star link            |
+| View              | Feature module      | Purpose                                       |
+| ----------------- | ------------------- | --------------------------------------------- |
+| Overview          | `OverviewView.tsx`  | Intro, type pair, palette, contrast, CSS info |
+| Content           | `ContentView.tsx`   | Grouped text / links                          |
+| Colors            | `ColorsView.tsx`    | Palette, peeper, highlight on page            |
+| Typography        | `ColorsView.tsx`    | Type cards                                    |
+| Assets            | `ContentView.tsx`   | Images / icons / SVG                          |
+| Generate Markdown | `MarkdownView.tsx`  | Live preview of ZIP markdown / JSON           |
+| Export            | `ExportView.tsx`    | Asset picker + Download ZIP                   |
+| Developer         | `DeveloperView.tsx` | Author profile and repo star link             |
 
 **Inspect Mode** (chrome switch) replaces the current view with `InspectorView.tsx` — click an element on the page to see measured styles. Layout is in the overflow menu (`setView('layout')`); the bottom nav highlights Overview while Layout is open.
 
@@ -197,12 +197,12 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 
 Overview reads **live** tab metrics via `GET_CSS_INFO` (fallback: last scan’s `cssInformation`).
 
-| Field        | Source                                                                 |
-| ------------ | ---------------------------------------------------------------------- |
-| Style Rules  | Sum of top-level `cssRules.length` (a `@media` block counts as one)    |
-| CSS file     | Network `decodedBodySize` / `encodedBodySize` / `transferSize`         |
-| Stylesheets  | `document.styleSheets.length` on the top frame                         |
-| Load Time    | Sum of CSS resource `duration` values                                  |
+| Field       | Source                                                              |
+| ----------- | ------------------------------------------------------------------- |
+| Style Rules | Sum of top-level `cssRules.length` (a `@media` block counts as one) |
+| CSS file    | Network `decodedBodySize` / `encodedBodySize` / `transferSize`      |
+| Stylesheets | `document.styleSheets.length` on the top frame                      |
+| Load Time   | Sum of CSS resource `duration` values                               |
 
 CORS sheets: `cssRules` throws → background `fetch` + `countTopLevelCssRules`.
 
@@ -212,25 +212,25 @@ CORS sheets: `cssRules` throws → background `fetch` + `countTopLevelCssRules`.
 
 All runtime messages are versioned (`MESSAGE_SCHEMA_VERSION`) and parsed in `src/shared/messages.ts`. Unknown or malformed payloads are dropped.
 
-| Type                   | Direction                         | Purpose                              |
-| ---------------------- | --------------------------------- | ------------------------------------ |
-| `GET_ACTIVE_TAB`       | UI → SW                           | Identify the current tab             |
-| `START_SCAN`           | UI → SW → content                 | Begin scan                           |
-| `CANCEL_SCAN`          | UI → SW → content                 | Abort in-flight scan                 |
-| `SCAN_CHUNK`           | content → SW                      | Partial `PageScan`                   |
-| `SCAN_PROGRESS`        | content / SW → UI                 | Phase + counts                       |
-| `SCAN_COMPLETE`        | content → SW → UI                 | `assembled: true` after persist      |
-| `SCAN_FAILED`          | SW → UI                           | User-facing error                    |
-| `GET_SCAN`             | UI → SW                           | Load raw + normalized                |
-| `GET_CSS_INFO`         | UI → SW                           | Live CSS Information                 |
-| `START_EXPORT`         | UI → SW                           | Build ZIP                            |
-| `CAPTURE_SCREENSHOT`   | UI → SW                           | Viewport + full-page PNG             |
-| `FETCH_ASSET`          | UI / content → SW                 | Bytes for ZIP / tiles                |
-| `TOGGLE_OVERLAY`       | SW → content                      | Open / close floating UI             |
-| `DOCK_SIDE_PANEL`      | UI → SW                           | Open Chrome side panel               |
-| `SET_INSPECT_MODE`     | UI → content                      | Click-to-inspect                     |
-| `INSPECT_ELEMENT`      | content → UI                      | Selected element snapshot            |
-| `HIGHLIGHT_COLOR`      | UI → content                      | Flash matching elements              |
+| Type                 | Direction         | Purpose                         |
+| -------------------- | ----------------- | ------------------------------- |
+| `GET_ACTIVE_TAB`     | UI → SW           | Identify the current tab        |
+| `START_SCAN`         | UI → SW → content | Begin scan                      |
+| `CANCEL_SCAN`        | UI → SW → content | Abort in-flight scan            |
+| `SCAN_CHUNK`         | content → SW      | Partial `PageScan`              |
+| `SCAN_PROGRESS`      | content / SW → UI | Phase + counts                  |
+| `SCAN_COMPLETE`      | content → SW → UI | `assembled: true` after persist |
+| `SCAN_FAILED`        | SW → UI           | User-facing error               |
+| `GET_SCAN`           | UI → SW           | Load raw + normalized           |
+| `GET_CSS_INFO`       | UI → SW           | Live CSS Information            |
+| `START_EXPORT`       | UI → SW           | Build ZIP                       |
+| `CAPTURE_SCREENSHOT` | UI → SW           | Viewport + full-page PNG        |
+| `FETCH_ASSET`        | UI / content → SW | Bytes for ZIP / tiles           |
+| `TOGGLE_OVERLAY`     | SW → content      | Open / close floating UI        |
+| `DOCK_SIDE_PANEL`    | UI → SW           | Open Chrome side panel          |
+| `SET_INSPECT_MODE`   | UI → content      | Click-to-inspect                |
+| `INSPECT_ELEMENT`    | content → UI      | Selected element snapshot       |
+| `HIGHLIGHT_COLOR`    | UI → content      | Flash matching elements         |
 
 ---
 
@@ -256,10 +256,10 @@ Asset limits: 250 files, 8MB each, 40MB total (`MAX_ASSETS`, `MAX_ASSET_BYTES`, 
 
 ## Storage
 
-| Store        | Module                 | Contents                                      |
-| ------------ | ---------------------- | --------------------------------------------- |
-| IndexedDB    | `storage/indexed-db.ts` | `scans` (raw + normalized), `blobs`           |
-| chrome.storage | `storage/preferences.ts` | UI prefs                                    |
+| Store          | Module                   | Contents                            |
+| -------------- | ------------------------ | ----------------------------------- |
+| IndexedDB      | `storage/indexed-db.ts`  | `scans` (raw + normalized), `blobs` |
+| chrome.storage | `storage/preferences.ts` | UI prefs                            |
 
 Scan records older than 24h (`STALE_SCAN_MS`) or incomplete after 1h (`INCOMPLETE_SCAN_MS`) are purged on install/startup.
 
@@ -267,12 +267,12 @@ Scan records older than 24h (`STALE_SCAN_MS`) or incomplete after 1h (`INCOMPLET
 
 ## Privacy
 
-| Rule                    | Implementation                                      |
-| ----------------------- | --------------------------------------------------- |
-| No remote backend       | No analytics, no upload APIs                        |
-| Sensitive query params  | `SENSITIVE_QUERY_KEYS` redacted in `shared/redact.ts` |
-| Secrets in scan         | Password / hidden / payment-like values never stored |
-| Host permissions        | `http://*/*` and `https://*/*` so the tab can be scanned without an extra click |
+| Rule                   | Implementation                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| No remote backend      | No analytics, no upload APIs                                                    |
+| Sensitive query params | `SENSITIVE_QUERY_KEYS` redacted in `shared/redact.ts`                           |
+| Secrets in scan        | Password / hidden / payment-like values never stored                            |
+| Host permissions       | `http://*/*` and `https://*/*` so the tab can be scanned without an extra click |
 
 ---
 
@@ -295,16 +295,16 @@ Scan records older than 24h (`STALE_SCAN_MS`) or incomplete after 1h (`INCOMPLET
 
 Hybrid: scanners are functional collectors; the service worker is an orchestrator; the UI is a store + view map.
 
-| Pattern              | Where                                      | Purpose                                      |
-| -------------------- | ------------------------------------------ | -------------------------------------------- |
-| Orchestrator         | `scan-orchestrator.ts`                     | Session, inject, assemble, persist           |
-| Message facade       | `message-router.ts`                        | One switch for all `ExtensionMessage` types  |
-| Chunked transport    | `chunkScan` / `assembleScan`               | Keep `runtime.sendMessage` payloads small    |
-| Normalize pipeline   | `normalizeScan`                            | Raw observation → tokens + outline           |
-| Generator functions  | `src/generators/`                          | Pure `NormalizedDesign` → markdown / JSON    |
-| Zustand store        | `useScanStore`                             | Phase, design, view, inspect, options        |
-| Feature views        | `sidepanel/features/`                      | One view per bottom-nav surface              |
-| Coverage, not score  | `validation/coverage.ts`                   | What was captured, never a % visual match    |
+| Pattern             | Where                        | Purpose                                     |
+| ------------------- | ---------------------------- | ------------------------------------------- |
+| Orchestrator        | `scan-orchestrator.ts`       | Session, inject, assemble, persist          |
+| Message facade      | `message-router.ts`          | One switch for all `ExtensionMessage` types |
+| Chunked transport   | `chunkScan` / `assembleScan` | Keep `runtime.sendMessage` payloads small   |
+| Normalize pipeline  | `normalizeScan`              | Raw observation → tokens + outline          |
+| Generator functions | `src/generators/`            | Pure `NormalizedDesign` → markdown / JSON   |
+| Zustand store       | `useScanStore`               | Phase, design, view, inspect, options       |
+| Feature views       | `sidepanel/features/`        | One view per bottom-nav surface             |
+| Coverage, not score | `validation/coverage.ts`     | What was captured, never a % visual match   |
 
 ```
 Tab DOM → content scanners → PageScan chunks
@@ -319,14 +319,14 @@ Tab DOM → content scanners → PageScan chunks
 
 Vitest (`src/tests/`). No Chrome required.
 
-| File                   | Covers                                      |
-| ---------------------- | ------------------------------------------- |
-| `colors.test.ts`       | Color parse, contrast, grouping             |
-| `generators.test.ts`   | Markdown / JSON output, privacy             |
-| `scan-filters.test.ts` | DOM noise filters, class keep rules         |
-| `sections.test.ts`     | Section detection                           |
-| `utilities.test.ts`    | Filenames, ZIP paths, CSS format, messages  |
-| `viewports.test.ts`    | Breakpoint helpers, frame merge             |
+| File                   | Covers                                     |
+| ---------------------- | ------------------------------------------ |
+| `colors.test.ts`       | Color parse, contrast, grouping            |
+| `generators.test.ts`   | Markdown / JSON output, privacy            |
+| `scan-filters.test.ts` | DOM noise filters, class keep rules        |
+| `sections.test.ts`     | Section detection                          |
+| `utilities.test.ts`    | Filenames, ZIP paths, CSS format, messages |
+| `viewports.test.ts`    | Breakpoint helpers, frame merge            |
 
 `fixtures/reference-page.html` is the manual Chrome fixture (see README).
 

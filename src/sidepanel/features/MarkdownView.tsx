@@ -38,9 +38,30 @@ const GROUPS = [
 type GroupId = (typeof GROUPS)[number]['value']
 
 const FILES = [
-  { id: 'agents', group: 'guide', path: PKG.agents, name: 'AGENTS.md', hint: 'Start here', build: (p: Pack) => generateAgentsMarkdown(p.design) },
-  { id: 'claude', group: 'guide', path: PKG.claude, name: 'CLAUDE.md', hint: 'Claude', build: (p: Pack) => generateClaudeMarkdown(p.design) },
-  { id: 'skill', group: 'guide', path: PKG.skill, name: 'SKILL.md', hint: 'Playbook', build: (p: Pack) => generateSkillMarkdown(p.design) },
+  {
+    id: 'agents',
+    group: 'guide',
+    path: PKG.agents,
+    name: 'AGENTS.md',
+    hint: 'Start here',
+    build: (p: Pack) => generateAgentsMarkdown(p.design),
+  },
+  {
+    id: 'claude',
+    group: 'guide',
+    path: PKG.claude,
+    name: 'CLAUDE.md',
+    hint: 'Claude',
+    build: (p: Pack) => generateClaudeMarkdown(p.design),
+  },
+  {
+    id: 'skill',
+    group: 'guide',
+    path: PKG.skill,
+    name: 'SKILL.md',
+    hint: 'Playbook',
+    build: (p: Pack) => generateSkillMarkdown(p.design),
+  },
   {
     id: 'cursor',
     group: 'guide',
@@ -49,8 +70,22 @@ const FILES = [
     hint: 'Cursor',
     build: (p: Pack) => generateCursorRule(p.design),
   },
-  { id: 'design', group: 'docs', path: PKG.design, name: 'DESIGN.md', hint: 'Spec', build: (p: Pack) => generateDesignMarkdown(p.design) },
-  { id: 'build', group: 'docs', path: PKG.buildPrompt, name: 'BUILD_PAGE.md', hint: 'Build', build: (p: Pack) => generateBuildPrompt(p.design) },
+  {
+    id: 'design',
+    group: 'docs',
+    path: PKG.design,
+    name: 'DESIGN.md',
+    hint: 'Spec',
+    build: (p: Pack) => generateDesignMarkdown(p.design),
+  },
+  {
+    id: 'build',
+    group: 'docs',
+    path: PKG.buildPrompt,
+    name: 'BUILD_PAGE.md',
+    hint: 'Build',
+    build: (p: Pack) => generateBuildPrompt(p.design),
+  },
   {
     id: 'validate',
     group: 'docs',
@@ -200,7 +235,9 @@ export function MarkdownView() {
               <span className="tip tip-below tip-end">Info</span>
             </button>
           </div>
-          <pre className="md-preview" tabIndex={0}>{previewText(markdown)}</pre>
+          <pre className="md-preview" tabIndex={0}>
+            {previewText(markdown)}
+          </pre>
         </div>
       </div>
     </CollectionShell>
@@ -257,8 +294,8 @@ function MarkdownInfoPanel({ onClose }: { onClose: () => void }) {
         </p>
         <ol>
           <li>
-            <strong>Guide (root).</strong> <code>AGENTS.md</code> first, then <code>CLAUDE.md</code>, <code>SKILL.md</code>,
-            and <code>.cursor/rules/</code>. These stay next to <code>assets/</code>.
+            <strong>Guide (root).</strong> <code>AGENTS.md</code> first, then <code>CLAUDE.md</code>,{' '}
+            <code>SKILL.md</code>, and <code>.cursor/rules/</code>. These stay next to <code>assets/</code>.
           </li>
           <li>
             <strong>Copy assets.</strong> Move <code>assets/images</code>, <code>icons</code>, <code>svg</code>, and{' '}
@@ -267,21 +304,21 @@ function MarkdownInfoPanel({ onClose }: { onClose: () => void }) {
           <li>
             <strong>Docs.</strong> <code>docs/DESIGN.md</code> section 5 carries the page&rsquo;s{' '}
             <em>captured markup</em> — real tags, real class names, real text. Header, footer, and every section use
-            that same tree. Port it node for node (reuse Tailwind classes verbatim), then colors, type, image size,
-            and motion last.
+            that same tree. Port it node for node (reuse Tailwind classes verbatim), then colors, type, image size, and
+            motion last.
           </li>
           <li>
             <strong>Media.</strong> <code>&lt;video&gt;</code> and <code>&lt;canvas&gt;</code> are captured as still
-            images; <code>&lt;iframe&gt;</code> and <code>&lt;cal-inline&gt;</code> become sized placeholders. The rebuild
-            keeps those stand-ins instead of replaying media or recreating an embed&rsquo;s interior.
+            images; <code>&lt;iframe&gt;</code> and <code>&lt;cal-inline&gt;</code> become sized placeholders. The
+            rebuild keeps those stand-ins instead of replaying media or recreating an embed&rsquo;s interior.
           </li>
           <li>
             <strong>References.</strong> Exact copy, tokens, layout, scan, asset manifest, and limitations under{' '}
             <code>docs/references/</code>.
           </li>
           <li>
-            <strong>Build.</strong> Keep the stack. Prefer Tailwind. Match each section’s markup before adding animation.
-            Validate with <code>docs/prompts/VALIDATE_PAGE.md</code> and screenshots.
+            <strong>Build.</strong> Keep the stack. Prefer Tailwind. Match each section’s markup before adding
+            animation. Validate with <code>docs/prompts/VALIDATE_PAGE.md</code> and screenshots.
           </li>
         </ol>
       </div>

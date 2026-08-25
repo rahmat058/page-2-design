@@ -251,7 +251,10 @@ const VOID_TAGS = new Set([
 ])
 
 function prettyHtml(html: string): string {
-  const parts = html.replace(/\s*\n\s*/g, ' ').split(/(<\/?[^>]+>)/g).filter((part) => part.length)
+  const parts = html
+    .replace(/\s*\n\s*/g, ' ')
+    .split(/(<\/?[^>]+>)/g)
+    .filter((part) => part.length)
   let indent = 0
   let out = ''
   for (const part of parts) {

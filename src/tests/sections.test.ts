@@ -220,7 +220,13 @@ describe('dom outline', () => {
         attributes: { src: 'https://www.youtube.com/embed/abc123', title: 'Demo video' },
       }),
       // Same-origin embeds get scanned, but their interior must never reach the outline.
-      el({ id: 'inner', parentId: 'embed', tagName: 'h1', bounds: { x: 0, y: 0, width: 100, height: 20 }, directText: 'Inside embed' }),
+      el({
+        id: 'inner',
+        parentId: 'embed',
+        tagName: 'h1',
+        bounds: { x: 0, y: 0, width: 100, height: 20 },
+        directText: 'Inside embed',
+      }),
     ]
     const outline = buildDomOutline('embed', elements)
 

@@ -71,19 +71,19 @@ Optional body: what changed and why.
 
 ### Types
 
-| Type | Emoji | When to use |
-| ---- | ----- | ----------- |
-| `feat` | ✨ | User-facing behavior (scan, inspector, export) |
-| `fix` | 🐛 | Bug fix |
-| `docs` | 📚 | README, architecture, license, contributing, changelog, code of conduct |
-| `style` | 💎 | Formatting only (Prettier, no logic change) |
-| `refactor` | 📦 | Internal change with no feature or fix |
-| `perf` | 🚀 | Performance |
-| `test` | 🚨 | Tests only |
-| `build` | 🛠️ | Vite, TypeScript, npm dependencies used to build the extension |
-| `ci` | ⚙️ | Hooks, Commitlint, lint-staged, GitHub Actions |
-| `chore` | ♻️ | Maintenance that does not fit the types above |
-| `revert` | 🗑️ | Revert a previous commit |
+| Type       | Emoji | When to use                                                             |
+| ---------- | ----- | ----------------------------------------------------------------------- |
+| `feat`     | ✨    | User-facing behavior (scan, inspector, export)                          |
+| `fix`      | 🐛    | Bug fix                                                                 |
+| `docs`     | 📚    | README, architecture, license, contributing, changelog, code of conduct |
+| `style`    | 💎    | Formatting only (Prettier, no logic change)                             |
+| `refactor` | 📦    | Internal change with no feature or fix                                  |
+| `perf`     | 🚀    | Performance                                                             |
+| `test`     | 🚨    | Tests only                                                              |
+| `build`    | 🛠️    | Vite, TypeScript, npm dependencies used to build the extension          |
+| `ci`       | ⚙️    | Hooks, Commitlint, lint-staged, GitHub Actions                          |
+| `chore`    | ♻️    | Maintenance that does not fit the types above                           |
+| `revert`   | 🗑️    | Revert a previous commit                                                |
 
 Optional scopes: `overlay`, `sidepanel`, `background`, `content`, `scan`, `export`, `docs`.
 
@@ -186,14 +186,14 @@ Type must be lowercase (`feat`, not `Feat`).
 
 ## Project map
 
-| Area | Path |
-| ---- | ---- |
-| Service worker | `src/background/` |
-| Content script / overlay host | `src/content/` |
-| Inspector UI | `src/sidepanel/` |
-| Shared types and messages | `src/shared/` |
-| ZIP generators | `src/generators/`, `src/export/` |
-| Tests | `src/tests/` |
+| Area                          | Path                             |
+| ----------------------------- | -------------------------------- |
+| Service worker                | `src/background/`                |
+| Content script / overlay host | `src/content/`                   |
+| Inspector UI                  | `src/sidepanel/`                 |
+| Shared types and messages     | `src/shared/`                    |
+| ZIP generators                | `src/generators/`, `src/export/` |
+| Tests                         | `src/tests/`                     |
 
 Scan stays on-device. Do not add a backend, analytics, or network calls that upload page content.
 

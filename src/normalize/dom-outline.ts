@@ -108,11 +108,13 @@ export function utilityClassesFor(elements: ScannedElement[], limit = 28): strin
 }
 
 export function meaningfulClasses(classNames: string[]): string[] {
-  return classNames
-    // Arbitrary Tailwind values get long (`bg-linear-[180deg,rgba(226,232,229,0)_1.44%,#E2E8E5_2.14%]`)
-    // and carry exact measurements, so the cap only has to stop runaway generated names.
-    .filter((name) => name && name.length <= 140)
-    .filter((name) => !GENERATED_CLASS.test(name) && !CSS_MODULE_CLASS.test(name))
+  return (
+    classNames
+      // Arbitrary Tailwind values get long (`bg-linear-[180deg,rgba(226,232,229,0)_1.44%,#E2E8E5_2.14%]`)
+      // and carry exact measurements, so the cap only has to stop runaway generated names.
+      .filter((name) => name && name.length <= 140)
+      .filter((name) => !GENERATED_CLASS.test(name) && !CSS_MODULE_CLASS.test(name))
+  )
 }
 
 export function descendantsOf(rootId: string, elements: ScannedElement[]): ScannedElement[] {
@@ -173,10 +175,7 @@ function mediaReplacement(el: ScannedElement, pad: string, assetById: Map<string
   const dims = [width ? `width:${width}px` : '', height ? `height:${height}px` : ''].filter(Boolean).join(';')
   const aria = label ? ` aria-label="${escapeAttr(label)}"` : ''
   const dataHost = host ? ` data-embed="${escapeAttr(host)}"` : ''
-  return [
-    `${pad}${note}`,
-    `${pad}<div${classAttr}${dataHost}${aria} style="${dims}"></div>`,
-  ]
+  return [`${pad}${note}`, `${pad}<div${classAttr}${dataHost}${aria} style="${dims}"></div>`]
 }
 
 function hostname(url: string): string {
