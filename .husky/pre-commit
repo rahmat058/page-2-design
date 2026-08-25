@@ -1,1 +1,8 @@
+#!/usr/bin/env sh
+# Git hooks often lose the TTY (common on Windows), so lint-staged falls back to
+# [STARTED]/[COMPLETED] text. Reattach when a TTY is available.
+if sh -c ": >/dev/tty" >/dev/null 2>/dev/null; then
+  exec >/dev/tty 2>&1
+fi
+
 lint-staged

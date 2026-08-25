@@ -46,11 +46,11 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 
 `npm install` runs Husky (`prepare`). Hooks run in this order:
 
-1. **pre-commit** — lint-staged on staged files: `eslint --fix`, then `prettier --write` (JS/TS); Prettier only for `json` / `md` / `css` / `html` / `yml`
+1. **pre-commit** — lint-staged on staged files: `eslint --fix`, then `prettier --write` (JS/TS); Prettier only for `json` / `md` / `css` / `html` / `yml`. The hook reattaches `/dev/tty` when possible so Windows shows the same spinner/checkmark UI as macOS instead of `[STARTED]` / `[COMPLETED]` text.
 2. **commit-msg** — [Conventional Commits](https://www.conventionalcommits.org/)
 3. **pre-push** — `npm run lint:fix` and `npm run format` on the whole repo; if anything changes, the push stops so you can commit the fixes first
 
-Manual checks: `npm run lint:fix`, `npm run format`, `npm run format:check`.
+If commit output still looks plain on Windows, use [Windows Terminal](https://aka.ms/terminal) and update [Git for Windows](https://git-scm.com/downloads) (2.36+ handles hook TTYs better). Your machine is on Git 2.30.1, which is also why lint-staged 17 was pinned down earlier.
 
 ## Commit messages
 
