@@ -3,6 +3,7 @@ import type { AssetRecord, ContentBlock } from '../../shared/types'
 import { uniqueVisualAssets } from '../../content/asset-scanner'
 import { CountBadge } from '../components/CountBadge'
 import { ScanPrompt } from '../components/CopyButton'
+import { CollectionShell } from '../components/Segmented'
 import {
   AriaBlockIcon,
   ButtonBlockIcon,
@@ -102,65 +103,40 @@ async function copyBlock(block: ContentBlock): Promise<void> {
   useToastStore.getState().showToast(`${contentKindLabel(block)} copied`)
 }
 
+const ASSET_TABS = [
+  { value: 'grid', label: 'Grid', icon: <GridViewIcon /> },
+  { value: 'list', label: 'List', icon: <ListViewIcon /> },
+] as const
+
 export function AssetsView() {
   const assets = useScanStore((s) => s.design?.assets ?? [])
   const unique = useMemo(() => uniqueVisualAssets(assets), [assets])
   const [mode, setMode] = useState<'grid' | 'list'>('grid')
   if (unique.length === 0) return <ScanPrompt afterScan="No assets were captured." />
   return (
-    <div className="assets-wrap">
-      <div className="segmented pill-tabs asset-tabs" role="tablist" aria-label="Asset layout">
-        <button
-          type="button"
-          role="tab"
-          className={mode === 'grid' ? 'on' : ''}
-          aria-selected={mode === 'grid'}
-          onClick={() => {
-            if (mode === 'grid') return
-            setMode('grid')
-            useToastStore.getState().showToast('Grid view')
-          }}>
-          <GridViewIcon />
-          Grid
-        </button>
-        <button
-          type="button"
-          role="tab"
-          className={mode === 'list' ? 'on' : ''}
-          aria-selected={mode === 'list'}
-          onClick={() => {
-            if (mode === 'list') return
-            setMode('list')
-            useToastStore.getState().showToast('List view')
-          }}>
-          <ListViewIcon />
-          List
-        </button>
-      </div>
-      <div key={mode} className="fade-pane asset-scroll">
-        {mode === 'grid' ? (
-          <div className="asset-grid">
-            {unique.map((asset) => (
-              <AssetTile key={asset.id} asset={asset} />
-            ))}
-          </div>
-        ) : (
-          <div className="asset-list">
-            {unique.map((asset) => (
-              <AssetRow key={asset.id} asset={asset} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+    <CollectionShell value={mode} options={ASSET_TABS} onChange={setMode} label="Asset layout">
+      {mode === 'grid' ? (
+        <div className="asset-grid">
+          {unique.map((asset, index) => (
+            <AssetTile key={asset.id} asset={asset} index={index} />
+          ))}
+        </div>
+      ) : (
+        <div className="asset-list">
+          {unique.map((asset, index) => (
+            <AssetRow key={asset.id} asset={asset} index={index} />
+          ))}
+        </div>
+      )}
+    </CollectionShell>
   )
 }
 
-function AssetTile({ asset }: { asset: AssetRecord }) {
+function AssetTile({ asset, index }: { asset: AssetRecord; index: number }) {
   const size = estimateAssetSize(asset)
   const name = assetDownloadName(asset)
   return (
-    <div className="asset-tile">
+    <div className="asset-tile" style={{ animationDelay: `${Math.min(index, 8) * 28}ms` }}>
       <AssetPreview asset={asset} />
       <div className="asset-hover">
         <button
@@ -177,11 +153,11 @@ function AssetTile({ asset }: { asset: AssetRecord }) {
   )
 }
 
-function AssetRow({ asset }: { asset: AssetRecord }) {
+function AssetRow({ asset, index }: { asset: AssetRecord; index: number }) {
   const size = estimateAssetSize(asset)
   const name = assetDownloadName(asset)
   return (
-    <div className="asset-row">
+    <div className="asset-row" style={{ animationDelay: `${Math.min(index, 8) * 28}ms` }}>
       <AssetPreview asset={asset} />
       <div className="asset-row-copy">
         <strong>{name}</strong>

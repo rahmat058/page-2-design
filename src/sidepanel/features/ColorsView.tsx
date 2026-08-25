@@ -8,8 +8,14 @@ import { Button } from '../components/Button'
 import { CountBadge } from '../components/CountBadge'
 import { CopyButton, ScanPrompt } from '../components/CopyButton'
 import { InspectIcon, CopyIcon } from '../components/LucideIcons'
+import { CollectionShell } from '../components/Segmented'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
+
+const COLOR_TABS = [
+  { value: 'palette', label: 'Palette' },
+  { value: 'categories', label: 'Categories' },
+] as const
 
 export function ColorsView() {
   const colors = useScanStore((s) => s.design?.tokens.colors ?? [])
@@ -18,79 +24,55 @@ export function ColorsView() {
   if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />
   const grouped = pagePaletteGroups(colors)
   return (
-    <div className="colors-wrap">
-      <div className="segmented pill-tabs" role="tablist" aria-label="Color views">
-        <button
-          type="button"
-          role="tab"
-          className={tab === 'palette' ? 'on' : ''}
-          aria-selected={tab === 'palette'}
-          onClick={() => {
-            if (tab === 'palette') return
-            setTab('palette')
-            useToastStore.getState().showToast('Palette')
-          }}>
-          Palette
-        </button>
-        <button
-          type="button"
-          role="tab"
-          className={tab === 'categories' ? 'on' : ''}
-          aria-selected={tab === 'categories'}
-          onClick={() => {
-            if (tab === 'categories') return
-            setTab('categories')
-            useToastStore.getState().showToast('Categories')
-          }}>
-          Categories
-        </button>
-      </div>
-      <div key={tab} className="fade-pane colors-scroll">
-        {tab === 'palette' ? (
-          <div className="palette peeper-palette">
-            {colors.map((color) => (
-              <ColorCard
-                key={color.id}
-                color={color}
-                inspecting={inspectingId === color.id}
-                onInspect={() => void cycleInspectColor(color, setInspectingId)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="category-list">
-            {grouped.map((group) => (
-              <section key={group.key} className="category-block">
-                <h3>{group.title}</h3>
-                <div className="peeper-palette">
-                  {group.ids.map((id) => {
-                    const color = colors.find((item) => item.id === id)
-                    if (!color) return null
-                    return (
-                      <ColorCard
-                        key={color.id}
-                        color={color}
-                        inspecting={inspectingId === color.id}
-                        onInspect={() => void cycleInspectColor(color, setInspectingId)}
-                      />
-                    )
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+    <CollectionShell value={tab} options={COLOR_TABS} onChange={setTab} label="Color views">
+      {tab === 'palette' ? (
+        <div className="palette peeper-palette">
+          {colors.map((color, index) => (
+            <ColorCard
+              key={color.id}
+              color={color}
+              index={index}
+              inspecting={inspectingId === color.id}
+              onInspect={() => void cycleInspectColor(color, setInspectingId)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="category-list">
+          {grouped.map((group) => (
+            <section key={group.key} className="category-block">
+              <h3>{group.title}</h3>
+              <div className="peeper-palette">
+                {group.ids.map((id, index) => {
+                  const color = colors.find((item) => item.id === id)
+                  if (!color) return null
+                  return (
+                    <ColorCard
+                      key={color.id}
+                      color={color}
+                      index={index}
+                      inspecting={inspectingId === color.id}
+                      onInspect={() => void cycleInspectColor(color, setInspectingId)}
+                    />
+                  )
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+    </CollectionShell>
   )
 }
 
 function ColorCard({
   color,
+  index,
   inspecting,
   onInspect,
 }: {
   color: ColorToken
+  index: number
   inspecting: boolean
   onInspect: () => void
 }) {
@@ -111,7 +93,12 @@ function ColorCard({
       ]
         .filter(Boolean)
         .join(' ')}
-      style={{ background: fill, color: ink, ['--swatch' as string]: color.rgba }}>
+      style={{
+        background: fill,
+        color: ink,
+        ['--swatch' as string]: color.rgba,
+        animationDelay: `${Math.min(index, 8) * 28}ms`,
+      }}>
       <div className="peeper-copy">
         <strong>{label}</strong>
         <span>

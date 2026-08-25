@@ -4,8 +4,8 @@ import { userFacingError } from '../shared/errors'
 import { sendRuntime, onRuntimeMessage } from './chrome-api'
 import { Copy, Download, RefreshCw } from 'lucide-react'
 import { Button } from './components/Button'
-import { CountBadge } from './components/CountBadge'
 import { BottomNav } from './components/BottomNav'
+import { PageHead } from './components/PageHead'
 import { PanelChrome } from './components/PanelChrome'
 import { ColorsView, LayoutView, TypographyView } from './features/ColorsView'
 import { AssetsView, ContentView } from './features/ContentView'
@@ -86,61 +86,60 @@ export function App() {
         <InspectorView />
       ) : (
         <>
-      <div className={view === 'overview' ? 'page-head overview-head' : 'page-head'}>
-        <div className="head-row">
-          <h1>
-            {headingFor(view)}
-            {view !== 'overview' ? <CountBadge value={countFor(view, counts, design)} /> : null}
-          </h1>
-          {view === 'overview' && design ? (
-            <Button
-              size="sm"
-              icon={RefreshCw}
-              disabled={busy || tabRestricted}
-              onClick={() => void startScan()}>
-              {busy ? 'Scanning…' : 'Rescan'}
-            </Button>
-          ) : view === 'content' ? (
-            <Button size="sm" icon={Copy} onClick={() => void copyAllContent()}>
-              Copy all
-            </Button>
-          ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
-            <Button
-              size="sm"
-              icon={Download}
-              disabled={!canExport}
-              onClick={() => {
-                if (view === 'assets' || view === 'images' || view === 'icons') {
-                  const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? [])
-                  void downloadAllImagesZip(assets, hostname)
-                  return
-                }
-                useScanStore.getState().setView('export')
-              }}>
-              Export All
-            </Button>
-          ) : null}
-        </div>
-        {view === 'overview' ? (
-          <>
-            <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
-            {url ? <p className="page-url">{url}</p> : null}
-          </>
-        ) : null}
-      </div>
-      {tabRestricted ? <p className="banner">This tab cannot be scanned. Open an http(s) page.</p> : null}
-      <main className="main">
-        <div key={view} className="fade-pane">
-          {view === 'overview' ? <OverviewView /> : null}
-          {view === 'content' ? <ContentView /> : null}
-          {view === 'assets' || view === 'images' || view === 'icons' ? <AssetsView /> : null}
-          {view === 'colors' ? <ColorsView /> : null}
-          {view === 'typography' ? <TypographyView /> : null}
-          {view === 'layout' ? <LayoutView /> : null}
-          {view === 'export' ? <ExportView /> : null}
-        </div>
-      </main>
-      <BottomNav />
+          <PageHead
+            title={headingFor(view)}
+            count={view !== 'overview' ? countFor(view, counts, design) : null}
+            overview={view === 'overview'}
+            action={
+              view === 'overview' && design ? (
+                <Button
+                  size="sm"
+                  icon={RefreshCw}
+                  disabled={busy || tabRestricted}
+                  onClick={() => void startScan()}>
+                  {busy ? 'Scanning…' : 'Rescan'}
+                </Button>
+              ) : view === 'content' ? (
+                <Button size="sm" icon={Copy} onClick={() => void copyAllContent()}>
+                  Copy all
+                </Button>
+              ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
+                <Button
+                  size="sm"
+                  icon={Download}
+                  disabled={!canExport}
+                  onClick={() => {
+                    if (view === 'assets' || view === 'images' || view === 'icons') {
+                      const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? [])
+                      void downloadAllImagesZip(assets, hostname)
+                      return
+                    }
+                    useScanStore.getState().setView('export')
+                  }}>
+                  Export All
+                </Button>
+              ) : null
+            }>
+            {view === 'overview' ? (
+              <>
+                <p className="page-title">{title || hostname || 'Open a website, then scan'}</p>
+                {url ? <p className="page-url">{url}</p> : null}
+              </>
+            ) : null}
+          </PageHead>
+          {tabRestricted ? <p className="banner">This tab cannot be scanned. Open an http(s) page.</p> : null}
+          <main className="main">
+            <div key={view} className="fade-pane">
+              {view === 'overview' ? <OverviewView /> : null}
+              {view === 'content' ? <ContentView /> : null}
+              {view === 'assets' || view === 'images' || view === 'icons' ? <AssetsView /> : null}
+              {view === 'colors' ? <ColorsView /> : null}
+              {view === 'typography' ? <TypographyView /> : null}
+              {view === 'layout' ? <LayoutView /> : null}
+              {view === 'export' ? <ExportView /> : null}
+            </div>
+          </main>
+          <BottomNav />
         </>
       )}
       <Toast />
