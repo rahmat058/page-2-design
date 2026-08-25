@@ -140,7 +140,9 @@ export function ExportView() {
     <section className="card">
       <h2>Export</h2>
       <p>
-        {uniqueAssets.length} unique images ready to export. {selectedAssetIds.length} selected.
+        {uniqueAssets.length} unique images ready to export. {selectedAssetIds.length} selected. The ZIP keeps{' '}
+        <code>AGENTS.md</code> and <code>assets/</code> at the root; specs go under <code>docs/</code>. Copy{' '}
+        <code>assets/</code> into the app <code>public/</code> folder after unzipping.
       </p>
       <Checkbox
         checked={includeFailed}

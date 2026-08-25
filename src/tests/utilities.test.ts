@@ -11,6 +11,7 @@ import {
 } from '../sidepanel/content-groups'
 import type { AssetRecord } from '../shared/types'
 import { sanitizeFilename, buildAssetPath, zipDownloadName, assertSafeZipPath } from '../export/filename'
+import { publicUrlFromAssetPath } from '../export/package-paths'
 import { typographySignature } from '../content/typography-scanner'
 import { frequencyTokens } from '../normalize/spacing'
 import { escapeMarkdown, escapeTableCell } from '../normalize/markdown-escape'
@@ -49,7 +50,16 @@ describe('filename sanitization', () => {
     const a = buildAssetPath('image', 'asset_1', 'image/png', 'https://x/a.png', used)
     const b = buildAssetPath('image', 'asset_1', 'image/png', 'https://x/b.png', used)
     expect(a).not.toBe(b)
+    expect(a).toBe('assets/images/asset_1.png')
     expect(() => assertSafeZipPath('../secret')).toThrow()
+  })
+})
+
+describe('public asset URLs', () => {
+  it('maps ZIP assets/ paths to public/ URLs', () => {
+    expect(publicUrlFromAssetPath('assets/images/hero.png')).toBe('/images/hero.png')
+    expect(publicUrlFromAssetPath('assets/icons/mark.svg')).toBe('/icons/mark.svg')
+    expect(publicUrlFromAssetPath('assets/svg/logo.svg')).toBe('/svg/logo.svg')
   })
 })
 

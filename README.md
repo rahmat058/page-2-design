@@ -74,15 +74,12 @@ Check these side-panel views:
 
 You should see:
 
-- `DESIGN.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`
+- `AGENTS.md`, `CLAUDE.md`, `SKILL.md` at the root
 - `.cursor/rules/recreate-reference-page.mdc`
-- `prompts/BUILD_PAGE.md`, `prompts/VALIDATE_PAGE.md`
-- `references/CONTENT.md` and the JSON files
-- `assets/`
-- `screenshots/viewport.png`
-- `screenshots/full-page.png` if the page is taller than the viewport
+- `assets/` (images, icons, svg)
+- `docs/DESIGN.md`, `docs/prompts/`, `docs/references/`, `docs/screenshots/`
 
-Open `DESIGN.md` and `references/limitations.json`. Paths in the Markdown should match files that exist, or the gap should be listed in `limitations.json`.
+Open `AGENTS.md` first, then `docs/DESIGN.md`. Paths in the Markdown should match files that exist, or the gap should be listed in `docs/references/limitations.json`.
 
 ### 5. Real-site smoke test
 
@@ -127,17 +124,21 @@ Sensitive query parameters are redacted. Password, hidden, and payment-like fiel
 
 ## Use the ZIP in Cursor or Claude Code
 
-Unzip the archive, then open that folder (or copy it into the target repo) and ask the agent to follow `DESIGN.md` plus `prompts/BUILD_PAGE.md`. Validation order is in `prompts/VALIDATE_PAGE.md`.
+Unzip the archive, then open that folder (or copy it into the target repo) and ask the agent to follow `AGENTS.md`. Copy `assets/` into the app `public/` folder. The spec is `docs/DESIGN.md`; build and validation prompts are in `docs/prompts/`.
 
 Typical contents:
 
-- `DESIGN.md`, `AGENTS.md`, `CLAUDE.md`, `SKILL.md`
-- `.cursor/rules/recreate-reference-page.mdc`
-- `references/` JSON and `CONTENT.md`
-- `assets/`
-- `screenshots/viewport.png` and `screenshots/full-page.png` when captured
+```text
+AGENTS.md, CLAUDE.md, SKILL.md
+.cursor/rules/recreate-reference-page.mdc
+assets/{images,icons,svg,fonts}/
+docs/DESIGN.md
+docs/prompts/{BUILD_PAGE,VALIDATE_PAGE}.md
+docs/references/{CONTENT.md, design-tokens.json, layout.json, scan.json, asset-manifest.json, limitations.json}
+docs/screenshots/{viewport,full-page}.png
+```
 
-Files that were not produced are omitted and listed in `references/limitations.json`.
+Files that were not produced are omitted and listed in `docs/references/limitations.json`.
 
 ## Remaining limits
 

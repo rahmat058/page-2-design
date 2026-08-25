@@ -19,6 +19,10 @@ describe('markdown generators', () => {
     expect(md).toContain('#1D4ED8')
     expect(md).not.toMatch(/make it modern|pixel perfect|95% design match/i)
     expect(md).toContain('assets/images/asset_1.png')
+    expect(md).toContain('/images/asset_1.png')
+    expect(md).toContain('420×262')
+    expect(md).toContain('w-[420px] h-[262px]')
+    expect(md).toContain('Copy `assets/` into the app `public/` folder')
   })
 
   it('keeps SKILL.md procedural and under 500 lines', () => {
@@ -29,7 +33,11 @@ describe('markdown generators', () => {
   })
 
   it('generates agent, claude, cursor, content, and prompt files', () => {
-    expect(generateAgentsMarkdown(design)).toContain('Read `DESIGN.md` first')
+    expect(generateAgentsMarkdown(design)).toContain('Read `docs/DESIGN.md` first')
+    expect(generateAgentsMarkdown(design)).toContain('assets/images/*')
+    expect(generateAgentsMarkdown(design)).toContain('public/images/*')
+    expect(generateSkillMarkdown(design)).toContain('docs/DESIGN.md')
+    expect(generateBuildPrompt(design)).toContain('docs/prompts/VALIDATE_PAGE.md')
     expect(generateClaudeMarkdown(design)).toContain('Claude Code')
     expect(generateCursorRule(design)).toContain('alwaysApply: false')
     expect(generateContentMarkdown(design.content)).toContain('Measured design, not guessed style')
@@ -44,15 +52,25 @@ describe('zip paths', () => {
     const zip = await buildExportZip({
       raw: sampleScan(),
       design,
-      assetFiles: new Map(),
+      assetFiles: new Map([['assets/images/asset_1.png', new Uint8Array([1, 2, 3])]]),
       screenshot: { viewport: new Uint8Array([1, 2, 3]), fullPage: new Uint8Array([4, 5, 6]) },
     })
     expect(zip.filename).toMatch(/\.zip$/)
     expect(zip.paths.every((path) => !path.includes('..'))).toBe(true)
-    expect(zip.paths.some((path) => path.endsWith('DESIGN.md'))).toBe(true)
-    expect(zip.paths.some((path) => path.endsWith('screenshots/viewport.png'))).toBe(true)
-    expect(zip.paths.some((path) => path.endsWith('screenshots/full-page.png'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('docs/DESIGN.md'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('AGENTS.md'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('docs/prompts/BUILD_PAGE.md'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('docs/screenshots/viewport.png'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('docs/screenshots/full-page.png'))).toBe(true)
+    expect(zip.paths.some((path) => path.includes('/docs/references/'))).toBe(true)
+    expect(zip.paths.some((path) => path.endsWith('assets/images/asset_1.png'))).toBe(true)
+    expect(zip.paths.every((path) => !path.includes('/docs/assets/'))).toBe(true)
+    expect(zip.paths.every((path) => !path.includes('-design-export/prompts/'))).toBe(true)
+    expect(zip.paths.every((path) => !path.includes('-design-export/references/'))).toBe(true)
+    expect(zip.paths.every((path) => !path.includes('-design-export/screenshots/'))).toBe(true)
+    expect(zip.paths.every((path) => !path.includes('-design-export/DESIGN.md'))).toBe(true)
     expect(prettyJson(assetManifestJson(design))).toContain('asset_1')
+    expect(prettyJson(assetManifestJson(design))).toContain('"/images/asset_1.png"')
   })
 })
 

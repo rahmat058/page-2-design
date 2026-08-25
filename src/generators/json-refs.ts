@@ -1,4 +1,5 @@
 import { SCHEMA_VERSION } from '../shared/constants'
+import { publicUrlFromAssetPath } from '../export/package-paths'
 import type { NormalizedDesign, PageScan } from '../shared/types'
 
 export function designTokensJson(design: NormalizedDesign): unknown {
@@ -42,6 +43,7 @@ export function assetManifestJson(design: NormalizedDesign): unknown {
       id: asset.id,
       type: asset.type,
       localPath: asset.localPath,
+      publicPath: publicUrlFromAssetPath(asset.localPath),
       sourceUrl: asset.sourceUrl,
       resolvedUrl: asset.resolvedUrl,
       mimeType: asset.mimeType,

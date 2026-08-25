@@ -13,6 +13,7 @@ import {
 } from '../../generators/json-refs'
 import { generateBuildPrompt, generateValidatePrompt } from '../../generators/prompts'
 import { generateSkillMarkdown } from '../../generators/skill-md'
+import { PKG } from '../../export/package-paths'
 import { Button } from '../components/Button'
 import { ScanPrompt } from '../components/CopyButton'
 import { CollectionShell } from '../components/Segmented'
@@ -30,30 +31,30 @@ interface Pack {
 
 const GROUPS = [
   { value: 'guide', label: 'Guide' },
-  { value: 'prompts', label: 'Prompts' },
+  { value: 'docs', label: 'Docs' },
   { value: 'references', label: 'References' },
 ] as const
 
 type GroupId = (typeof GROUPS)[number]['value']
 
 const FILES = [
-  { id: 'agents', group: 'guide', path: 'AGENTS.md', name: 'AGENTS.md', hint: 'Start here', build: (p: Pack) => generateAgentsMarkdown(p.design) },
-  { id: 'design', group: 'guide', path: 'DESIGN.md', name: 'DESIGN.md', hint: 'Spec', build: (p: Pack) => generateDesignMarkdown(p.design) },
-  { id: 'skill', group: 'guide', path: 'SKILL.md', name: 'SKILL.md', hint: 'Playbook', build: (p: Pack) => generateSkillMarkdown(p.design) },
-  { id: 'claude', group: 'guide', path: 'CLAUDE.md', name: 'CLAUDE.md', hint: 'Claude', build: (p: Pack) => generateClaudeMarkdown(p.design) },
+  { id: 'agents', group: 'guide', path: PKG.agents, name: 'AGENTS.md', hint: 'Start here', build: (p: Pack) => generateAgentsMarkdown(p.design) },
+  { id: 'claude', group: 'guide', path: PKG.claude, name: 'CLAUDE.md', hint: 'Claude', build: (p: Pack) => generateClaudeMarkdown(p.design) },
+  { id: 'skill', group: 'guide', path: PKG.skill, name: 'SKILL.md', hint: 'Playbook', build: (p: Pack) => generateSkillMarkdown(p.design) },
   {
     id: 'cursor',
     group: 'guide',
-    path: '.cursor/rules/recreate-reference-page.mdc',
+    path: PKG.cursorRule,
     name: 'recreate-reference-page.mdc',
     hint: 'Cursor',
     build: (p: Pack) => generateCursorRule(p.design),
   },
-  { id: 'build', group: 'prompts', path: 'prompts/BUILD_PAGE.md', name: 'BUILD_PAGE.md', hint: 'Build', build: (p: Pack) => generateBuildPrompt(p.design) },
+  { id: 'design', group: 'docs', path: PKG.design, name: 'DESIGN.md', hint: 'Spec', build: (p: Pack) => generateDesignMarkdown(p.design) },
+  { id: 'build', group: 'docs', path: PKG.buildPrompt, name: 'BUILD_PAGE.md', hint: 'Build', build: (p: Pack) => generateBuildPrompt(p.design) },
   {
     id: 'validate',
-    group: 'prompts',
-    path: 'prompts/VALIDATE_PAGE.md',
+    group: 'docs',
+    path: PKG.validatePrompt,
     name: 'VALIDATE_PAGE.md',
     hint: 'Check',
     build: (p: Pack) => generateValidatePrompt(p.design),
@@ -61,7 +62,7 @@ const FILES = [
   {
     id: 'content',
     group: 'references',
-    path: 'references/CONTENT.md',
+    path: PKG.content,
     name: 'CONTENT.md',
     hint: 'Copy',
     build: (p: Pack) => generateContentMarkdown(p.design.content),
@@ -69,7 +70,7 @@ const FILES = [
   {
     id: 'tokens',
     group: 'references',
-    path: 'references/design-tokens.json',
+    path: PKG.tokens,
     name: 'design-tokens.json',
     hint: 'Tokens',
     build: (p: Pack) => prettyJson(designTokensJson(p.design)),
@@ -77,7 +78,7 @@ const FILES = [
   {
     id: 'layout',
     group: 'references',
-    path: 'references/layout.json',
+    path: PKG.layout,
     name: 'layout.json',
     hint: 'Layout',
     build: (p: Pack) => prettyJson(layoutJson(p.design)),
@@ -85,7 +86,7 @@ const FILES = [
   {
     id: 'scan',
     group: 'references',
-    path: 'references/scan.json',
+    path: PKG.scan,
     name: 'scan.json',
     hint: 'Scan',
     build: (p: Pack) => (p.raw ? prettyJson(scanJson(p.raw)) : 'Scan JSON is available after a completed scan.\n'),
@@ -93,7 +94,7 @@ const FILES = [
   {
     id: 'manifest',
     group: 'references',
-    path: 'references/asset-manifest.json',
+    path: PKG.manifest,
     name: 'asset-manifest.json',
     hint: 'Assets',
     build: (p: Pack) => prettyJson(assetManifestJson(p.design)),
@@ -101,7 +102,7 @@ const FILES = [
   {
     id: 'limits',
     group: 'references',
-    path: 'references/limitations.json',
+    path: PKG.limitations,
     name: 'limitations.json',
     hint: 'Gaps',
     build: (p: Pack) => prettyJson(limitationsJson(p.design)),
@@ -233,18 +234,30 @@ function MarkdownInfoPanel({ onClose }: { onClose: () => void }) {
       </header>
       <div className="md-howto-body">
         <p>
-          Folders match the Export ZIP. Open them in this order, starting at <strong>AGENTS.md</strong> in Guide.
+          Unzip the Export package, then start at <strong>AGENTS.md</strong>. Specs live under <code>docs/</code>. Copy{' '}
+          <code>assets/</code> into the app <code>public/</code> folder. Screenshots stay in{' '}
+          <code>docs/screenshots/</code> for visual comparison.
         </p>
         <ol>
           <li>
-            <strong>Guide</strong> — <code>AGENTS.md</code> first, then <code>DESIGN.md</code>, <code>SKILL.md</code>,{' '}
-            <code>CLAUDE.md</code>, and the Cursor rule.
+            <strong>Guide (root).</strong> <code>AGENTS.md</code> first, then <code>CLAUDE.md</code>, <code>SKILL.md</code>,
+            and <code>.cursor/rules/</code>. These stay next to <code>assets/</code>.
           </li>
           <li>
-            <strong>Prompts</strong> — <code>BUILD_PAGE.md</code> while implementing, <code>VALIDATE_PAGE.md</code> after.
+            <strong>Copy assets.</strong> Move <code>assets/images</code>, <code>icons</code>, <code>svg</code>, and{' '}
+            <code>fonts</code> into <code>public/</code> (Vite, CRA, Next.js). Use <code>/images/...</code> URLs.
           </li>
           <li>
-            <strong>References</strong> — measured data: copy, tokens, layout, scan, asset paths, and limitations.
+            <strong>Docs.</strong> Read <code>docs/DESIGN.md</code> for header, sections, footer, button color, image
+            size, shadow, and motion. Then <code>docs/prompts/BUILD_PAGE.md</code>.
+          </li>
+          <li>
+            <strong>References.</strong> Exact copy, tokens, layout, scan, asset manifest, and limitations under{' '}
+            <code>docs/references/</code>.
+          </li>
+          <li>
+            <strong>Build.</strong> Keep the stack. Prefer Tailwind arbitrary values. Semantic HTML, captured alt text,
+            reserved image width/height. Validate with <code>docs/prompts/VALIDATE_PAGE.md</code> and screenshots.
           </li>
         </ol>
       </div>

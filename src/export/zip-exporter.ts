@@ -14,6 +14,7 @@ import {
 import { generateBuildPrompt, generateValidatePrompt } from '../generators/prompts'
 import { generateSkillMarkdown } from '../generators/skill-md'
 import { assertSafeZipPath, exportFolderName, zipDownloadName } from './filename'
+import { PKG } from './package-paths'
 
 export interface ZipInput {
   raw: PageScan
@@ -42,25 +43,25 @@ export async function buildExportZip(input: ZipInput): Promise<ZipResult> {
     paths.push(`${folder}/${safe}`)
   }
 
-  add('DESIGN.md', generateDesignMarkdown(input.design))
-  add('AGENTS.md', generateAgentsMarkdown(input.design))
-  add('CLAUDE.md', generateClaudeMarkdown(input.design))
-  add('SKILL.md', generateSkillMarkdown(input.design))
-  add('.cursor/rules/recreate-reference-page.mdc', generateCursorRule(input.design))
-  add('prompts/BUILD_PAGE.md', generateBuildPrompt(input.design))
-  add('prompts/VALIDATE_PAGE.md', generateValidatePrompt(input.design))
-  add('references/CONTENT.md', generateContentMarkdown(input.design.content))
-  add('references/design-tokens.json', prettyJson(designTokensJson(input.design)))
-  add('references/layout.json', prettyJson(layoutJson(input.design)))
-  add('references/scan.json', prettyJson(scanJson(input.raw)))
-  add('references/asset-manifest.json', prettyJson(assetManifestJson(input.design)))
-  add('references/limitations.json', prettyJson(limitationsJson(input.design)))
+  add(PKG.agents, generateAgentsMarkdown(input.design))
+  add(PKG.claude, generateClaudeMarkdown(input.design))
+  add(PKG.skill, generateSkillMarkdown(input.design))
+  add(PKG.cursorRule, generateCursorRule(input.design))
+  add(PKG.design, generateDesignMarkdown(input.design))
+  add(PKG.buildPrompt, generateBuildPrompt(input.design))
+  add(PKG.validatePrompt, generateValidatePrompt(input.design))
+  add(PKG.content, generateContentMarkdown(input.design.content))
+  add(PKG.tokens, prettyJson(designTokensJson(input.design)))
+  add(PKG.layout, prettyJson(layoutJson(input.design)))
+  add(PKG.scan, prettyJson(scanJson(input.raw)))
+  add(PKG.manifest, prettyJson(assetManifestJson(input.design)))
+  add(PKG.limitations, prettyJson(limitationsJson(input.design)))
 
   if (input.screenshot?.viewport) {
-    add('screenshots/viewport.png', input.screenshot.viewport)
+    add(PKG.screenshotViewport, input.screenshot.viewport)
   }
   if (input.screenshot?.fullPage) {
-    add('screenshots/full-page.png', input.screenshot.fullPage)
+    add(PKG.screenshotFull, input.screenshot.fullPage)
   }
 
   for (const [path, bytes] of input.assetFiles) {
