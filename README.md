@@ -95,19 +95,18 @@ npm run dev
 
 ## Scripts
 
-| Command                | Description                                                           |
-| ---------------------- | --------------------------------------------------------------------- |
-| `npm run dev`          | Watch-build `dist` (sidepanel + background + content)                 |
-| `npm run build`        | Typecheck, then production `dist`                                     |
-| `npm run typecheck`    | `tsc --noEmit`                                                        |
-| `npm run lint`         | ESLint                                                                |
-| `npm run lint:fix`     | ESLint with `--fix`                                                   |
-| `npm test`             | Vitest unit tests                                                     |
-| `npm run test:watch`   | Vitest watch                                                          |
-| `npm run format`       | Prettier write                                                        |
-| `npm run format:check` | Prettier check (no write)                                             |
-| `npm run commit`       | Commitizen prompt (emoji + conventional header)                       |
-| `npm run icons`        | Generate toolbar icons (does not overwrite `public/icons` on `build`) |
+| Command                | Description                                           |
+| ---------------------- | ----------------------------------------------------- |
+| `npm run dev`          | Watch-build `dist` (sidepanel + background + content) |
+| `npm run build`        | Typecheck, then production `dist`                     |
+| `npm run typecheck`    | `tsc --noEmit`                                        |
+| `npm run lint`         | ESLint                                                |
+| `npm run lint:fix`     | ESLint with `--fix`                                   |
+| `npm test`             | Vitest unit tests                                     |
+| `npm run test:watch`   | Vitest watch                                          |
+| `npm run format`       | Prettier write                                        |
+| `npm run format:check` | Prettier check (no write)                             |
+| `npm run commit`       | Commitizen prompt (emoji + conventional header)       |
 
 ---
 
@@ -181,14 +180,14 @@ Then **Reload** the extension card and refresh the page. During `npm run dev`, r
 
 ### Extension icons
 
-Toolbar icons come from `public/icons/`:
+Put launcher/toolbar PNGs in `public/icons/` yourself:
 
 - `icon-16.png`
 - `icon-32.png`
 - `icon-48.png`
 - `icon-128.png`
 
-`npm run build` copies them into `dist`. It does not regenerate or overwrite them.
+`npm run build` copies them into `dist`. Nothing in the repo generates or overwrites these files.
 
 ---
 
