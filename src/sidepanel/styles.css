@@ -144,7 +144,7 @@ a:focus-visible,
   background: var(--btn-primary);
   padding: 0.55rem 0.9rem;
   height: 36px;
-  color: #fff;
+  color: var(--plum);
   font-weight: 600;
   letter-spacing: 0.2px;
   line-height: 1;
@@ -842,11 +842,11 @@ body,
   transform: translateX(2px);
   box-shadow: var(--btn-shadow);
   background: var(--btn-primary);
-  color: #fff;
+  color: var(--plum);
 }
 
 .menu button:hover:not(:disabled) svg {
-  color: #fff;
+  color: var(--plum);
 }
 
 .menu button:active:not(:disabled) {
@@ -941,7 +941,7 @@ body,
 .nav-btn.on {
   background: var(--btn-primary);
   box-shadow: var(--btn-shadow);
-  color: #fff;
+  color: var(--plum);
 }
 
 .palette,
@@ -1255,7 +1255,7 @@ body,
   border-radius: 8px;
   background: var(--btn-primary);
   box-shadow: var(--btn-shadow);
-  color: #fff;
+  color: var(--plum);
 }
 
 .nav-btn.on:hover {
@@ -1264,7 +1264,7 @@ body,
 }
 
 .nav-btn.on svg {
-  color: #fff;
+  color: var(--plum);
 }
 
 .nav-btn {
@@ -2668,7 +2668,7 @@ body,
 }
 
 .ui-segmented button.on {
-  color: #fff;
+  color: var(--plum);
   font-weight: 650;
 }
 
