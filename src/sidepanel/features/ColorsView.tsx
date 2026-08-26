@@ -1,5 +1,5 @@
 /**
- * Colors, typography, and layout result tabs for the scanned design tokens.
+ * Colors and typography result tabs for the scanned design tokens.
  */
 import { useState } from 'react'
 import { isDarkHex, parseColor, pagePaletteGroups } from '../../normalize/colors'
@@ -9,7 +9,7 @@ import { sendRuntime } from '../chrome-api'
 import { Copy } from 'lucide-react'
 import { Button } from '../components/Button'
 import { CountBadge } from '../components/CountBadge'
-import { CopyButton, ScanPrompt } from '../components/CopyButton'
+import { ScanPrompt } from '../components/CopyButton'
 import { InspectIcon, CopyIcon } from '../components/LucideIcons'
 import { CollectionShell } from '../components/Segmented'
 import { EMPTY_COLORS, EMPTY_TYPOGRAPHY } from '../empty'
@@ -299,40 +299,6 @@ function typeSection(token: TypographyToken): { key: string; title: string; orde
   if (/h3|heading-3/i.test(name) || size >= 18) return { key: 'h3', title: 'Heading 3', order: 3 }
   if (/caption|label/i.test(name) || size <= 13) return { key: 'caption', title: 'Captions', order: 5 }
   return { key: 'body', title: 'Paragraphs', order: 4 }
-}
-
-export function LayoutView() {
-  const design = useScanStore((s) => s.design)
-  if (!design) return <ScanPrompt afterScan="No layout data was captured." />
-  return (
-    <>
-      <section className="card">
-        <h2>Sections</h2>
-        <div className="list">
-          {design.sections.map((section) => (
-            <div key={section.id}>
-              <strong>{section.name}</strong>
-              <div className="muted">
-                {section.composition?.role ?? 'section'} · {section.composition?.pattern ?? 'stack'} ·{' '}
-                {section.composition?.columns ?? 1} col · {section.bounds.width}×{section.bounds.height}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      <section className="card">
-        <h2>Spacing / radius / shadow</h2>
-        {[...design.tokens.spacing, ...design.tokens.radii, ...design.tokens.shadows].map((token) => (
-          <div key={token.id} className="row">
-            <span>
-              {token.name}: {token.value}
-            </span>
-            <CopyButton value={token.value} label="Copy" />
-          </div>
-        ))}
-      </section>
-    </>
-  )
 }
 
 function prettyTypeName(name: string): string {
