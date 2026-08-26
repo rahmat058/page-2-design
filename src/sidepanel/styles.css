@@ -3460,7 +3460,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-bottom: 8px;
+  padding: 2px 2px 8px;
 }
 
 .dev-app-badge {
@@ -3528,21 +3528,23 @@ body,
   display: flex;
   align-items: center;
   gap: 12px;
+  padding-left: 2px;
 }
 
 .dev-avatar {
+  display: block;
   flex: 0 0 auto;
   box-shadow:
     0 0 0 1px rgb(46 42 66 / 0.08),
-    0 8px 18px rgb(46 42 66 / 0.1);
+    0 6px 14px rgb(46 42 66 / 0.1);
   border: 2px solid #fff;
-  border-radius: 18px;
+  border-radius: 50%;
   background: var(--paper);
   width: 64px;
   height: 64px;
   object-fit: cover;
+  object-position: center;
 }
-
 .dev-avatar.fallback {
   display: inline-flex;
   justify-content: center;
