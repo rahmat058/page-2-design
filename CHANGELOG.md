@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Open-source community files: MIT license, code of conduct, contributing guide, security policy, and changelog.
+- `PRIVACY.md` for Chrome Web Store / end-user privacy disclosure (local-only processing).
+
+### Changed
+
+- Side panel code layout: shared `hooks/` and `lib/`, folder-per-component (`PanelChrome`, `BottomNav`, `Segmented`, `VirtualList`, …) with colocated helpers; `App.tsx` kept as the shell only.
 
 ## [1.0.0] - 2026-08-25
 

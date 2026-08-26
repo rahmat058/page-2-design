@@ -2,6 +2,8 @@
 
 Page2Design is a **local-only** Chrome Manifest V3 extension. Scans, IndexedDB storage, and ZIP export stay on the device. There is no backend, analytics, or upload API.
 
+End-user policy for the Chrome Web Store: **[PRIVACY.md](./PRIVACY.md)**.
+
 ## Supported versions
 
 | Version                  | Supported                               |

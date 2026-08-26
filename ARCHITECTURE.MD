@@ -46,6 +46,7 @@ Page2Design/
 ├── CONTRIBUTING.md
 ├── CHANGELOG.md
 ├── SECURITY.md
+├── PRIVACY.md                 # Local-only data handling (store listing URL)
 ├── README.md
 ├── ARCHITECTURE.MD
 ├── commitlint.config.ts       # Conventional commits + type emojis
@@ -72,10 +73,18 @@ Page2Design/
 │   │   ├── inspect-mode.ts    # Click-to-inspect
 │   │   └── *scanner.ts        # DOM, color, type, assets, content, …
 │   ├── sidepanel/             # React inspector (overlay + side panel)
-│   │   ├── App.tsx
-│   │   ├── store/useScanStore.ts
+│   │   ├── App.tsx            # Shell only — wires chrome, views, hooks
+│   │   ├── main.tsx
+│   │   ├── hooks/             # Shared hooks (runtime, overlay, busy, …)
+│   │   ├── lib/               # Non-React helpers (view titles, panel actions)
+│   │   ├── store/             # Zustand (`useScanStore`, toast)
 │   │   ├── features/          # Overview, Colors, Content, Export, Developer, …
-│   │   └── components/        # Chrome, bottom nav, buttons
+│   │   └── components/        # Folder-per-component when logic is non-trivial
+│   │       ├── PanelChrome/   # index + lib/ (overlay drag)
+│   │       ├── BottomNav/     # index + lib/ (nav items)
+│   │       ├── Segmented/     # + hooks/use-segmented-indicator
+│   │       ├── VirtualList/   # + LazyMount
+│   │       └── …             # Button, Switch, Toast, …
 │   ├── normalize/             # PageScan → NormalizedDesign
 │   ├── generators/            # AGENTS.md, DESIGN.md, prompts, JSON refs
 │   ├── export/                # ZIP layout, asset download, filenames
@@ -275,6 +284,8 @@ Scan records older than 24h (`STALE_SCAN_MS`) or incomplete after 1h (`INCOMPLET
 
 ## Privacy
 
+Store listing and end-user policy: **[PRIVACY.md](./PRIVACY.md)**.
+
 | Rule                   | Implementation                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------- |
 | No remote backend      | No analytics, no upload APIs                                                    |
@@ -312,6 +323,9 @@ Hybrid: scanners are functional collectors; the service worker is an orchestrato
 | Generator functions | `src/generators/`            | Pure `NormalizedDesign` → markdown / JSON   |
 | Zustand store       | `useScanStore`               | Phase, design, view, inspect, options       |
 | Feature views       | `sidepanel/features/`        | One view per bottom-nav surface             |
+| Shared hooks        | `sidepanel/hooks/`           | Runtime messages, overlay resize, busy, …   |
+| Panel helpers       | `sidepanel/lib/`             | Titles/counts, clipboard, chrome actions    |
+| UI components       | `sidepanel/components/`      | Folder + `lib/` / `hooks/` when non-trivial |
 | Coverage, not score | `validation/coverage.ts`     | What was captured, never a % visual match   |
 
 ```

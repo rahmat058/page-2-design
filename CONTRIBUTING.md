@@ -195,9 +195,15 @@ Type must be lowercase (`feat`, not `Feat`).
 | Service worker                | `src/background/`                |
 | Content script / overlay host | `src/content/`                   |
 | Inspector UI                  | `src/sidepanel/`                 |
+| Shared UI hooks               | `src/sidepanel/hooks/`           |
+| Panel helpers                 | `src/sidepanel/lib/`             |
+| Feature views                 | `src/sidepanel/features/`        |
+| UI components                 | `src/sidepanel/components/`      |
 | Shared types and messages     | `src/shared/`                    |
 | ZIP generators                | `src/generators/`, `src/export/` |
 | Tests                         | `src/tests/`                     |
+
+Prefer: shared hooks in `hooks/`, non-React helpers in `lib/`, and `ComponentName/{index,lib,hooks}` when a component grows beyond a thin presentational file.
 
 Scan stays on-device. Do not add a backend, analytics, or network calls that upload page content.
 

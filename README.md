@@ -118,6 +118,12 @@ Page2Design/
 │   ├── background/            # Service worker (scan, CSS, ZIP)
 │   ├── content/               # DOM scan + overlay host
 │   ├── sidepanel/             # React inspector UI
+│   │   ├── App.tsx            # Shell: chrome, views, hooks
+│   │   ├── hooks/             # Shared React hooks
+│   │   ├── lib/               # View helpers, overlay, panel actions
+│   │   ├── components/        # UI primitives (folder + lib/hooks)
+│   │   ├── features/          # One view per bottom-nav surface
+│   │   └── store/             # Zustand scan store
 │   ├── normalize/             # PageScan → NormalizedDesign
 │   ├── generators/            # AGENTS.md, DESIGN.md, prompts, JSON refs
 │   ├── export/                # ZIP layout and asset download
@@ -125,6 +131,7 @@ Page2Design/
 │   ├── shared/                # Types, messages, redaction
 │   └── tests/                 # Vitest
 ├── ARCHITECTURE.MD            # Pipeline, messages, privacy, limits
+├── PRIVACY.md                 # Chrome Web Store privacy policy
 ├── CONTRIBUTING.md
 └── LICENSE
 ```
@@ -213,6 +220,7 @@ We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUT
 
 - [Report a bug or request a feature](https://github.com/rahmat058/page-2-design/issues)
 - [Security policy](./SECURITY.md)
+- [Privacy policy](./PRIVACY.md)
 - [Changelog](./CHANGELOG.md)
 
 ---
