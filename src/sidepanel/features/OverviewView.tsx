@@ -13,11 +13,9 @@ import { coverageSummary } from '../../validation/coverage'
 import { EmptyState } from '../components/CopyButton'
 import { contrastPairs, parseColor, colorDistance } from '../../normalize/colors'
 import { emptyCssInformation, hasCssData } from '../../shared/types'
-import type { CssInformation } from '../../shared/types'
 import { formatCssBytes, formatCssLoadTime } from '../../shared/css-format'
 import { objectUrlForAsset } from '../download-asset'
-import { sendRuntime } from '../chrome-api'
-import { createRequestId } from '../../shared/messages'
+import { useLiveCssInfo } from '../hooks'
 
 // ---------------------------------------------------------------------------
 // Overview
@@ -33,19 +31,7 @@ export function OverviewView() {
   const error = useScanStore((s) => s.error)
   const options = useScanStore((s) => s.options)
   const setOptions = useScanStore((s) => s.setOptions)
-  const [liveCss, setLiveCss] = useState<CssInformation | null>(null)
-
-  useEffect(() => {
-    if (phase !== 'ready' && phase !== 'complete') return
-    let cancelled = false
-    void (async () => {
-      const response = await sendRuntime({ type: 'GET_CSS_INFO', requestId: createRequestId() })
-      if (!cancelled && response?.type === 'CSS_INFO') setLiveCss(response.payload)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [phase, scanId])
+  const liveCss = useLiveCssInfo(phase, scanId)
 
   const width =
     totalChunks && totalChunks > 0 ? Math.round((completedChunks / totalChunks) * 100) : phase === 'ready' ? 100 : 0

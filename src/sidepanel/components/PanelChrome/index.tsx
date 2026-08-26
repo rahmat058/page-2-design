@@ -2,8 +2,8 @@
  * Top chrome: inspect toggle, overflow menu, dock/close, and scan shortcuts.
  */
 import { useRef } from 'react'
-import type { PanelView } from '../store/useScanStore'
-import { Switch } from './Switch'
+import type { PanelView } from '../../store/useScanStore'
+import { Switch } from '../Switch'
 import {
   CancelMenuIcon,
   ClearMenuIcon,
@@ -15,7 +15,8 @@ import {
   LayoutMenuIcon,
   MenuIcon,
   ScanMenuIcon,
-} from './LucideIcons'
+} from '../LucideIcons'
+import { startOverlayDrag } from './lib/start-overlay-drag'
 
 interface Props {
   inspectOn: boolean
@@ -45,7 +46,7 @@ export function PanelChrome(props: Props) {
         type="button"
         className="icon-btn grip"
         aria-label="Move panel"
-        onPointerDown={(event) => startDrag(event)}>
+        onPointerDown={(event) => startOverlayDrag(event)}>
         <GripIcon />
         <span className="tip tip-below tip-start">Move panel</span>
       </button>
@@ -102,50 +103,4 @@ export function PanelChrome(props: Props) {
       </div>
     </div>
   )
-}
-
-function startDrag(event: React.PointerEvent<HTMLButtonElement>): void {
-  if (window === window.top) return
-  event.preventDefault()
-  event.stopPropagation()
-  const target = event.currentTarget
-  target.setPointerCapture(event.pointerId)
-  postOverlay({ type: 'dragstart', screenX: event.screenX, screenY: event.screenY })
-
-  let latestX = event.screenX
-  let latestY = event.screenY
-  let frame = 0
-
-  const flush = () => {
-    frame = 0
-    postOverlay({ type: 'move', screenX: latestX, screenY: latestY })
-  }
-
-  const move = (next: PointerEvent) => {
-    latestX = next.screenX
-    latestY = next.screenY
-    if (!frame) frame = requestAnimationFrame(flush)
-  }
-
-  const end = () => {
-    if (frame) cancelAnimationFrame(frame)
-    flush()
-    postOverlay({ type: 'dragend' })
-    try {
-      target.releasePointerCapture(event.pointerId)
-    } catch {
-      /* already released */
-    }
-    target.removeEventListener('pointermove', move)
-    target.removeEventListener('pointerup', end)
-    target.removeEventListener('pointercancel', end)
-  }
-
-  target.addEventListener('pointermove', move)
-  target.addEventListener('pointerup', end)
-  target.addEventListener('pointercancel', end)
-}
-
-function postOverlay(payload: { type: string; screenX?: number; screenY?: number }): void {
-  window.parent.postMessage({ source: 'page2design', ...payload }, '*')
 }

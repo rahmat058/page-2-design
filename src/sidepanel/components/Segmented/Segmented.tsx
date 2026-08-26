@@ -1,7 +1,8 @@
 /**
- * Segmented control and CollectionShell layout used by multi-mode result tabs.
+ * Sliding segmented control used by multi-mode result tabs.
  */
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
+import { useSegmentedIndicator } from './hooks/use-segmented-indicator'
 
 export interface SegmentedOption<T extends string> {
   value: T
@@ -19,23 +20,7 @@ interface Props<T extends string> {
 
 export function Segmented<T extends string>({ value, options, onChange, label, className }: Props<T>) {
   const listRef = useRef<HTMLDivElement>(null)
-  const [indicator, setIndicator] = useState({ left: 0, width: 0 })
-
-  useLayoutEffect(() => {
-    const list = listRef.current
-    if (!list) return
-
-    const update = () => {
-      const active = list.querySelector<HTMLElement>('[aria-selected="true"]')
-      if (!active) return
-      setIndicator({ left: active.offsetLeft, width: active.offsetWidth })
-    }
-
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(list)
-    return () => observer.disconnect()
-  }, [value, options])
+  const indicator = useSegmentedIndicator(listRef, value, options)
 
   return (
     <div
@@ -71,28 +56,6 @@ export function Segmented<T extends string>({ value, options, onChange, label, c
           </button>
         )
       })}
-    </div>
-  )
-}
-
-interface CollectionShellProps<T extends string> extends Props<T> {
-  children: ReactNode
-}
-
-export function CollectionShell<T extends string>({
-  value,
-  options,
-  onChange,
-  label,
-  className,
-  children,
-}: CollectionShellProps<T>) {
-  return (
-    <div className={['collection-shell', className].filter(Boolean).join(' ')}>
-      <Segmented value={value} options={options} onChange={onChange} label={label} />
-      <div key={value} className="fade-pane collection-scroll">
-        {children}
-      </div>
     </div>
   )
 }

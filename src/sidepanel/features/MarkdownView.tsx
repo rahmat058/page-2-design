@@ -1,7 +1,7 @@
 /**
  * Generate Markdown / JSON pack for agents: file picker, preview, copy, and download.
  */
-import { useEffect, useRef, useState, startTransition } from 'react'
+import { useState } from 'react'
 import { CircleHelp, Copy, Download, RefreshCw } from 'lucide-react'
 import { generateAgentsMarkdown, generateClaudeMarkdown, generateCursorRule } from '../../generators/agents-md'
 import { generateContentMarkdown } from '../../generators/content-md'
@@ -21,6 +21,7 @@ import { Button } from '../components/Button'
 import { ScanPrompt } from '../components/CopyButton'
 import { CollectionShell } from '../components/Segmented'
 import { revokeObjectUrlLater } from '../download-asset'
+import { useMarkdownPreview, useScanBusy } from '../hooks'
 import { startScan } from '../scan-flow'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
@@ -168,49 +169,10 @@ export function MarkdownView() {
   const [group, setGroup] = useState<GroupId>('guide')
   const [fileId, setFileId] = useState<FileId>('agents')
   const [infoOpen, setInfoOpen] = useState(false)
-  const [markdown, setMarkdown] = useState('Refreshing from the page…')
-  const [generating, setGenerating] = useState(false)
-  const cacheRef = useRef<Map<string, string>>(new Map())
-  const busy = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating'].includes(phase)
+  const busy = useScanBusy() && phase !== 'exporting'
   const files = FILES.filter((file) => file.group === group)
   const selected = files.find((file) => file.id === fileId) ?? files[0] ?? FILES[0]
-
-  useEffect(() => {
-    cacheRef.current.clear()
-  }, [scanId, design?.metadata.scannedAt])
-
-  useEffect(() => {
-    if (!design) {
-      setMarkdown('Refreshing from the page…')
-      setGenerating(false)
-      return
-    }
-    const key = `${scanId ?? design.metadata.scannedAt}:${selected.id}`
-    const cached = cacheRef.current.get(key)
-    if (cached) {
-      setMarkdown(cached)
-      setGenerating(false)
-      return
-    }
-    setGenerating(true)
-    setMarkdown('Generating preview…')
-    const pack: Pack = { design, raw }
-    const file = selected
-    let cancelled = false
-    const timer = window.setTimeout(() => {
-      startTransition(() => {
-        if (cancelled) return
-        const text = buildFile(file, pack)
-        cacheRef.current.set(key, text)
-        setMarkdown(text)
-        setGenerating(false)
-      })
-    }, 0)
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer)
-    }
-  }, [design, raw, selected, scanId])
+  const { markdown, generating } = useMarkdownPreview({ design, raw, scanId, selected })
 
   if (!design && !busy) return <ScanPrompt afterScan="Scan this page to generate the export markdown files." />
 
@@ -294,17 +256,8 @@ export function MarkdownView() {
 }
 
 // ---------------------------------------------------------------------------
-// Build, preview, clipboard, download
+// Preview, clipboard, download
 // ---------------------------------------------------------------------------
-
-function buildFile(file: (typeof FILES)[number], pack: Pack): string {
-  try {
-    return file.build(pack)
-  } catch (error) {
-    const detail = error instanceof Error ? error.stack || error.message : String(error)
-    return `# Could not generate ${file.path}\n\n${detail}\n`
-  }
-}
 
 function previewText(markdown: string): string {
   if (markdown.length <= PREVIEW_CHARS) return markdown

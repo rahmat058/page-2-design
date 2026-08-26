@@ -2,10 +2,7 @@
  * Side panel root: wires scan store, runtime messages, chrome chrome, and feature views.
  * Also handles overlay resize and inspect-mode toggling.
  */
-import { useEffect, useState } from 'react'
-import { createRequestId } from '../shared/messages'
-import { userFacingError } from '../shared/errors'
-import { sendRuntime, onRuntimeMessage } from './chrome-api'
+import { useState } from 'react'
 import { Copy, Download, RefreshCw, Star } from 'lucide-react'
 import { Button } from './components/Button'
 import { BottomNav } from './components/BottomNav'
@@ -20,20 +17,11 @@ import { DeveloperView, REPO_URL } from './features/DeveloperView'
 import { OverviewView } from './features/OverviewView'
 import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
-import { cancelScan, clearScanData, loadScan, refreshTab, startScan } from './scan-flow'
+import { cancelScan, clearScanData, refreshTab, startScan } from './scan-flow'
 import { useScanStore } from './store/useScanStore'
-import { useToastStore } from './toast'
 import { uniqueVisualAssets } from '../content/asset-scanner'
-import { copyContentPlain, groupContentBySection, panelContentBlocks } from './content-groups'
-import type { NormalizedDesign } from '../shared/types'
-import { OVERLAY_WIDE_WIDTH, OVERLAY_WIDTH } from '../shared/constants'
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const BUSY = ['preparing', 'lazy-loading', 'scanning', 'normalizing', 'validating', 'exporting']
-const OVERLAY = typeof window !== 'undefined' && window !== window.top
+import { isOverlayFrame, useOverlayResize, usePanelRuntime, useScanBusy } from './hooks'
+import { closePanel, copyAllContent, countFor, dockSidePanel, headingFor, toggleInspectMode } from './lib'
 
 // ---------------------------------------------------------------------------
 // App shell
@@ -49,51 +37,22 @@ export function App() {
   const inspectOn = useScanStore((s) => s.inspectOn)
   const [menuOpen, setMenuOpen] = useState(false)
   const mdOpen = view === 'generate-md'
-
-  useEffect(() => {
-    void boot()
-    return onRuntimeMessage((message) => {
-      if (message.type === 'SCAN_PROGRESS') {
-        useScanStore.getState().setProgress(message.payload)
-      }
-      if (message.type === 'SCAN_FAILED') {
-        useScanStore.getState().setFailed(userFacingError(message.payload))
-      }
-      if (message.type === 'SCAN_COMPLETE' && message.payload.assembled) {
-        void loadScan(message.scanId)
-      }
-      if (message.type === 'INSPECT_ELEMENT') {
-        const store = useScanStore.getState()
-        if (!store.inspectOn) store.setInspectOn(true)
-        store.setInspected(message.payload)
-      }
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!OVERLAY) return
-    window.parent.postMessage(
-      {
-        source: 'page2design',
-        type: 'resize',
-        width: mdOpen && !inspectOn ? OVERLAY_WIDE_WIDTH : OVERLAY_WIDTH,
-      },
-      '*',
-    )
-  }, [mdOpen, inspectOn])
-
-  const busy = BUSY.includes(phase)
+  const overlay = isOverlayFrame()
+  const busy = useScanBusy()
   const canExport = Boolean(design) && (phase === 'ready' || phase === 'complete')
+
+  usePanelRuntime()
+  useOverlayResize(mdOpen && !inspectOn)
 
   return (
     <div className={mdOpen && !inspectOn ? 'app inspector is-wide' : 'app inspector'}>
       <PanelChrome
         inspectOn={inspectOn}
         menuOpen={menuOpen}
-        overlay={OVERLAY}
+        overlay={overlay}
         busy={busy}
         canExport={canExport}
-        onToggleInspect={() => void toggleInspect()}
+        onToggleInspect={() => void toggleInspectMode()}
         onToggleMenu={() => setMenuOpen((open) => !open)}
         onDock={() => void dockSidePanel()}
         onClose={() => void closePanel()}
@@ -174,80 +133,4 @@ export function App() {
       <Toast />
     </div>
   )
-
-  async function toggleInspect() {
-    const next = !useScanStore.getState().inspectOn
-    useScanStore.getState().setInspectOn(next)
-    await sendRuntime({
-      type: 'SET_INSPECT_MODE',
-      requestId: createRequestId(),
-      payload: { enabled: next, contextMenu: useScanStore.getState().inspectContextMenu },
-    })
-  }
-
-  async function dockSidePanel() {
-    await sendRuntime({ type: 'DOCK_SIDE_PANEL', requestId: createRequestId() })
-  }
-
-  async function closePanel() {
-    if (OVERLAY) {
-      window.parent.postMessage({ source: 'page2design', type: 'close' }, '*')
-    }
-    useScanStore.getState().setInspectOn(false)
-    await sendRuntime({
-      type: 'SET_INSPECT_MODE',
-      requestId: createRequestId(),
-      payload: { enabled: false },
-    })
-    await sendRuntime({ type: 'CLOSE_OVERLAY', requestId: createRequestId() })
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Boot & view helpers
-// ---------------------------------------------------------------------------
-
-let autoScanStarted = false
-
-async function boot(): Promise<void> {
-  await refreshTab()
-  if (autoScanStarted) return
-  const { tabRestricted, design, phase } = useScanStore.getState()
-  if (tabRestricted || design || phase !== 'idle') return
-  autoScanStarted = true
-  await startScan()
-}
-
-async function copyAllContent(): Promise<void> {
-  const design = useScanStore.getState().design
-  if (!design) return
-  const groups = groupContentBySection(panelContentBlocks(design.content), design.sections)
-  await navigator.clipboard.writeText(copyContentPlain(groups))
-  useToastStore.getState().showToast('All content copied')
-}
-
-function headingFor(view: string): string {
-  if (view === 'colors') return 'Colors'
-  if (view === 'typography') return 'Typography'
-  if (view === 'assets' || view === 'images' || view === 'icons') return 'Assets'
-  if (view === 'export') return 'Export'
-  if (view === 'content') return 'Content'
-  if (view === 'layout') return 'Layout'
-  if (view === 'generate-md') return 'Generate Markdown'
-  if (view === 'developer') return 'Developer'
-  return 'Overview'
-}
-
-function countFor(
-  view: string,
-  counts: { colors: number; typography: number; images: number; textBlocks: number },
-  design: NormalizedDesign | null,
-): number {
-  if (view === 'colors') return counts.colors
-  if (view === 'typography') return counts.typography
-  if (view === 'assets' || view === 'images' || view === 'icons') {
-    return design ? uniqueVisualAssets(design.assets).length : counts.images
-  }
-  if (view === 'content') return design ? panelContentBlocks(design.content).length : counts.textBlocks
-  return 0
 }
