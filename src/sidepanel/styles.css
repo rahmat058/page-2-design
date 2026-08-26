@@ -3463,6 +3463,67 @@ body,
   padding-bottom: 8px;
 }
 
+.dev-app-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgb(255 147 171 / 0.12);
+  border: 1px solid rgb(255 147 171 / 0.45);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff7f9 0%, #fff 55%, #f7f3ff 100%);
+  padding: 12px 14px;
+}
+
+.dev-app-badge-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dev-app-name {
+  color: var(--plum);
+  font-size: 14px;
+  font-family: var(--font-bold);
+  letter-spacing: 0.01em;
+}
+
+.dev-app-badge-copy small {
+  opacity: 0.8;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.dev-version-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  box-shadow: 0 6px 14px rgb(215 190 252 / 0.32);
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--lavender), var(--lavender));
+  padding: 6px 12px;
+  color: var(--plum);
+  line-height: 1.15;
+}
+
+.dev-version-label {
+  opacity: 0.72;
+  font-size: 8px;
+  font-family: var(--font-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dev-version-pill strong {
+  font-size: 13px;
+  font-family: var(--font-bold);
+  letter-spacing: 0.02em;
+}
+
 .dev-identity {
   display: flex;
   align-items: center;
@@ -3471,8 +3532,11 @@ body,
 
 .dev-avatar {
   flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgb(46 42 66 / 0.08),
+    0 8px 18px rgb(46 42 66 / 0.1);
+  border: 2px solid #fff;
+  border-radius: 18px;
   background: var(--paper);
   width: 64px;
   height: 64px;
@@ -3525,9 +3589,11 @@ body,
 }
 
 .dev-open-pill {
+  box-shadow: 0 2px 8px rgb(215 190 252 / 0.28);
+  border: 1px solid rgb(215 190 252 / 0.55);
   border-radius: 999px;
-  background: var(--accent-on);
-  padding: 3px 8px;
+  background: var(--lavender);
+  padding: 3px 9px;
   color: var(--plum);
   font-size: 10px;
   font-family: var(--font-bold);

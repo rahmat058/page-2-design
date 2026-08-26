@@ -6,6 +6,15 @@ import { Globe, MapPin, Star } from 'lucide-react'
 
 export const REPO_URL = 'https://github.com/rahmat058/page-2-design'
 
+/** Prefer the loaded extension manifest so the UI matches chrome://extensions. */
+function appVersion(): string {
+  try {
+    return chrome.runtime.getManifest().version || '1.0.0'
+  } catch {
+    return '1.0.0'
+  }
+}
+
 const PROFILE = {
   name: 'Kazi Rahamatullah',
   handle: '@rahmat058',
@@ -77,9 +86,21 @@ const LINKS = [
 
 export function DeveloperView() {
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const version = appVersion()
 
   return (
     <article className="dev-page">
+      <div className="dev-app-badge" aria-label={`Page2Design version ${version}`}>
+        <div className="dev-app-badge-copy">
+          <span className="dev-app-name">Page2Design</span>
+          <small>Chrome extension</small>
+        </div>
+        <span className="dev-version-pill">
+          <span className="dev-version-label">Version</span>
+          <strong>v{version}</strong>
+        </span>
+      </div>
+
       <header className="dev-identity">
         {avatarFailed ? (
           <span className="dev-avatar fallback" aria-hidden="true">
