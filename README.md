@@ -18,7 +18,7 @@ Scan a live webpage and export one **agent-ready** design package — local-only
 
 The ZIP helps Cursor, Claude Code, and similar coding agents recreate the **observed** page. It does not recover original source, React trees, or private form values.
 
-Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md](./CHANGELOG.md)**
+Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md](./CHANGELOG.md)** · Store listing: **[STORE.md](./STORE.md)**
 
 ---
 
@@ -134,6 +134,7 @@ Page2Design/
 │   ├── shared/                # Types, messages, redaction, device presets
 │   └── tests/                 # Vitest
 ├── ARCHITECTURE.MD            # Pipeline, messages, privacy, limits
+├── STORE.md                   # Chrome Web Store summary + description
 ├── PRIVACY.md                 # Chrome Web Store privacy policy
 ├── CONTRIBUTING.md
 └── LICENSE
@@ -246,6 +247,7 @@ We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUT
 - [Report a bug or request a feature](https://github.com/rahmat058/page-2-design/issues)
 - [Security policy](./SECURITY.md)
 - [Privacy policy](./PRIVACY.md)
+- [Chrome Web Store listing](./STORE.md)
 - [Changelog](./CHANGELOG.md)
 
 ---

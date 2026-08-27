@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Overlay host grows with the Responsive preview (panel 336px + gap + preview width, capped to the viewport). Preview and inspector drop shadows are off while the flyout is open so the gap between cards stays clean.
 - Assets **List** view is a normal stacked list inside the collection scroller (no nested virtual list), so row spacing stays even.
 - Developer GitHub / LinkedIn / website rows use the same card chrome as Design System export tiles.
+- Chrome Web Store listing copy (`STORE.md`) matches current product: Design System, Responsive preview, and **More Options → Clear local scan data**.
 
 ### Fixed
 

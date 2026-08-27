@@ -47,6 +47,7 @@ Page2Design/
 ├── CHANGELOG.md
 ├── SECURITY.md
 ├── PRIVACY.md                 # Local-only data handling (store listing URL)
+├── STORE.md                   # Chrome Web Store summary + description
 ├── README.md
 ├── ARCHITECTURE.MD
 ├── commitlint.config.ts       # Conventional commits + type emojis

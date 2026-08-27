@@ -6,7 +6,7 @@ you agree to follow the [Code of Conduct](./CODE_OF_CONDUCT.md).
 ## How to help
 
 - **Bugs and limits** — open an [issue](https://github.com/rahmat058/page-2-design/issues) with Chrome version, the page you scanned (or `fixtures/reference-page.html`), and what you expected vs what you got.
-- **Docs** — README and [ARCHITECTURE.MD](./ARCHITECTURE.MD) stay in sync: install and test in README, pipeline and folders in architecture.
+- **Docs** — README and [ARCHITECTURE.MD](./ARCHITECTURE.MD) stay in sync: install and test in README, pipeline and folders in architecture. Chrome Web Store copy lives in [STORE.md](./STORE.md).
 - **Code** — small, focused pull requests are easier to review than large redesigns.
 
 Do not send captured page content, passwords, or private ZIP exports in issues or PRs. For security reports, see **[SECURITY.md](./SECURITY.md)** (do not file them as public issues).
