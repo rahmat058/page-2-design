@@ -2,7 +2,7 @@
  * Developer / about tab: author profile and link to the project repository.
  */
 import { useState, type SVGProps } from 'react'
-import { Globe, MapPin, Star } from 'lucide-react'
+import { ExternalLink, Globe, MapPin, Star } from 'lucide-react'
 
 export const REPO_URL = 'https://github.com/rahmat058/page-2-design'
 
@@ -79,9 +79,21 @@ function LinkedinMark(props: { size?: number }) {
 }
 
 const LINKS = [
-  { href: 'https://github.com/rahmat058', label: 'GitHub', hint: 'rahmat058', Icon: GithubMark },
-  { href: 'https://www.linkedin.com/in/rahmat058/', label: 'LinkedIn', hint: 'in/rahmat058', Icon: LinkedinMark },
-  { href: 'https://www.kazi-rahamatullah.com/', label: 'Website', hint: 'kazi-rahamatullah.com', Icon: Globe },
+  { href: 'https://github.com/rahmat058', label: 'GitHub', hint: 'rahmat058', tone: 'github', Icon: GithubMark },
+  {
+    href: 'https://www.linkedin.com/in/rahmat058/',
+    label: 'LinkedIn',
+    hint: 'in/rahmat058',
+    tone: 'linkedin',
+    Icon: LinkedinMark,
+  },
+  {
+    href: 'https://www.kazi-rahamatullah.com/',
+    label: 'Website',
+    hint: 'kazi-rahamatullah.com',
+    tone: 'website',
+    Icon: Globe,
+  },
 ] as const
 
 export function DeveloperView() {
@@ -138,17 +150,25 @@ export function DeveloperView() {
         </span>
       </a>
 
-      <div className="dev-links">
-        {LINKS.map((link) => (
-          <a key={link.href} className="dev-link" href={link.href} target="_blank" rel="noopener noreferrer">
-            <link.Icon size={ICON.size} />
-            <span>
-              <strong>{link.label}</strong>
-              <small>{link.hint}</small>
-            </span>
-          </a>
-        ))}
-      </div>
+      <ul className="ds-modern-list">
+        {LINKS.map((link) => {
+          const Icon = link.Icon
+          return (
+            <li key={link.href}>
+              <a className="ds-modern-card" href={link.href} target="_blank" rel="noopener noreferrer">
+                <span className={`ds-modern-icon ${link.tone}`} aria-hidden="true">
+                  <Icon size={16} />
+                </span>
+                <span className="ds-modern-copy">
+                  <strong>{link.label}</strong>
+                  <span>{link.hint}</span>
+                </span>
+                <ExternalLink size={16} strokeWidth={2} className="ds-modern-dl" aria-hidden="true" />
+              </a>
+            </li>
+          )
+        })}
+      </ul>
 
       <section className="dev-section">
         <h3>About</h3>
