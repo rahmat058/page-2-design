@@ -4,9 +4,9 @@
 import type { PanelView } from '../../../store/useScanStore'
 import {
   AssetsIcon,
-  ColorsIcon,
   ContentIcon,
   DesignMdIcon,
+  DesignSystemIcon,
   ExportNavIcon,
   OverviewIcon,
   ProfileIcon,
@@ -16,7 +16,7 @@ import {
 export const BOTTOM_NAV_ITEMS: { id: PanelView; label: string; icon: typeof OverviewIcon }[] = [
   { id: 'overview', label: 'Overview', icon: OverviewIcon },
   { id: 'content', label: 'Content', icon: ContentIcon },
-  { id: 'colors', label: 'Colors', icon: ColorsIcon },
+  { id: 'design-system', label: 'Design System', icon: DesignSystemIcon },
   { id: 'typography', label: 'Typography', icon: TypeIcon },
   { id: 'assets', label: 'Assets', icon: AssetsIcon },
   { id: 'generate-md', label: 'Generate Markdown', icon: DesignMdIcon },
@@ -28,5 +28,6 @@ export const BOTTOM_NAV_ITEMS: { id: PanelView; label: string; icon: typeof Over
 export function resolveActiveNav(view: PanelView): PanelView {
   if (view === 'images' || view === 'icons') return 'assets'
   if (view === 'layout') return 'overview'
+  if (view === 'colors') return 'design-system'
   return view
 }

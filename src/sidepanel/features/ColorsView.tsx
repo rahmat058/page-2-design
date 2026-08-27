@@ -1,168 +1,18 @@
 /**
- * Colors and typography result tabs for the scanned design tokens.
+ * Typography result tab for scanned design tokens.
  */
 import { useState } from 'react'
-import { isDarkHex, parseColor, pagePaletteGroups } from '../../normalize/colors'
 import { createRequestId } from '../../shared/messages'
-import type { ColorToken, TypographyToken } from '../../shared/types'
+import type { TypographyToken } from '../../shared/types'
 import { sendRuntime } from '../chrome-api'
 import { Copy } from 'lucide-react'
 import { Button } from '../components/Button'
 import { CountBadge } from '../components/CountBadge'
 import { ScanPrompt } from '../components/CopyButton'
-import { InspectIcon, CopyIcon } from '../components/LucideIcons'
-import { CollectionShell } from '../components/Segmented'
-import { EMPTY_COLORS, EMPTY_TYPOGRAPHY } from '../empty'
+import { InspectIcon } from '../components/LucideIcons'
+import { EMPTY_TYPOGRAPHY } from '../empty'
 import { useScanStore } from '../store/useScanStore'
 import { useToastStore } from '../toast'
-
-const COLOR_TABS = [
-  { value: 'palette', label: 'Palette' },
-  { value: 'categories', label: 'Categories' },
-] as const
-
-export function ColorsView() {
-  const colors = useScanStore((s) => s.design?.tokens.colors ?? EMPTY_COLORS)
-  const [tab, setTab] = useState<'palette' | 'categories'>('palette')
-  const [inspectingId, setInspectingId] = useState<string | null>(null)
-  if (colors.length === 0) return <ScanPrompt afterScan="No colors were captured." />
-  const grouped = pagePaletteGroups(colors)
-  return (
-    <CollectionShell value={tab} options={COLOR_TABS} onChange={setTab} label="Color views">
-      {tab === 'palette' ? (
-        <div className="palette peeper-palette">
-          {colors.map((color, index) => (
-            <ColorCard
-              key={color.id}
-              color={color}
-              index={index}
-              inspecting={inspectingId === color.id}
-              onInspect={() => void cycleInspectColor(color, setInspectingId)}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="category-list">
-          {grouped.map((group) => (
-            <section key={group.key} className="category-block">
-              <h3>{group.title}</h3>
-              <div className="peeper-palette">
-                {group.ids.map((id, index) => {
-                  const color = colors.find((item) => item.id === id)
-                  if (!color) return null
-                  return (
-                    <ColorCard
-                      key={color.id}
-                      color={color}
-                      index={index}
-                      inspecting={inspectingId === color.id}
-                      onInspect={() => void cycleInspectColor(color, setInspectingId)}
-                    />
-                  )
-                })}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-    </CollectionShell>
-  )
-}
-
-function ColorCard({
-  color,
-  index,
-  inspecting,
-  onInspect,
-}: {
-  color: ColorToken
-  index: number
-  inspecting: boolean
-  onInspect: () => void
-}) {
-  const gradient = color.kind === 'gradient'
-  const fill = color.css || color.rgba || color.hex
-  const ink = isDarkHex(color.hex) ? '#fff' : '#111'
-  const parsed = parseColor(color.hex)
-  const translucent = !gradient && Boolean(parsed && parsed.a < 0.96)
-  const copyValue = gradient ? color.css : color.hex
-  const label = gradient ? color.name : color.hex
-  return (
-    <div
-      className={[
-        'palette-card peeper-card',
-        translucent ? 'checker' : '',
-        isLightSwatch(color.hex) ? 'light-swatch' : '',
-        inspecting ? 'inspecting' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      style={{
-        background: fill,
-        color: ink,
-        ['--swatch' as string]: color.rgba,
-        animationDelay: `${Math.min(index, 8) * 28}ms`,
-      }}>
-      <div className="peeper-copy">
-        <strong>{label}</strong>
-        <span>
-          {color.count} {color.count === 1 ? 'instance' : 'instances'}
-        </span>
-      </div>
-      <div className="peeper-actions">
-        <button
-          type="button"
-          className={inspecting ? 'swatch-action on' : 'swatch-action'}
-          aria-label={`Inspect ${label} on the page`}
-          aria-pressed={inspecting}
-          onClick={onInspect}>
-          <InspectIcon />
-        </button>
-        <button
-          type="button"
-          className="swatch-action"
-          aria-label={`Copy ${label}`}
-          onClick={() => void copyColor(copyValue, label)}>
-          <CopyIcon />
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function isLightSwatch(hex: string): boolean {
-  const parsed = parseColor(hex)
-  if (!parsed) return false
-  const luminance = (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255
-  return luminance > 0.9
-}
-
-async function copyColor(value: string, label: string): Promise<void> {
-  await navigator.clipboard.writeText(value)
-  useToastStore.getState().showToast(`${label} copied`)
-}
-
-async function cycleInspectColor(color: ColorToken, setInspectingId: (id: string | null) => void): Promise<void> {
-  const response = await sendRuntime({
-    type: 'HIGHLIGHT_COLOR',
-    requestId: createRequestId(),
-    payload: { hex: color.hex, css: color.css ?? color.hex },
-  })
-  if (response?.type !== 'HIGHLIGHT_COLOR_RESULT' || response.payload.done || response.payload.total === 0) {
-    setInspectingId(null)
-    useToastStore
-      .getState()
-      .showToast(
-        response?.type === 'HIGHLIGHT_COLOR_RESULT' && response.payload.total === 0
-          ? 'No matches on the page'
-          : 'Inspect off',
-      )
-    return
-  }
-  setInspectingId(color.id)
-  const label = color.kind === 'gradient' ? color.name : color.hex
-  useToastStore.getState().showToast(`${label} · ${response.payload.index + 1} of ${response.payload.total}`)
-}
 
 export function TypographyView() {
   const tokens = useScanStore((s) => s.design?.tokens.typography ?? EMPTY_TYPOGRAPHY)

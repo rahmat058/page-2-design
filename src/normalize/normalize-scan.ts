@@ -149,7 +149,8 @@ function buildDocumentOutline(raw: PageScan, assets: NormalizedDesign['assets'])
 function groupColors(raw: PageScan): ColorToken[] {
   const tokens: ColorToken[] = []
   for (const usage of raw.colors) {
-    if (usage.source === 'variable' || usage.source === 'outline' || usage.source === 'shadow') {
+    // Keep CSS custom-property colors from the page; skip outline/shadow noise.
+    if (usage.source === 'outline' || usage.source === 'shadow') {
       continue
     }
     const parsed = parseColor(usage.canonicalHex) ?? parseColor(usage.canonicalRgba)
@@ -158,10 +159,15 @@ function groupColors(raw: PageScan): ColorToken[] {
     const gradient = usage.source === 'gradient'
     const css = gradient ? (usage.original[0] ?? parsed.rgba) : parsed.rgba
     const role = gradient ? 'gradient' : inferColorRole(parsed.hex, usage.properties)
+    const varName = usage.source === 'variable' ? cssVarTokenName(usage.original) : null
+    // Only keep CSS variables that look like design tokens — raw :root dumps make scans huge/slow.
+    if (usage.source === 'variable' && !isDesignTokenVarName(varName)) {
+      continue
+    }
     tokens.push({
       id: `color_${tokens.length + 1}`,
-      name: `${role}-${tokens.length + 1}`,
-      nameInferred: true,
+      name: varName ?? `${role}-${tokens.length + 1}`,
+      nameInferred: !varName,
       hex: opaqueHex(parsed.hex),
       rgba: parsed.rgba,
       hsl: parsed.hsl,
@@ -171,7 +177,7 @@ function groupColors(raw: PageScan): ColorToken[] {
       area: usage.area || usage.count,
       properties: usage.properties,
       elementIds: usage.elementIds,
-      role,
+      role: usage.source === 'variable' ? 'accent' : role,
       roleInferred: true,
       nearDuplicates: [],
       kind: gradient ? 'gradient' : 'solid',
@@ -179,6 +185,21 @@ function groupColors(raw: PageScan): ColorToken[] {
     })
   }
   return finalizePalette(tokens)
+}
+
+function cssVarTokenName(original: string[]): string | null {
+  for (const entry of original) {
+    const match = entry.match(/--([a-z0-9-_]+)/i)
+    if (match?.[1]) return match[1].replace(/_/g, '-')
+  }
+  return null
+}
+
+function isDesignTokenVarName(name: string | null): boolean {
+  if (!name) return false
+  return /(color|colour|bg|background|brand|primary|secondary|accent|neutral|success|warn|error|danger|destructive|muted|foreground|border|ring|fill|stroke|theme|palette)/i.test(
+    name,
+  )
 }
 
 function finalizePalette(tokens: ColorToken[]): ColorToken[] {
@@ -207,10 +228,15 @@ function finalizePalette(tokens: ColorToken[]): ColorToken[] {
   const ranked = [...gradients, ...clustered].sort(
     (a, b) => (b.area || b.count) - (a.area || a.count) || b.count - a.count || a.hex.localeCompare(b.hex),
   )
-  const limited = ranked.slice(0, 32).map((token, index) => ({
+  const limited = ranked.slice(0, 40).map((token, index) => ({
     ...token,
     id: `color_${index + 1}`,
-    name: token.kind === 'gradient' ? gradientLabel(token.css) : `${token.role}-${index + 1}`,
+    name:
+      token.kind === 'gradient'
+        ? gradientLabel(token.css)
+        : token.nameInferred === false && token.name
+          ? token.name
+          : `${token.role}-${index + 1}`,
     nearDuplicates: [],
   }))
   const order = new Map<string, number>()

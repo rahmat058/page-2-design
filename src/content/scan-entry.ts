@@ -80,15 +80,34 @@ function init(): void {
     }
 
     if (message.type === 'FETCH_ASSET') {
-      void fetchAsset(message.payload.url).then((payload) => {
-        sendResponse(
-          createMessage({
-            type: 'ASSET_BYTES',
-            requestId: message.requestId,
-            payload,
-          }),
-        )
-      })
+      void fetchAsset(message.payload.url)
+        .then((payload) => {
+          sendResponse(
+            createMessage({
+              type: 'ASSET_BYTES',
+              requestId: message.requestId,
+              payload,
+            }),
+          )
+        })
+        .catch(() => {
+          try {
+            sendResponse(
+              createMessage({
+                type: 'ASSET_BYTES',
+                requestId: message.requestId,
+                payload: {
+                  url: message.payload.url,
+                  mimeType: null,
+                  base64: null,
+                  error: 'Fetch failed',
+                },
+              }),
+            )
+          } catch {
+            /* channel closed */
+          }
+        })
       return true
     }
 
@@ -146,41 +165,45 @@ function init(): void {
             options,
             {
               send: (msg) => {
-                void chrome.runtime.sendMessage(msg)
+                void chrome.runtime.sendMessage(msg).catch(() => undefined)
               },
               cancelled: () => cancelled,
             },
             scanId,
           )
-          chrome.runtime.sendMessage(
-            createMessage({
-              type: 'SCAN_COMPLETE',
-              requestId: createRequestId(),
-              scanId,
-              payload: {
-                counts: {
-                  elements: scan.elements.length,
-                  textBlocks: scan.content.length,
-                  images: scan.assets.length,
-                  colors: scan.colors.length,
-                  typography: scan.typography.length,
+          void chrome.runtime
+            .sendMessage(
+              createMessage({
+                type: 'SCAN_COMPLETE',
+                requestId: createRequestId(),
+                scanId,
+                payload: {
+                  counts: {
+                    elements: scan.elements.length,
+                    textBlocks: scan.content.length,
+                    images: scan.assets.length,
+                    colors: scan.colors.length,
+                    typography: scan.typography.length,
+                  },
+                  assembled: false,
                 },
-                assembled: false,
-              },
-            }),
-          )
+              }),
+            )
+            .catch(() => undefined)
         } catch (error) {
           const serialized = serializeError(
             error instanceof DomainError ? error : new DomainError('SCAN_FAILED', 'Page scan failed.'),
           )
-          chrome.runtime.sendMessage(
-            createMessage({
-              type: 'SCAN_FAILED',
-              requestId: createRequestId(),
-              scanId,
-              payload: serialized,
-            }),
-          )
+          void chrome.runtime
+            .sendMessage(
+              createMessage({
+                type: 'SCAN_FAILED',
+                requestId: createRequestId(),
+                scanId,
+                payload: serialized,
+              }),
+            )
+            .catch(() => undefined)
         } finally {
           busy = false
         }
@@ -192,7 +215,9 @@ function init(): void {
     return false
   })
 
-  chrome.runtime.sendMessage(createMessage({ type: 'CONTENT_READY', requestId: createRequestId() }))
+  void chrome.runtime
+    .sendMessage(createMessage({ type: 'CONTENT_READY', requestId: createRequestId() }))
+    .catch(() => undefined)
 }
 
 // ---------------------------------------------------------------------------

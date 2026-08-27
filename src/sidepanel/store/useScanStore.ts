@@ -17,6 +17,7 @@ export type PanelView =
   | 'assets'
   | 'images'
   | 'icons'
+  | 'design-system'
   | 'colors'
   | 'typography'
   | 'layout'
@@ -42,6 +43,8 @@ interface ScanStore {
   selectedAssetIds: string[]
   raw: PageScan | null
   design: NormalizedDesign | null
+  designSystemReady: boolean
+  designSystemEpoch: number
   inspectOn: boolean
   inspectContextMenu: boolean
   inspected: InspectedElement | null
@@ -61,6 +64,8 @@ interface ScanStore {
   setOptions: (options: Partial<ScanOptions>) => void
   toggleAsset: (id: string) => void
   setSelectedAssets: (ids: string[]) => void
+  setDesignSystemReady: (ready: boolean) => void
+  regenerateDesignSystem: () => void
   setInspectOn: (on: boolean) => void
   setInspectContextMenu: (on: boolean) => void
   setInspected: (inspected: InspectedElement | null) => void
@@ -89,6 +94,8 @@ export const useScanStore = create<ScanStore>((set) => ({
   selectedAssetIds: [],
   raw: null,
   design: null,
+  designSystemReady: false,
+  designSystemEpoch: 0,
   inspectOn: false,
   inspectContextMenu: false,
   inspected: null,
@@ -127,6 +134,7 @@ export const useScanStore = create<ScanStore>((set) => ({
       },
       selectedAssetIds: visual.map((asset) => asset.id),
       error: null,
+      designSystemReady: false,
     })
   },
   setFailed: (message) => set({ phase: 'failed', error: message }),
@@ -141,6 +149,12 @@ export const useScanStore = create<ScanStore>((set) => ({
         : [...state.selectedAssetIds, id],
     })),
   setSelectedAssets: (ids) => set({ selectedAssetIds: ids }),
+  setDesignSystemReady: (ready) => set({ designSystemReady: ready }),
+  regenerateDesignSystem: () =>
+    set((state) => ({
+      designSystemReady: true,
+      designSystemEpoch: state.designSystemEpoch + 1,
+    })),
   setInspectOn: (on) => set(on ? { inspectOn: true } : { inspectOn: false, inspected: null }),
   setInspectContextMenu: (on) => set({ inspectContextMenu: on }),
   setInspected: (inspected) => set({ inspected }),
@@ -150,6 +164,7 @@ export const useScanStore = create<ScanStore>((set) => ({
       scanId: null,
       raw: null,
       design: null,
+      designSystemReady: false,
       error: null,
       counts: emptyCounts(),
       limitations: [],

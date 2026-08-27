@@ -14,6 +14,7 @@ import {
   GripVertical,
   Heading,
   Image as ImageIcon,
+  Layers,
   LayoutGrid,
   LayoutPanelLeft,
   LayoutTemplate,
@@ -57,6 +58,10 @@ export function OverviewIcon() {
 
 export function ColorsIcon() {
   return <Droplet size={18} {...STROKE} aria-hidden="true" />
+}
+
+export function DesignSystemIcon() {
+  return <Layers size={18} {...STROKE} aria-hidden="true" />
 }
 
 export function TypeIcon() {

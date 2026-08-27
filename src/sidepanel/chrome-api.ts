@@ -11,8 +11,12 @@ export async function sendRuntime(message: {
   payload?: unknown
 }): Promise<ExtensionMessage | null> {
   const payload = createMessage({ ...message, requestId: message.requestId || createRequestId() })
-  const response = await chrome.runtime.sendMessage(payload)
-  return parseMessage(response)
+  try {
+    const response = await chrome.runtime.sendMessage(payload)
+    return parseMessage(response)
+  } catch {
+    return null
+  }
 }
 
 export function onRuntimeMessage(handler: (message: ExtensionMessage) => void): () => void {

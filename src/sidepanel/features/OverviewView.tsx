@@ -78,7 +78,7 @@ export function OverviewView() {
           <section className="overview-block">
             <div className="row">
               <h2>Color Palette</h2>
-              <button type="button" className="link" onClick={() => useScanStore.getState().setView('colors')}>
+              <button type="button" className="link" onClick={() => useScanStore.getState().setView('design-system')}>
                 Show all
               </button>
             </div>

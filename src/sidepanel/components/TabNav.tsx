@@ -8,7 +8,7 @@ const TABS: { id: PanelView; label: string }[] = [
   { id: 'content', label: 'Content' },
   { id: 'images', label: 'Images' },
   { id: 'icons', label: 'Icons & SVG' },
-  { id: 'colors', label: 'Colors' },
+  { id: 'design-system', label: 'Design System' },
   { id: 'typography', label: 'Typography' },
   { id: 'layout', label: 'Layout' },
   { id: 'export', label: 'Export' },

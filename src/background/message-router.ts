@@ -20,6 +20,17 @@ import {
 import { readTabCssInformation } from './read-tab-css'
 import { emptyCssInformation } from '../shared/types'
 
+/** Content → extension broadcasts that only need a sync ack (panel listens too). */
+const SYNC_ACK = new Set(['CONTENT_READY', 'SCAN_PROGRESS', 'INSPECT_ELEMENT', 'PONG'])
+
+function safeReply(sendResponse: (response?: unknown) => void, payload: unknown): void {
+  try {
+    sendResponse(payload)
+  } catch {
+    /* channel already closed */
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Message dispatch
 // ---------------------------------------------------------------------------
@@ -32,27 +43,34 @@ export function routeMessage(
   const message = parseMessage(raw)
   if (!message) return false
 
+  // Fire-and-forget from content / peers: ack synchronously so Chrome does not
+  // wait for an async sendResponse (avoids "message channel closed" spam).
+  if (SYNC_ACK.has(message.type)) {
+    safeReply(sendResponse, { ok: true })
+    return false
+  }
+
   const reply = async () => {
     try {
       switch (message.type) {
         case 'GET_ACTIVE_TAB': {
           const payload = await identifyActiveTab()
-          sendResponse(createMessage({ type: 'ACTIVE_TAB_INFO', requestId: message.requestId, payload }))
+          safeReply(sendResponse, createMessage({ type: 'ACTIVE_TAB_INFO', requestId: message.requestId, payload }))
           return
         }
         case 'START_SCAN': {
           await startScan(message.scanId, message.payload)
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'CANCEL_SCAN': {
           await cancelScan(message.scanId)
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'SCAN_CHUNK': {
           acceptChunk(message)
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'SCAN_COMPLETE': {
@@ -60,40 +78,50 @@ export function routeMessage(
             try {
               await completeScan(message.scanId)
               const record = await getScan(message.scanId)
-              chrome.runtime.sendMessage(
-                createMessage({
-                  type: 'SCAN_COMPLETE',
-                  requestId: createRequestId(),
-                  scanId: message.scanId,
-                  payload: {
-                    counts: {
-                      elements: record?.normalized?.coverage.relevantElements ?? message.payload.counts.elements,
-                      textBlocks: record?.normalized?.coverage.visibleTextBlocks ?? message.payload.counts.textBlocks,
-                      images: record?.normalized?.assets.length ?? message.payload.counts.images,
-                      colors: record?.normalized?.tokens.colors.length ?? message.payload.counts.colors,
-                      typography: record?.normalized?.tokens.typography.length ?? message.payload.counts.typography,
+              void chrome.runtime
+                .sendMessage(
+                  createMessage({
+                    type: 'SCAN_COMPLETE',
+                    requestId: createRequestId(),
+                    scanId: message.scanId,
+                    payload: {
+                      counts: {
+                        elements: record?.normalized?.coverage.relevantElements ?? message.payload.counts.elements,
+                        textBlocks: record?.normalized?.coverage.visibleTextBlocks ?? message.payload.counts.textBlocks,
+                        images: record?.normalized?.assets.length ?? message.payload.counts.images,
+                        colors: record?.normalized?.tokens.colors.length ?? message.payload.counts.colors,
+                        typography: record?.normalized?.tokens.typography.length ?? message.payload.counts.typography,
+                      },
+                      assembled: true,
                     },
-                    assembled: true,
-                  },
-                }),
-              )
+                  }),
+                )
+                .catch(() => undefined)
             } catch (error) {
-              chrome.runtime.sendMessage(
-                createMessage({
-                  type: 'SCAN_FAILED',
-                  requestId: createRequestId(),
-                  scanId: message.scanId,
-                  payload: serializeError(error),
-                }),
-              )
+              void chrome.runtime
+                .sendMessage(
+                  createMessage({
+                    type: 'SCAN_FAILED',
+                    requestId: createRequestId(),
+                    scanId: message.scanId,
+                    payload: serializeError(error),
+                  }),
+                )
+                .catch(() => undefined)
             }
           }
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
+          return
+        }
+        case 'SCAN_FAILED': {
+          // Content already broadcast; panel handles store update. Ack only.
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'GET_SCAN': {
           const record = await getScan(message.scanId)
-          sendResponse(
+          safeReply(
+            sendResponse,
             createMessage({
               type: 'SCAN_RECORD',
               requestId: message.requestId,
@@ -109,7 +137,8 @@ export function routeMessage(
         }
         case 'CAPTURE_SCREENSHOT': {
           const shot = await captureScreenshots(message.scanId)
-          sendResponse(
+          safeReply(
+            sendResponse,
             createMessage({
               type: 'SCREENSHOT_RESULT',
               requestId: createRequestId(),
@@ -127,13 +156,14 @@ export function routeMessage(
         case 'GET_CSS_INFO': {
           const tabId = await resolveScanTabId(null)
           const payload = tabId != null ? await readTabCssInformation(tabId) : emptyCssInformation()
-          sendResponse(createMessage({ type: 'CSS_INFO', requestId: message.requestId, payload }))
+          safeReply(sendResponse, createMessage({ type: 'CSS_INFO', requestId: message.requestId, payload }))
           return
         }
         case 'FETCH_ASSET': {
           const tabId = await resolveScanTabId(null)
           const result = await fetchAssetBytes(message.payload.url, tabId ?? undefined)
-          sendResponse(
+          safeReply(
+            sendResponse,
             createMessage({
               type: 'ASSET_BYTES',
               requestId: message.requestId,
@@ -144,7 +174,7 @@ export function routeMessage(
         }
         case 'CLEAR_SCANS': {
           await clearAllScans()
-          sendResponse(createMessage({ type: 'SCANS_CLEARED', requestId: message.requestId }))
+          safeReply(sendResponse, createMessage({ type: 'SCANS_CLEARED', requestId: message.requestId }))
           return
         }
         case 'HIGHLIGHT_COLOR': {
@@ -157,7 +187,7 @@ export function routeMessage(
               result = { ok: false }
             }
           }
-          sendResponse(result)
+          safeReply(sendResponse, result)
           return
         }
         case 'CLOSE_OVERLAY':
@@ -172,7 +202,7 @@ export function routeMessage(
               /* tab may not allow content scripts */
             }
           }
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'DOCK_SIDE_PANEL': {
@@ -188,7 +218,7 @@ export function routeMessage(
               /* overlay may already be closed */
             }
           }
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         case 'TOGGLE_OVERLAY': {
@@ -197,21 +227,17 @@ export function routeMessage(
             await ensureContentScript(tab.tabId)
             await chrome.tabs.sendMessage(tab.tabId, message)
           }
-          sendResponse({ ok: true })
+          safeReply(sendResponse, { ok: true })
           return
         }
         default:
-          return
+          safeReply(sendResponse, { ok: true })
       }
     } catch (error) {
-      try {
-        sendResponse({
-          ok: false,
-          error: userFacingError(serializeError(error)),
-        })
-      } catch {
-        /* channel closed */
-      }
+      safeReply(sendResponse, {
+        ok: false,
+        error: userFacingError(serializeError(error)),
+      })
     }
   }
 

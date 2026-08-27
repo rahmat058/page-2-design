@@ -3,12 +3,13 @@
  * Also handles overlay resize and inspect-mode toggling.
  */
 import { useState } from 'react'
-import { Copy, Download, RefreshCw, Star } from 'lucide-react'
+import { Copy, Download, Layers, RefreshCw, Star } from 'lucide-react'
 import { Button } from './components/Button'
 import { BottomNav } from './components/BottomNav'
 import { PageHead } from './components/PageHead'
 import { PanelChrome } from './components/PanelChrome'
-import { ColorsView, TypographyView } from './features/ColorsView'
+import { TypographyView } from './features/ColorsView'
+import { DesignSystemView } from './features/DesignSystemView'
 import { AssetsView, ContentView } from './features/ContentView'
 import { ExportView } from './features/ExportView'
 import { InspectorView } from './features/InspectorView'
@@ -20,6 +21,7 @@ import { Toast } from './components/Toast'
 import { downloadAllImagesZip } from './download-asset'
 import { cancelScan, clearScanData, refreshTab, startScan } from './scan-flow'
 import { useScanStore } from './store/useScanStore'
+import { useToastStore } from './toast'
 import { uniqueVisualAssets } from '../content/asset-scanner'
 import { isOverlayFrame, useOverlayResize, usePanelRuntime, useScanBusy } from './hooks'
 import { closePanel, copyAllContent, countFor, dockSidePanel, headingFor, toggleInspectMode } from './lib'
@@ -35,9 +37,11 @@ export function App() {
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const design = useScanStore((s) => s.design)
   const counts = useScanStore((s) => s.counts)
+  const designSystemReady = useScanStore((s) => s.designSystemReady)
   const inspectOn = useScanStore((s) => s.inspectOn)
   const [menuOpen, setMenuOpen] = useState(false)
   const mdOpen = view === 'generate-md'
+  const onDesignSystem = view === 'design-system' || view === 'colors'
   const overlay = isOverlayFrame()
   const busy = useScanBusy()
   const canExport = Boolean(design) && (phase === 'ready' || phase === 'complete')
@@ -76,8 +80,9 @@ export function App() {
         <>
           <PageHead
             title={headingFor(view)}
+            icon={onDesignSystem && designSystemReady ? Layers : undefined}
             count={
-              view !== 'overview' && view !== 'generate-md' && view !== 'developer'
+              view !== 'overview' && view !== 'generate-md' && view !== 'developer' && !onDesignSystem
                 ? countFor(view, counts, design)
                 : null
             }
@@ -91,20 +96,26 @@ export function App() {
                 <Button size="sm" icon={Copy} onClick={() => void copyAllContent()}>
                   Copy all
                 </Button>
-              ) : view === 'colors' || view === 'assets' || view === 'images' || view === 'icons' ? (
+              ) : view === 'assets' || view === 'images' || view === 'icons' ? (
                 <Button
                   size="sm"
                   icon={Download}
                   disabled={!canExport}
                   onClick={() => {
-                    if (view === 'assets' || view === 'images' || view === 'icons') {
-                      const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? [])
-                      void downloadAllImagesZip(assets, hostname)
-                      return
-                    }
-                    useScanStore.getState().setView('export')
+                    const assets = uniqueVisualAssets(useScanStore.getState().design?.assets ?? [])
+                    void downloadAllImagesZip(assets, hostname)
                   }}>
                   Export All
+                </Button>
+              ) : onDesignSystem && designSystemReady ? (
+                <Button
+                  size="sm"
+                  icon={RefreshCw}
+                  onClick={() => {
+                    useScanStore.getState().regenerateDesignSystem()
+                    useToastStore.getState().showToast('Design system regenerated')
+                  }}>
+                  Regenerate
                 </Button>
               ) : view === 'developer' ? (
                 <a className="ui-btn ui-btn-sm" href={REPO_URL} target="_blank" rel="noopener noreferrer">
@@ -120,7 +131,7 @@ export function App() {
               {view === 'overview' ? <OverviewView /> : null}
               {view === 'content' ? <ContentView /> : null}
               {view === 'assets' || view === 'images' || view === 'icons' ? <AssetsView /> : null}
-              {view === 'colors' ? <ColorsView /> : null}
+              {view === 'design-system' || view === 'colors' ? <DesignSystemView /> : null}
               {view === 'typography' ? <TypographyView /> : null}
               {view === 'layout' ? <LayoutView /> : null}
               {view === 'export' ? <ExportView /> : null}

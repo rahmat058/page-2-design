@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Side panel code layout: shared `hooks/` and `lib/`, folder-per-component (`PanelChrome`, `BottomNav`, `Segmented`, `VirtualList`, …) with colocated helpers; `App.tsx` kept as the shell only.
+- Colors tab **Design System** panel: color scales, typography pair/scale, component previews, spacing/radius/shadow tokens, and export (CSS / Tailwind / SCSS / JSON / Design.md).
 
 ## [1.0.0] - 2026-08-25
 

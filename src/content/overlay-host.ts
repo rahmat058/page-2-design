@@ -40,10 +40,12 @@ function mountOverlay(): void {
     top: `${MARGIN}px`,
     right: `${MARGIN}px`,
     width: `${PANEL_WIDTH}px`,
-    height: `min(680px, calc(100vh - ${MARGIN * 2}px))`,
+    height: `calc(100vh - ${MARGIN * 2}px)`,
+    maxHeight: '680px',
     zIndex: '2147483646',
     pointerEvents: 'auto',
     transition: SIZE_TRANSITION,
+    boxSizing: 'border-box',
   } as CSSStyleDeclaration)
 
   const shadow = host.attachShadow({ mode: 'closed' })

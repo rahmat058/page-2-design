@@ -201,7 +201,7 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 | ----------------- | ------------------- | --------------------------------------------- |
 | Overview          | `OverviewView.tsx`  | Intro, type pair, palette, contrast, CSS info |
 | Content           | `ContentView.tsx`   | Grouped text / links                          |
-| Colors            | `ColorsView.tsx`    | Palette, peeper, highlight on page            |
+| Design System     | `DesignSystemView.tsx` / `DesignSystemPanel.tsx` | Scales, type, components, tokens, export |
 | Typography        | `ColorsView.tsx`    | Type cards                                    |
 | Assets            | `ContentView.tsx`   | Images / icons / SVG                          |
 | Layout            | `LayoutView.tsx`    | Sections outline + spacing / radius / shadow  |
