@@ -149,16 +149,11 @@ export function AssetsView() {
           ))}
         </div>
       ) : (
-        <VirtualList
-          className="asset-list"
-          count={unique.length}
-          itemHeight={68}
-          maxHeight={520}
-          renderItem={(index) => {
-            const asset = unique[index]
-            return asset ? <AssetRow asset={asset} index={index} /> : null
-          }}
-        />
+        <div className="asset-list">
+          {unique.map((asset, index) => (
+            <AssetRow key={asset.id} asset={asset} index={index} />
+          ))}
+        </div>
       )}
     </CollectionShell>
   )

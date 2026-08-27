@@ -452,38 +452,15 @@ a.ui-btn {
   max-height: none;
 }
 
-.virtual.asset-list {
-  padding: 2px 6px 6px 2px;
-  overflow: auto;
-  overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.virtual.asset-list::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
 .virtual-item {
   box-sizing: border-box;
   border-bottom: 1px solid var(--line);
   padding: 0;
 }
 
-.virtual.asset-list .virtual-item {
-  border-bottom: none;
-  padding-bottom: 4px;
-}
-
 .virtual-item > .content-row,
 .virtual-item > .asset-row {
   height: 100%;
-}
-
-.virtual.asset-list .virtual-item > .asset-row {
-  height: calc(100% - 4px);
 }
 
 .asset-tile-lazy {
@@ -1592,7 +1569,9 @@ body,
 }
 
 .asset-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .asset-row {
@@ -2876,7 +2855,7 @@ html:not(.is-overlay) .overlay-row .app.inspector {
 }
 
 .collection-scroll:has(.asset-list) {
-  padding-right: 2px;
+  padding: 0 2px 0 0;
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -3381,11 +3360,11 @@ html:not(.is-overlay) .overlay-row .app.inspector {
 }
 
 .asset-list {
-  display: grid;
-  gap: 4px;
-  padding: 2px 4px 4px 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 2px;
 }
 
 .asset-list::-webkit-scrollbar {
