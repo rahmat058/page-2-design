@@ -1,7 +1,7 @@
 /**
  * Responsive: device list in the extension panel, live preview card to its left.
  */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Minus, Plus, RefreshCw, RotateCw, Search, Smartphone, Tablet, Monitor } from 'lucide-react'
 import type { DeviceCategory, DeviceOrientation, DevicePreset } from '../../shared/device-presets'
 import {
