@@ -221,6 +221,24 @@ Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
 
 ---
 
+## 🧹 Troubleshooting
+
+If the inspector looks wrong, stuck, or out of date, **do not scan the page first**. Clear the stored scan, then scan again.
+
+Stale IndexedDB data from a previous tab, a failed scan, or an extension reload can linger in the overlay. Scanning on top of that often keeps the bad result.
+
+1. Open the Page2Design inspector on the tab
+2. Click **More Options** (the ⋮ menu in the top chrome)
+3. Click **Clear local scan data**
+4. Confirm the panel is empty (no leftover Overview / Assets / Design System)
+5. Then click **Scan page**
+
+Use this whenever a scan fails, the wrong site’s tokens still show, Responsive or Design System looks empty after a successful scan, or you just reloaded the unpacked extension.
+
+Clearing data only wipes **local** scans on this device. It does not change the live webpage.
+
+---
+
 ## 🤝 Contributing
 
 We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** and the **[Code of Conduct](./CODE_OF_CONDUCT.md)** before opening a PR.
