@@ -25,6 +25,7 @@ import {
   MousePointerClick,
   RefreshCw,
   ScanSearch,
+  Smartphone,
   Table2,
   Tag,
   TextCursorInput,
@@ -170,6 +171,10 @@ export function ExportMenuIcon() {
 
 export function LayoutMenuIcon() {
   return <LayoutTemplate size={16} {...STROKE} aria-hidden="true" />
+}
+
+export function ResponsiveMenuIcon() {
+  return <Smartphone size={16} {...STROKE} aria-hidden="true" />
 }
 
 export function ClearMenuIcon() {

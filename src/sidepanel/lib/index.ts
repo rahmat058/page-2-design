@@ -11,6 +11,13 @@ export { BUSY_PHASES, isBusyPhase } from './scan-busy'
 export { headingFor, countFor } from './view-helpers'
 export { copyAllContent } from './copy-content'
 export { toggleInspectMode, dockSidePanel, closePanel } from './panel-actions'
+export {
+  fetchDeviceEmulation,
+  applyDeviceEmulation,
+  stopDeviceEmulation,
+  reloadEmulatedTab,
+  setEmulatedZoom,
+} from './device-emulation'
 export { isSaneLayoutToken, layoutItemCount } from './layout-tokens'
 export {
   buildDesignSystem,

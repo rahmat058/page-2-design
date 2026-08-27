@@ -39,6 +39,10 @@ export const MAX_STORED_SCANS = 8
 export const MAX_CROSS_ORIGIN_FRAMES = 8
 export const OVERLAY_WIDTH = 336
 export const OVERLAY_WIDE_WIDTH = 560
+export const OVERLAY_PREVIEW_MIN = 280
+export const OVERLAY_PREVIEW_MAX = 780
+export const OVERLAY_FLYOUT_GAP = 12
+export const OVERLAY_PREVIEW_MAX_H = 700
 
 // ---------------------------------------------------------------------------
 // Privacy & DOM capture allowlists

@@ -27,7 +27,7 @@ export const BOTTOM_NAV_ITEMS: { id: PanelView; label: string; icon: typeof Over
 /** Map legacy / alias views onto a primary nav id. */
 export function resolveActiveNav(view: PanelView): PanelView {
   if (view === 'images' || view === 'icons') return 'assets'
-  if (view === 'layout') return 'overview'
+  if (view === 'layout' || view === 'responsive') return 'overview'
   if (view === 'colors') return 'design-system'
   return view
 }

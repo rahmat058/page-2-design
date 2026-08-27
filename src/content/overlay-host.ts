@@ -41,30 +41,24 @@ function mountOverlay(): void {
     right: `${MARGIN}px`,
     width: `${PANEL_WIDTH}px`,
     height: `calc(100vh - ${MARGIN * 2}px)`,
-    maxHeight: '680px',
+    maxHeight: '760px',
     zIndex: '2147483646',
     pointerEvents: 'auto',
     transition: SIZE_TRANSITION,
     boxSizing: 'border-box',
+    background: 'transparent',
   } as CSSStyleDeclaration)
 
   const shadow = host.attachShadow({ mode: 'closed' })
   const wrap = document.createElement('div')
   wrap.setAttribute('part', 'panel')
-  wrap.style.cssText = [
-    'position:absolute',
-    'inset:0',
-    'border-radius:16px',
-    'overflow:hidden',
-    'box-shadow:0 16px 48px rgba(16,18,27,0.22)',
-    'background:#fff',
-  ].join(';')
+  wrap.style.cssText = ['position:absolute', 'inset:0', 'overflow:visible', 'background:transparent'].join(';')
 
   const frame = document.createElement('iframe')
   frame.title = 'Page2Design'
   frame.src = chrome.runtime.getURL('sidepanel.html')
   frame.allow = 'clipboard-write'
-  frame.style.cssText = 'display:block;width:100%;height:100%;border:0;background:#fff;'
+  frame.style.cssText = 'display:block;width:100%;height:100%;border:0;background:transparent;'
   wrap.appendChild(frame)
   shadow.appendChild(wrap)
 

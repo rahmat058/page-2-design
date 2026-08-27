@@ -10,7 +10,7 @@ const TABS: { id: PanelView; label: string }[] = [
   { id: 'icons', label: 'Icons & SVG' },
   { id: 'design-system', label: 'Design System' },
   { id: 'typography', label: 'Typography' },
-  { id: 'layout', label: 'Layout' },
+  { id: 'responsive', label: 'Responsive' },
   { id: 'export', label: 'Export' },
   { id: 'generate-md', label: 'Generate Markdown' },
 ]

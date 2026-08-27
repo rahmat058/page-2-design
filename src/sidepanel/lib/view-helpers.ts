@@ -13,6 +13,7 @@ export function headingFor(view: PanelView | string): string {
   if (view === 'assets' || view === 'images' || view === 'icons') return 'Assets'
   if (view === 'export') return 'Export'
   if (view === 'content') return 'Content'
+  if (view === 'responsive') return 'Responsive'
   if (view === 'layout') return 'Layout'
   if (view === 'generate-md') return 'Generate Markdown'
   if (view === 'developer') return 'Developer'

@@ -5,12 +5,20 @@ import { useEffect } from 'react'
 import { userFacingError } from '../../shared/errors'
 import { onRuntimeMessage } from '../chrome-api'
 import { loadScan, refreshTab, startScan } from '../scan-flow'
-import { useScanStore } from '../store/useScanStore'
+import { useScanStore, type PanelView } from '../store/useScanStore'
 
 let autoScanStarted = false
 
 async function boot(): Promise<void> {
   await refreshTab()
+  try {
+    const stored = await chrome.storage.session.get('panelView')
+    if (typeof stored.panelView === 'string' && stored.panelView !== 'responsive' && stored.panelView !== 'layout') {
+      useScanStore.getState().setView(stored.panelView as PanelView)
+    }
+  } catch {
+    /* session storage may be missing */
+  }
   if (autoScanStarted) return
   const { tabRestricted, design, phase } = useScanStore.getState()
   if (tabRestricted || design || phase !== 'idle') return

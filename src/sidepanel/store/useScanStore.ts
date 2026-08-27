@@ -21,6 +21,7 @@ export type PanelView =
   | 'colors'
   | 'typography'
   | 'layout'
+  | 'responsive'
   | 'export'
   | 'generate-md'
   | 'developer'

@@ -12,7 +12,7 @@ import {
   ExportMenuIcon,
   GripIcon,
   IdentifyMenuIcon,
-  LayoutMenuIcon,
+  ResponsiveMenuIcon,
   MenuIcon,
   ScanMenuIcon,
 } from '../LucideIcons'
@@ -85,9 +85,9 @@ export function PanelChrome(props: Props) {
                 <ExportMenuIcon />
                 Export ZIP
               </button>
-              <button type="button" onClick={() => props.onOpen('layout')}>
-                <LayoutMenuIcon />
-                Layout
+              <button type="button" onClick={() => props.onOpen('responsive')}>
+                <ResponsiveMenuIcon />
+                Responsive
               </button>
               <button type="button" onClick={props.onClear}>
                 <ClearMenuIcon />

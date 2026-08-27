@@ -1,20 +1,16 @@
 /**
- * Syncs floating-overlay width when markdown view / inspect mode changes.
+ * Syncs floating-overlay width when markdown view / inspect / responsive flyout change.
  */
 import { useEffect } from 'react'
-import { OVERLAY_WIDE_WIDTH, OVERLAY_WIDTH } from '../../shared/constants'
 import { postOverlayMessage } from '../lib/overlay-messages'
 
 const IS_OVERLAY = typeof window !== 'undefined' && window !== window.top
 
-export function useOverlayResize(wide: boolean): void {
+export function useOverlayResize(width: number): void {
   useEffect(() => {
     if (!IS_OVERLAY) return
-    postOverlayMessage({
-      type: 'resize',
-      width: wide ? OVERLAY_WIDE_WIDTH : OVERLAY_WIDTH,
-    })
-  }, [wide])
+    postOverlayMessage({ type: 'resize', width })
+  }, [width])
 }
 
 export function isOverlayFrame(): boolean {

@@ -19,6 +19,14 @@ import {
 } from './scan-orchestrator'
 import { readTabCssInformation } from './read-tab-css'
 import { emptyCssInformation } from '../shared/types'
+import {
+  applyDeviceEmulation,
+  clearDeviceEmulation,
+  getDeviceEmulation,
+  getEmulatedZoom,
+  reloadEmulatedTab,
+  setEmulatedZoom,
+} from './device-emulation'
 
 /** Content → extension broadcasts that only need a sync ack (panel listens too). */
 const SYNC_ACK = new Set(['CONTENT_READY', 'SCAN_PROGRESS', 'INSPECT_ELEMENT', 'PONG'])
@@ -228,6 +236,61 @@ export function routeMessage(
             await chrome.tabs.sendMessage(tab.tabId, message)
           }
           safeReply(sendResponse, { ok: true })
+          return
+        }
+        case 'SET_DEVICE_EMULATION': {
+          const payload = await applyDeviceEmulation(message.payload)
+          const zoom = await getEmulatedZoom()
+          safeReply(
+            sendResponse,
+            createMessage({
+              type: 'DEVICE_EMULATION_STATUS',
+              requestId: message.requestId,
+              payload: { ...payload, zoom },
+            }),
+          )
+          return
+        }
+        case 'CLEAR_DEVICE_EMULATION': {
+          const payload = await clearDeviceEmulation()
+          safeReply(
+            sendResponse,
+            createMessage({
+              type: 'DEVICE_EMULATION_STATUS',
+              requestId: message.requestId,
+              payload: { ...payload, zoom: 1 },
+            }),
+          )
+          return
+        }
+        case 'GET_DEVICE_EMULATION': {
+          const payload = getDeviceEmulation()
+          const zoom = await getEmulatedZoom()
+          safeReply(
+            sendResponse,
+            createMessage({
+              type: 'DEVICE_EMULATION_STATUS',
+              requestId: message.requestId,
+              payload: { ...payload, zoom },
+            }),
+          )
+          return
+        }
+        case 'RELOAD_EMULATED_TAB': {
+          await reloadEmulatedTab()
+          safeReply(sendResponse, { ok: true })
+          return
+        }
+        case 'SET_EMULATED_ZOOM': {
+          const zoom = await setEmulatedZoom(message.payload.factor)
+          safeReply(
+            sendResponse,
+            createMessage({
+              type: 'DEVICE_EMULATION_STATUS',
+              requestId: message.requestId,
+              payload: { ...getDeviceEmulation(), zoom },
+            }),
+          )
           return
         }
         default:

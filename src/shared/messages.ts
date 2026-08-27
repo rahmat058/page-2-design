@@ -58,6 +58,12 @@ export type MessageType =
   | 'HIGHLIGHT_COLOR_RESULT'
   | 'GET_CSS_INFO'
   | 'CSS_INFO'
+  | 'SET_DEVICE_EMULATION'
+  | 'CLEAR_DEVICE_EMULATION'
+  | 'GET_DEVICE_EMULATION'
+  | 'DEVICE_EMULATION_STATUS'
+  | 'RELOAD_EMULATED_TAB'
+  | 'SET_EMULATED_ZOOM'
 
 // ---------------------------------------------------------------------------
 // Message interfaces
@@ -327,6 +333,53 @@ export interface CssInfoMessage extends MessageBase {
   payload: CssInformation
 }
 
+export interface DeviceEmulationPayload {
+  active: boolean
+  tabId: number | null
+  deviceId: string | null
+  width: number
+  height: number
+  deviceScaleFactor: number
+  mobile: boolean
+  orientation: 'portrait' | 'landscape'
+  error: string | null
+  zoom?: number
+}
+
+export interface SetDeviceEmulationMessage extends MessageBase {
+  type: 'SET_DEVICE_EMULATION'
+  payload: {
+    deviceId: string
+    width: number
+    height: number
+    deviceScaleFactor: number
+    mobile: boolean
+    orientation: 'portrait' | 'landscape'
+  }
+}
+
+export interface ClearDeviceEmulationMessage extends MessageBase {
+  type: 'CLEAR_DEVICE_EMULATION'
+}
+
+export interface GetDeviceEmulationMessage extends MessageBase {
+  type: 'GET_DEVICE_EMULATION'
+}
+
+export interface DeviceEmulationStatusMessage extends MessageBase {
+  type: 'DEVICE_EMULATION_STATUS'
+  payload: DeviceEmulationPayload
+}
+
+export interface ReloadEmulatedTabMessage extends MessageBase {
+  type: 'RELOAD_EMULATED_TAB'
+}
+
+export interface SetEmulatedZoomMessage extends MessageBase {
+  type: 'SET_EMULATED_ZOOM'
+  payload: { factor: number }
+}
+
 // ---------------------------------------------------------------------------
 // Union, validation, and factories
 // ---------------------------------------------------------------------------
@@ -367,6 +420,12 @@ export type ExtensionMessage =
   | HighlightColorResultMessage
   | GetCssInfoMessage
   | CssInfoMessage
+  | SetDeviceEmulationMessage
+  | ClearDeviceEmulationMessage
+  | GetDeviceEmulationMessage
+  | DeviceEmulationStatusMessage
+  | ReloadEmulatedTabMessage
+  | SetEmulatedZoomMessage
 
 const MESSAGE_TYPES = new Set<MessageType>([
   'PING',
@@ -404,6 +463,12 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'HIGHLIGHT_COLOR_RESULT',
   'GET_CSS_INFO',
   'CSS_INFO',
+  'SET_DEVICE_EMULATION',
+  'CLEAR_DEVICE_EMULATION',
+  'GET_DEVICE_EMULATION',
+  'DEVICE_EMULATION_STATUS',
+  'RELOAD_EMULATED_TAB',
+  'SET_EMULATED_ZOOM',
 ])
 
 export function createMessage(partial: {
