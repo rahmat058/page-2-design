@@ -1,6 +1,6 @@
 # Privacy Policy — Page2Design
 
-**Last updated:** 26 August 2026  
+**Last updated:** 27 August 2026  
 **Product:** Page2Design (Chrome extension)  
 **Developer:** [Kazi Rahamatullah](https://github.com/rahmat058)  
 **Contact:** [github.com/rahmat058](https://github.com/rahmat058)
@@ -38,7 +38,7 @@ Data is collected **only on your device**, from the active browser tab, after yo
 
 Data is used solely to:
 
-- Show the in-extension inspector (overview, colors, typography, content, assets)
+- Show the in-extension inspector (overview, design system, typography, content, assets, responsive preview)
 - Generate markdown / design reference files
 - Build a local ZIP export for your own use with coding agents or design workflows
 

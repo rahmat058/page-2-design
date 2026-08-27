@@ -11,11 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Open-source community files: MIT license, code of conduct, contributing guide, security policy, and changelog.
 - `PRIVACY.md` for Chrome Web Store / end-user privacy disclosure (local-only processing).
+- **Design System** bottom-nav tab: accordion for Colors, Typography, Components, Tokens, and Export. Builds Primary / Secondary / Accent / Neutral ramps from the scan, plus semantic colors only when they appear on the page. Buttons and badges use those ramps (solid / outline / ghost). Export snippets as `{page-slug}.tailwind-v4.Page2Design.css`, `.shadcn.Page2Design.css`, and `.dtcg.Page2Design.json` (CSS/JSON MIME types so Chrome does not force `.txt`).
+- **Responsive** breakpoint checker (More Options). Device list stays in the main panel (search + category accordions). On the overlay, a Mac-style preview window opens to the left; width follows the selected breakpoint (phones stay compact; tablets up to 1024px CSS; desktops up to 1280px). Preview is an iframe of the current page URL so media queries apply — no `debugger` permission and no “started debugging this browser” bar. Device set: 1 fluid size, 15 phones, 11 tablets, 12 desktops.
+- Design-system-style device cards (white surface, light border, lavender hover/selected shadow) matching Typography cards.
 
 ### Changed
 
 - Side panel code layout: shared `hooks/` and `lib/`, folder-per-component (`PanelChrome`, `BottomNav`, `Segmented`, `VirtualList`, …) with colocated helpers; `App.tsx` kept as the shell only.
-- Colors tab **Design System** panel: color scales, typography pair/scale, component previews, spacing/radius/shadow tokens, and export (CSS / Tailwind / SCSS / JSON / Design.md).
+- Colors is now an alias of **Design System** (bottom nav). **Layout** is no longer a panel view; section/spacing tokens still export in `docs/references/layout.json`. More Options **Layout** is **Responsive**.
+- Overlay host grows with the Responsive preview (panel 336px + gap + preview width, capped to the viewport). Preview and inspector drop shadows are off while the flyout is open so the gap between cards stays clean.
+- Assets **List** view is a normal stacked list inside the collection scroller (no nested virtual list), so row spacing stays even.
+- Developer GitHub / LinkedIn / website rows use the same card chrome as Design System export tiles.
+
+### Fixed
+
+- Responsive category accordions overlapping when several groups were expanded (groups no longer flex-shrink; the list scrolls).
+- Design System CSS/SCSS downloads saving as `.txt` because of a `text/plain` MIME type.
 
 ## [1.0.0] - 2026-08-25
 

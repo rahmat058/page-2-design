@@ -31,6 +31,8 @@ More detail: [ARCHITECTURE.MD — Privacy](./ARCHITECTURE.MD#privacy).
 | `sidePanel`                 | Inspector fallback on restricted pages                     |
 | `http://*/*`, `https://*/*` | Scan and fetch assets without an extra click on every page |
 
+The extension does **not** request the `debugger` permission. Responsive preview is an in-extension iframe of the current page URL, not Chrome device metrics override.
+
 Do not load the extension on pages you are not allowed to inspect. The export ZIP can contain visible page text, styles, and assets from that tab — treat it like a design snapshot of the page you scanned.
 
 ## Reporting a vulnerability

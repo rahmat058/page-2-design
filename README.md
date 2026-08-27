@@ -2,7 +2,7 @@
 
 Scan a live webpage and export one **agent-ready** design package — local-only, no backend.
 
-[![Page2Design](./public/icons/icon-128.png)](https://github.com/rahmat058/page-2-design)
+[![Page2Design](./public/icons/icon128.png)](https://github.com/rahmat058/page-2-design)
 
 <div>
 <img src="https://img.shields.io/badge/Chrome_MV3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white">
@@ -69,8 +69,10 @@ npm run dev
 - **Local-only scan** — click **Scan page**; nothing is uploaded; IndexedDB stays on device
 - **Floating inspector** — overlay on normal sites; Chrome side panel on restricted pages
 - **Overview** — typography pair, palette, contrast, live **CSS Information**
-- **Tokens & assets** — colors, type, images, icons, SVG
+- **Design System** — color ramps, type scale, component previews, spacing/radius/shadow tokens, and CSS / Tailwind / shadcn / JSON export
+- **Typography & assets** — type cards; images, icons, and SVG in grid or list
 - **Content** — visible copy only; passwords, hidden, and payment-like fields are never stored
+- **Responsive** — More Options device picker plus a Mac-style breakpoint preview beside the overlay (iframe at CSS-pixel size; no page debugger)
 - **Generate Markdown** — preview the same files that go in the ZIP
 - **Agent-ready export** — one ZIP with `AGENTS.md`, `docs/DESIGN.md`, prompts, references, screenshots, and `assets/`
 - **Privacy-aware** — sensitive query params redacted; gaps listed in `limitations.json`, never invented
@@ -99,8 +101,9 @@ Files that were not produced are omitted and listed in `docs/references/limitati
 2. Open the Page2Design inspector
 3. Leave lazy content and extra viewports on (defaults)
 4. Click **Scan page**
-5. Review Overview, Content, Images, Icons & SVG, Colors, Typography, Layout
-6. On **Export**, choose assets and download one ZIP
+5. Review Overview, Content, Assets, Design System, and Typography
+6. Optionally open **More Options → Responsive** and pick a device to preview the page at that breakpoint
+7. On **Export**, choose assets and download one ZIP
 
 ---
 
@@ -122,13 +125,13 @@ Page2Design/
 │   │   ├── hooks/             # Shared React hooks
 │   │   ├── lib/               # View helpers, overlay, panel actions
 │   │   ├── components/        # UI primitives (folder + lib/hooks)
-│   │   ├── features/          # One view per bottom-nav surface
+│   │   ├── features/          # Overview, Design System, Typography, Assets, Responsive, …
 │   │   └── store/             # Zustand scan store
 │   ├── normalize/             # PageScan → NormalizedDesign
 │   ├── generators/            # AGENTS.md, DESIGN.md, prompts, JSON refs
 │   ├── export/                # ZIP layout and asset download
 │   ├── storage/               # IndexedDB
-│   ├── shared/                # Types, messages, redaction
+│   ├── shared/                # Types, messages, redaction, device presets
 │   └── tests/                 # Vitest
 ├── ARCHITECTURE.MD            # Pipeline, messages, privacy, limits
 ├── PRIVACY.md                 # Chrome Web Store privacy policy
@@ -184,12 +187,14 @@ npm run build
 2. Identify tab → should show `Page2Design fixture`
 3. **Scan page** (lazy content + extra viewports on)
 
-| View                   | Expect                                                      |
-| ---------------------- | ----------------------------------------------------------- |
-| Overview               | Hostname, phase `ready`, counts, CSS Information            |
-| Content                | **Measured design, not guessed style**                      |
-| Images / Icons         | Hero graphic / diamond icon                                 |
-| Colors / Type / Layout | Accent, paper bg, Georgia-style heading, header/main/footer |
+| View          | Expect                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| Overview      | Hostname, phase `ready`, counts, CSS Information                 |
+| Content       | **Measured design, not guessed style**                           |
+| Assets        | Hero graphic / diamond icon (grid or list)                       |
+| Design System | Color ramps, type scale, tokens, export cards                    |
+| Typography    | Georgia-style heading cards                                      |
+| Responsive    | More Options → pick a phone and a desktop; preview width changes |
 
 **Privacy:** `super-secret-password-123` and `hidden-auth-token` must **not** appear in the inspector or ZIP.
 
@@ -199,7 +204,7 @@ Download ZIP → unzip → confirm `AGENTS.md`, `.cursor/rules/`, `assets/`, `do
 
 ### Extension icons
 
-Place launcher PNGs in `public/icons/` yourself: `icon-16.png`, `icon-32.png`, `icon-48.png`, `icon-128.png`. Build copies them into `dist`; nothing regenerates them.
+Place launcher PNGs in `public/icons/` yourself: `icon16.png`, `icon32.png`, `icon48.png`, `icon128.png`. Build copies them into `dist`; nothing regenerates them.
 
 ---
 
@@ -209,6 +214,8 @@ Place launcher PNGs in `public/icons/` yourself: `icon-16.png`, `icon-32.png`, `
 - Tainted canvas, blocked frames, or failed downloads are recorded as limitations — not invented
 - Coverage is capture coverage, not a visual-match percentage
 - Extra viewport capture may briefly resize the browser window, then restore it
+- Responsive preview is an iframe of the current URL. Sites that send `X-Frame-Options` or a framing CSP show a blank window; that is the site blocking embed, not a failed scan
+- The live tab is **not** resized or debugger-emulated when you pick a device
 
 Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
 

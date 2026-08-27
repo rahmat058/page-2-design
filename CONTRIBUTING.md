@@ -13,7 +13,7 @@ Do not send captured page content, passwords, or private ZIP exports in issues o
 
 ## Development setup
 
-You need **Node.js 18+** and current Chrome.
+You need **Node.js 24+** and current Chrome.
 
 ```bash
 git clone https://github.com/rahmat058/page-2-design.git
@@ -39,7 +39,7 @@ Reload the extension card after each rebuild, then refresh the scanned tab (and 
 
 1. Run `npm test`, `npm run typecheck`, and `npm run lint`.
 2. Format with `npm run format` if you touched files Prettier covers.
-3. Smoke-test with `fixtures/reference-page.html`: Identify tab, Scan page, Overview (including CSS Information), and a ZIP export. Password and hidden fixture values must not appear in the inspector or ZIP.
+3. Smoke-test with `fixtures/reference-page.html`: Identify tab, Scan page, Overview (including CSS Information), Design System, Typography, Assets, optionally **More Options → Responsive**, and a ZIP export. Password and hidden fixture values must not appear in the inspector or ZIP.
 4. If you change scan, messages, storage, or ZIP layout, update [ARCHITECTURE.MD](./ARCHITECTURE.MD) and add a note under **Unreleased** in [CHANGELOG.md](./CHANGELOG.md).
 
 ## Git hooks

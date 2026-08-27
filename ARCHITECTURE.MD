@@ -65,7 +65,8 @@ Page2Design/
 │   │   ├── service-worker.ts  # Action click, message listener
 │   │   ├── message-router.ts  # Typed message switch
 │   │   ├── scan-orchestrator.ts
-│   │   └── read-tab-css.ts    # Live CSS Information (CSS Peeper-style)
+│   │   ├── read-tab-css.ts    # Live CSS Information (CSS Peeper-style)
+│   │   └── device-emulation.ts # Leftover CDP helpers (UI uses iframe preview; no debugger permission)
 │   ├── content/               # Injected page scanner + overlay
 │   │   ├── scan-entry.ts      # Message handlers in the tab
 │   │   ├── scan-page.ts       # Full-page scan pipeline
@@ -78,7 +79,7 @@ Page2Design/
 │   │   ├── hooks/             # Shared hooks (runtime, overlay, busy, …)
 │   │   ├── lib/               # Non-React helpers (view titles, panel actions)
 │   │   ├── store/             # Zustand (`useScanStore`, toast)
-│   │   ├── features/          # Overview, Colors, Content, Export, Developer, …
+│   │   ├── features/          # Overview, Design System, Typography, Assets, Responsive, Export, Developer, …
 │   │   └── components/        # Folder-per-component when logic is non-trivial
 │   │       ├── PanelChrome/   # index + lib/ (overlay drag)
 │   │       ├── BottomNav/     # index + lib/ (nav items)
@@ -90,7 +91,7 @@ Page2Design/
 │   ├── export/                # ZIP layout, asset download, filenames
 │   ├── validation/            # Coverage + scan sanity
 │   ├── storage/               # IndexedDB scans + blobs
-│   ├── shared/                # Types, messages, constants, CSS format
+│   ├── shared/                # Types, messages, constants, CSS format, device presets
 │   └── tests/                 # Vitest unit tests
 ├── vite.config.ts             # Side panel / overlay UI
 ├── vite.background.config.ts
@@ -119,7 +120,7 @@ Three Vite builds write into `dist/`:
 | Side panel     | Restricted URLs, or **Open side panel** from overlay chrome | `chrome.sidePanel` → `sidepanel.html`    |
 | Content script | Injected with `chrome.scripting.executeScript` (all frames) | Isolated world; top frame owns full scan |
 
-Overlay width is `OVERLAY_WIDTH` (336px). Generate Markdown widens to `OVERLAY_WIDE_WIDTH` (560px).
+Overlay width is `OVERLAY_WIDTH` (336px). Generate Markdown widens to `OVERLAY_WIDE_WIDTH` (560px). **Responsive** adds a Mac-style preview to the left of the overlay; host width becomes panel + `OVERLAY_FLYOUT_GAP` + preview width (phones stay compact; tablets cap at 1024px CSS; desktops at 1280px; overlay `maxHeight` 760px). The live tab is not resized.
 
 Restricted URLs (`chrome:`, `edge:`, `about:`, Web Store) cannot be scanned. The action falls back to the side panel.
 
@@ -146,7 +147,7 @@ background  assembleScan(chunks)
 SCAN_COMPLETE (assembled: true)
     │
     ▼
-sidepanel  loadScan() → Zustand store → Overview / Colors / …
+sidepanel  loadScan() → Zustand store → Overview / Design System / …
 ```
 
 ### Content scan (`src/content/scan-page.ts`)
@@ -197,19 +198,21 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 
 ### Bottom nav
 
-| View              | Feature module      | Purpose                                       |
-| ----------------- | ------------------- | --------------------------------------------- |
-| Overview          | `OverviewView.tsx`  | Intro, type pair, palette, contrast, CSS info |
-| Content           | `ContentView.tsx`   | Grouped text / links                          |
-| Design System     | `DesignSystemView.tsx` / `DesignSystemPanel.tsx` | Scales, type, components, tokens, export |
-| Typography        | `ColorsView.tsx`    | Type cards                                    |
-| Assets            | `ContentView.tsx`   | Images / icons / SVG                          |
-| Layout            | `LayoutView.tsx`    | Sections outline + spacing / radius / shadow  |
-| Generate Markdown | `MarkdownView.tsx`  | Live preview of ZIP markdown / JSON           |
-| Export            | `ExportView.tsx`    | Asset picker + Download ZIP                   |
-| Developer         | `DeveloperView.tsx` | Author profile and repo star link             |
+| View              | Feature module                         | Purpose                                                                 |
+| ----------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| Overview          | `OverviewView.tsx`                     | Intro, type pair, palette, contrast, CSS info                           |
+| Content           | `ContentView.tsx`                      | Grouped text / links                                                    |
+| Design System     | `DesignSystemView.tsx` / `DesignSystemPanel.tsx` | Color ramps, type, components, tokens, CSS/Tailwind/shadcn/JSON export |
+| Typography        | `ColorsView.tsx`                       | Type cards                                                              |
+| Assets            | `ContentView.tsx`                      | Images / icons / SVG (grid or list)                                     |
+| Generate Markdown | `MarkdownView.tsx`                     | Live preview of ZIP markdown / JSON                                     |
+| Export            | `ExportView.tsx`                       | Asset picker + Download ZIP                                             |
+| Developer         | `DeveloperView.tsx`                    | Author profile and repo star link                                       |
+| Responsive        | `ResponsiveView.tsx`                   | Device list in-panel + Mac preview beside the overlay (not a nav tab)   |
 
-**Inspect Mode** (chrome switch) replaces the current view with `InspectorView.tsx` — click an element on the page to see measured styles. Layout is in the overflow menu (`setView('layout')`); the bottom nav highlights Overview while Layout is open.
+**Inspect Mode** (chrome switch) replaces the current view with `InspectorView.tsx` — click an element on the page to see measured styles.
+
+**Responsive** opens from **More Options**. The device list (search + Phones / Tablets / Desktop accordions) replaces the main pane; presets live in `src/shared/device-presets.ts`. The preview iframe loads the current tab URL at that CSS-pixel size so media queries apply. There is **no** `debugger` permission — picking a device does not emulate or squeeze the live page. Sites that forbid framing show a blank preview. `layout.json` is still generated for the ZIP; `LayoutView.tsx` is unused UI.
 
 ### CSS Information
 
@@ -245,6 +248,7 @@ All runtime messages are versioned (`MESSAGE_SCHEMA_VERSION`) and parsed in `src
 | `CAPTURE_SCREENSHOT` | UI → SW           | Viewport + full-page PNG        |
 | `FETCH_ASSET`        | UI / content → SW | Bytes for ZIP / tiles           |
 | `TOGGLE_OVERLAY`     | SW → content      | Open / close floating UI        |
+| Overlay resize       | UI → page (postMessage) | Grow/shrink host for Markdown or Responsive preview |
 | `DOCK_SIDE_PANEL`    | UI → SW           | Open Chrome side panel          |
 | `SET_INSPECT_MODE`   | UI → content      | Click-to-inspect                |
 | `INSPECT_ELEMENT`    | content → UI      | Selected element snapshot       |
@@ -268,7 +272,7 @@ docs/screenshots/{viewport,full-page}.png
 
 Missing files are omitted and listed in `limitations.json`. Agents should start at `AGENTS.md`, then `docs/DESIGN.md` (section 5 is captured markup).
 
-Asset limits: 250 files, 8MB each, 40MB total (`MAX_ASSETS`, `MAX_ASSET_BYTES`, `MAX_TOTAL_ASSET_BYTES`).
+Asset limits: 500 files, 8MB each, 80MB total (`MAX_ASSETS`, `MAX_ASSET_BYTES`, `MAX_TOTAL_ASSET_BYTES`).
 
 ---
 
@@ -303,7 +307,7 @@ Store listing and end-user policy: **[PRIVACY.md](./PRIVACY.md)**.
 | **Message schema**    | `MESSAGE_SCHEMA_VERSION` — unknown / malformed messages are dropped       |
 | **Chunked transport** | `ELEMENT_CHUNK_SIZE` (40) so `runtime.sendMessage` stays small            |
 | **Element budget**    | `MAX_ELEMENTS` (4000); iframe scans cap at 400                            |
-| **Asset budget**      | 250 files, 8MB each, 40MB total                                           |
+| **Asset budget**      | 500 files, 8MB each, 80MB total                                           |
 | **Scan TTL**          | 24h stale / 1h incomplete records purged on install and startup           |
 | **CSS Information**   | `public/inspect-css.js` injected into the **top frame** (not `allFrames`) |
 | **Coverage**          | Capture coverage, never a visual-match percentage                         |
@@ -342,14 +346,16 @@ Tab DOM → content scanners → PageScan chunks
 
 Vitest (`src/tests/`). No Chrome required.
 
-| File                   | Covers                                     |
-| ---------------------- | ------------------------------------------ |
-| `colors.test.ts`       | Color parse, contrast, grouping            |
-| `generators.test.ts`   | Markdown / JSON output, privacy            |
-| `scan-filters.test.ts` | DOM noise filters, class keep rules        |
-| `sections.test.ts`     | Section detection                          |
-| `utilities.test.ts`    | Filenames, ZIP paths, CSS format, messages |
-| `viewports.test.ts`    | Breakpoint helpers, frame merge            |
+| File                     | Covers                                              |
+| ------------------------ | --------------------------------------------------- |
+| `colors.test.ts`         | Color parse, contrast, grouping                     |
+| `design-system.test.ts`  | Ramps, semantic colors, export filenames            |
+| `device-presets.test.ts` | Breakpoint set, rotate, preview window sizing       |
+| `generators.test.ts`     | Markdown / JSON output, privacy                     |
+| `scan-filters.test.ts`   | DOM noise filters, class keep rules                 |
+| `sections.test.ts`       | Section detection                                   |
+| `utilities.test.ts`      | Filenames, ZIP paths, CSS format, messages          |
+| `viewports.test.ts`      | Breakpoint helpers, frame merge                     |
 
 `fixtures/reference-page.html` is the manual Chrome fixture (see README).
 
@@ -362,3 +368,5 @@ Vitest (`src/tests/`). No Chrome required.
 - Coverage is capture coverage, not a visual-match percentage
 - Extra viewport capture may briefly resize the window, then restore it
 - CSS Information can differ from CSS Peeper by a few rules or ~0.1s when a sheet is unreadable in one tool and fetched in the other
+- Responsive preview cannot display pages that forbid iframe embedding (`X-Frame-Options` / CSP `frame-ancestors`)
+- Picking a device does not change the live tab’s viewport (no Chrome debugger emulation)
