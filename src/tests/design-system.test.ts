@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ColorToken, NormalizedDesign } from '../shared/types'
-import { buildDesignSystem } from '../sidepanel/lib/design-system'
+import { buildDesignSystem, exportDesignSystem, exportFilename } from '../sidepanel/lib/design-system'
 
 function color(partial: Partial<ColorToken> & Pick<ColorToken, 'id' | 'hex' | 'count'>): ColorToken {
   return {
@@ -203,5 +203,60 @@ describe('buildDesignSystem color scales', () => {
     expect(byName.Accent).toBeTruthy()
     expect(byName.Accent).not.toBe('#ccff00')
     expect(['#808080', '#7b7b84', '#29292b']).toContain(byName.Neutral)
+  })
+})
+
+describe('modern format downloads', () => {
+  const title = 'Next.js & Headless CMS Experts: Blazing-Fast Static Websites - StaticMania'
+
+  it('names files as slug.format.Page2Design.ext', () => {
+    expect(exportFilename('css', title)).toMatch(/\.css$/)
+    expect(exportFilename('tailwind', title)).toBe(
+      'next-js-headless-cms-experts-blazing-fast-static-websites-staticmania.tailwind-v4.Page2Design.css',
+    )
+    expect(exportFilename('shadcn', title)).toBe(
+      'next-js-headless-cms-experts-blazing-fast-static-websites-staticmania.shadcn.Page2Design.css',
+    )
+    expect(exportFilename('scss', title)).toMatch(/\.scss$/)
+    expect(exportFilename('json', title)).toBe(
+      'next-js-headless-cms-experts-blazing-fast-static-websites-staticmania.dtcg.Page2Design.json',
+    )
+  })
+
+  it('writes Tailwind v4 @theme with oklch brand scales', () => {
+    const model = buildDesignSystem(
+      stubDesign([
+        color({ id: 'blue', hex: '#1D4CFF', count: 40, area: 8000, role: 'accent' }),
+        color({ id: 'gray', hex: '#737373', count: 90, area: 8000, role: 'border' }),
+      ]),
+    )
+    const css = exportDesignSystem(model, 'tailwind', 'StaticMania')
+    expect(css.startsWith('/* Design system extracted from StaticMania */')).toBe(true)
+    expect(css).toContain('@theme {')
+    expect(css).toContain('--color-brand-500:')
+    expect(css).toMatch(/oklch\(/)
+    expect(css).not.toContain('--color-primary-')
+  })
+
+  it('writes DTCG design tokens json', () => {
+    const model = buildDesignSystem(
+      stubDesign([
+        color({ id: 'blue', hex: '#1D4CFF', count: 40, area: 8000, role: 'accent' }),
+        color({ id: 'gray', hex: '#737373', count: 90, area: 8000, role: 'border' }),
+      ]),
+    )
+    const json = JSON.parse(exportDesignSystem(model, 'json', 'StaticMania')) as {
+      $schema: string
+      color: Record<string, Record<string, { $type: string; $value: string }>>
+    }
+    expect(json.$schema).toContain('designtokens.org')
+    const brand = json.color.brand ?? {}
+    const sample = brand['500'] ?? Object.values(brand)[0]
+    expect(sample).toEqual(
+      expect.objectContaining({
+        $type: 'color',
+        $value: expect.stringContaining('oklch('),
+      }),
+    )
   })
 })

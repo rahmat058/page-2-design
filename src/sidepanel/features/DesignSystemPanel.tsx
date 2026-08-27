@@ -412,7 +412,7 @@ function ExportBlock({ model, siteName }: { model: DesignSystemModel; siteName: 
           onClick={() => void copyText(text, EXPORT_TABS.find((t) => t.id === format)?.label ?? 'Export')}>
           Copy
         </Button>
-        <Button size="sm" icon={Download} onClick={() => void downloadText(text, exportFilename(format))}>
+        <Button size="sm" icon={Download} onClick={() => void downloadText(text, exportFilename(format, siteName))}>
           Download
         </Button>
       </div>
@@ -439,7 +439,7 @@ function ModernFormatsBlock({ model, siteName }: { model: DesignSystemModel; sit
                 type="button"
                 className="ds-modern-card"
                 onClick={() =>
-                  void downloadText(exportDesignSystem(model, item.id, siteName), exportFilename(item.id))
+                  void downloadText(exportDesignSystem(model, item.id, siteName), exportFilename(item.id, siteName))
                 }>
                 <span className={`ds-modern-icon ${item.tone}`} aria-hidden="true">
                   <Icon size={16} strokeWidth={2} />
@@ -464,16 +464,19 @@ async function copyText(value: string, label: string): Promise<void> {
 }
 
 async function downloadText(text: string, filename: string): Promise<void> {
-  const type = filename.endsWith('.json')
-    ? 'application/json'
-    : filename.endsWith('.md')
-      ? 'text/markdown;charset=utf-8'
-      : 'text/plain;charset=utf-8'
-  const blob = new Blob([text], { type })
+  const blob = new Blob([text], { type: mimeForDownload(filename) })
   const url = URL.createObjectURL(blob)
   await chrome.downloads.download({ url, filename, saveAs: true })
   revokeObjectUrlLater(url)
   useToastStore.getState().showToast(`${filename} downloaded`)
+}
+
+/** Chrome Save As rewrites `text/plain` blobs to `.txt`; MIME must match the real extension. */
+function mimeForDownload(filename: string): string {
+  if (filename.endsWith('.json')) return 'application/json;charset=utf-8'
+  if (filename.endsWith('.css') || filename.endsWith('.scss')) return 'text/css;charset=utf-8'
+  if (filename.endsWith('.md')) return 'text/markdown;charset=utf-8'
+  return 'application/octet-stream'
 }
 
 function truncate(value: string, max: number): string {

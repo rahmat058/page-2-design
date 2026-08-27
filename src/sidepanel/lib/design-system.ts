@@ -2,6 +2,7 @@
  * Design-system helpers: color scales and export snippets from a NormalizedDesign.
  */
 import { parseColor } from '../../normalize/colors'
+import { EXTENSION_NAME } from '../../shared/constants'
 import type { ColorToken, DesignToken, NormalizedDesign, TypographyToken } from '../../shared/types'
 import { isSaneLayoutToken } from './layout-tokens'
 
@@ -108,7 +109,7 @@ export function exportDesignSystem(model: DesignSystemModel, format: DesignExpor
     case 'css':
       return toCss(model)
     case 'tailwind':
-      return toTailwind(model)
+      return toTailwind(model, siteName)
     case 'scss':
       return toScss(model)
     case 'json':
@@ -116,17 +117,23 @@ export function exportDesignSystem(model: DesignSystemModel, format: DesignExpor
     case 'design-md':
       return toDesignMd(model, siteName)
     case 'shadcn':
-      return toShadcn(model)
+      return toShadcn(model, siteName)
   }
 }
 
-export function exportFilename(format: DesignExportFormat): string {
-  if (format === 'css') return 'design-tokens.css'
-  if (format === 'tailwind') return 'design-tokens.tailwind.css'
-  if (format === 'scss') return '_design-tokens.scss'
-  if (format === 'json') return 'design-tokens.json'
-  if (format === 'shadcn') return 'globals.css'
-  return 'DESIGN_SYSTEM.md'
+const EXPORT_FILE: Record<DesignExportFormat, { key: string; ext: string }> = {
+  css: { key: 'css', ext: 'css' },
+  tailwind: { key: 'tailwind-v4', ext: 'css' },
+  scss: { key: 'scss', ext: 'scss' },
+  json: { key: 'dtcg', ext: 'json' },
+  shadcn: { key: 'shadcn', ext: 'css' },
+  'design-md': { key: 'design-md', ext: 'md' },
+}
+
+export function exportFilename(format: DesignExportFormat, siteName: string): string {
+  const spec = EXPORT_FILE[format]
+  const slugName = slugifyTitle(siteName) || 'design-system'
+  return `${slugName}.${spec.key}.${EXTENSION_NAME}.${spec.ext}`
 }
 
 /** CSS custom property line for a type-scale step (clipboard). */
@@ -395,7 +402,7 @@ function buildTypeScale(tokens: TypographyToken[]): DesignSystemModel['typeScale
 
   const unique: typeof sorted = []
   for (const item of sorted) {
-    if (unique.length >= labels.length) break
+    if (unique.length >= 12) break
     if (unique.some((u) => Math.abs(u.px - item.px) < 1.5)) continue
     unique.push(item)
   }
@@ -565,22 +572,47 @@ function toCss(model: DesignSystemModel): string {
   return `${lines.join('\n')}\n`
 }
 
-function toTailwind(model: DesignSystemModel): string {
-  const lines = ['@theme {', '  /* Colors */']
+function toTailwind(model: DesignSystemModel, siteName: string): string {
+  const pad = '    '
+  const lines = [`/* Design system extracted from ${siteName} */`, '@theme {', '', `${pad}/* Colors */`]
   for (const scale of model.scales) {
-    const key = slug(scale.name)
+    const key = themeColorName(scale.name)
     for (const step of scale.steps) {
-      lines.push(`  --color-${key}-${step.step}: ${step.hex};`)
+      lines.push(`${pad}--color-${key}-${step.step}: ${toOklch(step.hex)};`)
     }
+    lines.push('')
   }
-  lines.push(`  --font-sans: ${model.bodyFont};`)
-  lines.push(`  --font-display: ${model.headingFont};`)
-  for (const row of model.typeScale) {
-    lines.push(`  --text-${row.label}: ${row.rem};`)
+  const spacing = uniqueThemeRows(model.tokenRows.spacing, (row) => spacingThemeKey(row.px))
+  if (spacing.length) {
+    lines.push(`${pad}/* Spacing */`)
+    for (const row of spacing) {
+      lines.push(`${pad}--spacing-${spacingThemeKey(row.px)}: ${toRem(row.px)};`)
+    }
+    lines.push('')
   }
-  lines.push(`  --radius-lg: ${model.radius};`)
-  for (const row of model.tokenRows.spacing) {
-    lines.push(`  --spacing-${nearestTwSpace(row.px)}: ${row.value};`)
+  const radii = uniqueThemeRows(model.tokenRows.radii, (row) => radiusThemeKey(row.px))
+  if (radii.length) {
+    lines.push(`${pad}/* Border Radius */`)
+    for (const row of radii) {
+      lines.push(`${pad}--radius-${radiusThemeKey(row.px)}: ${radiusThemeValue(row.px)};`)
+    }
+    lines.push('')
+  }
+  const shadows = uniqueThemeRows(model.tokenRows.shadows, (row) => shadowThemeKey(row.tw))
+  if (shadows.length) {
+    lines.push(`${pad}/* Shadows */`)
+    for (const row of shadows) {
+      lines.push(`${pad}--shadow-${shadowThemeKey(row.tw)}: ${row.value};`)
+    }
+    lines.push('')
+  }
+  const typeRows = uniqueThemeRows(model.typeScale, (row) => `${typeScalePx(row)}px`)
+  if (typeRows.length) {
+    lines.push(`${pad}/* Typography */`)
+    for (const row of typeRows) {
+      lines.push(`${pad}--text-${typeScalePx(row)}px: ${row.rem};`)
+    }
+    lines.push('')
   }
   lines.push('}')
   return `${lines.join('\n')}\n`
@@ -602,53 +634,86 @@ function toScss(model: DesignSystemModel): string {
 }
 
 function toJson(model: DesignSystemModel, siteName: string): string {
-  const colors: Record<string, Record<string, string>> = {}
+  const color: Record<string, Record<string, { $type: 'color'; $value: string }>> = {}
   for (const scale of model.scales) {
-    colors[slug(scale.name)] = Object.fromEntries(scale.steps.map((s) => [String(s.step), s.hex]))
+    const key = themeColorName(scale.name)
+    color[key] = Object.fromEntries(
+      scale.steps.map((step) => [String(step.step), { $type: 'color' as const, $value: toOklch(step.hex) }]),
+    )
   }
+  const spacing = Object.fromEntries(
+    uniqueThemeRows(model.tokenRows.spacing, (row) => spacingThemeKey(row.px)).map((row) => [
+      spacingThemeKey(row.px),
+      { $type: 'dimension', $value: toRem(row.px) },
+    ]),
+  )
+  const radius = Object.fromEntries(
+    uniqueThemeRows(model.tokenRows.radii, (row) => radiusThemeKey(row.px)).map((row) => [
+      radiusThemeKey(row.px),
+      { $type: 'dimension', $value: radiusThemeValue(row.px) },
+    ]),
+  )
+  const shadow = Object.fromEntries(
+    uniqueThemeRows(model.tokenRows.shadows, (row) => shadowThemeKey(row.tw)).map((row) => [
+      shadowThemeKey(row.tw),
+      { $type: 'shadow', $value: row.value },
+    ]),
+  )
+  const fontSize = Object.fromEntries(
+    uniqueThemeRows(model.typeScale, (row) => `${typeScalePx(row)}px`).map((row) => [
+      `${typeScalePx(row)}px`,
+      { $type: 'dimension', $value: row.rem },
+    ]),
+  )
   return `${JSON.stringify(
     {
-      name: siteName,
-      fonts: { body: model.bodyFont, heading: model.headingFont },
-      typography: Object.fromEntries(model.typeScale.map((row) => [row.label, row.rem])),
-      colors,
-      radius: model.radius,
-      spacing: model.spacing.map((t) => ({ name: t.name, value: t.value })),
-      shadows: model.shadows.map((t) => ({ name: t.name, value: t.value })),
+      $schema: 'https://tr.designtokens.org/format/',
+      $metadata: { name: siteName, generator: EXTENSION_NAME },
+      color,
+      spacing,
+      radius,
+      shadow,
+      fontSize,
+      fontFamily: {
+        body: { $type: 'fontFamily', $value: model.bodyFont },
+        heading: { $type: 'fontFamily', $value: model.headingFont },
+      },
     },
     null,
     2,
   )}\n`
 }
 
-function toShadcn(model: DesignSystemModel): string {
-  const primary = model.primary
-  const secondary = model.secondary
-  const accent = model.accent
+function toShadcn(model: DesignSystemModel, siteName: string): string {
+  const primary = toOklch(model.primary)
+  const secondary = toOklch(model.secondary)
+  const accent = toOklch(model.accent)
+  const neutral = toOklch(model.neutral)
+  const pad = '    '
   const lines = [
-    '/* shadcn/ui theme tokens derived from this page */',
+    `/* Design system extracted from ${siteName} */`,
     ':root {',
-    `  --background: #ffffff;`,
-    `  --foreground: #0a0a0a;`,
-    `  --primary: ${primary};`,
-    `  --primary-foreground: #ffffff;`,
-    `  --secondary: ${secondary};`,
-    `  --secondary-foreground: #0a0a0a;`,
-    `  --accent: ${accent};`,
-    `  --accent-foreground: #0a0a0a;`,
-    `  --muted: color-mix(in srgb, ${model.neutral} 12%, #ffffff);`,
-    `  --muted-foreground: ${model.neutral};`,
-    `  --border: #e4e4e7;`,
-    `  --input: #e4e4e7;`,
-    `  --ring: ${primary};`,
-    `  --radius: ${model.radius};`,
-    `  --font-sans: ${model.bodyFont};`,
-    `  --font-heading: ${model.headingFont};`,
+    `${pad}--background: oklch(1 0 0);`,
+    `${pad}--foreground: oklch(0.145 0 0);`,
+    `${pad}--primary: ${primary};`,
+    `${pad}--primary-foreground: oklch(1 0 0);`,
+    `${pad}--secondary: ${secondary};`,
+    `${pad}--secondary-foreground: oklch(0.145 0 0);`,
+    `${pad}--accent: ${accent};`,
+    `${pad}--accent-foreground: oklch(0.145 0 0);`,
+    `${pad}--muted: ${neutral};`,
+    `${pad}--muted-foreground: ${neutral};`,
+    `${pad}--border: oklch(0.922 0 0);`,
+    `${pad}--input: oklch(0.922 0 0);`,
+    `${pad}--ring: ${primary};`,
+    `${pad}--radius: ${model.radius};`,
+    `${pad}--font-sans: ${model.bodyFont};`,
+    `${pad}--font-heading: ${model.headingFont};`,
   ]
-  for (const row of model.typeScale) {
-    lines.push(`  --text-${row.label}: ${row.rem};`)
+  for (const row of uniqueThemeRows(model.typeScale, (item) => `${typeScalePx(item)}px`)) {
+    lines.push(`${pad}--text-${typeScalePx(row)}px: ${row.rem};`)
   }
-  lines.push('}', '')
+  lines.push('}')
   return `${lines.join('\n')}\n`
 }
 
@@ -675,6 +740,65 @@ function primaryFont(stack: string): string {
 
 function slug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+}
+
+function slugifyTitle(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+function themeColorName(name: string): string {
+  const key = slug(name).replace(/^-+|-+$/g, '')
+  return key === 'primary' ? 'brand' : key
+}
+
+function toOklch(hex: string): string {
+  return parseColor(hex)?.oklch ?? hex
+}
+
+function toRem(px: number): string {
+  return `${Number((px / 16).toFixed(4))}rem`
+}
+
+function spacingThemeKey(px: number): string {
+  const half = px / 2
+  if (half > 0 && Number.isInteger(half)) return String(half)
+  return String(nearestTwSpace(px))
+}
+
+function radiusThemeKey(px: number): string {
+  const cls = twRadiusClass(px)
+  return cls === 'rounded' ? 'DEFAULT' : cls.replace(/^rounded-/, '')
+}
+
+function radiusThemeValue(px: number): string {
+  return px >= 999 ? '9999px' : toRem(px)
+}
+
+function shadowThemeKey(tw: string): string {
+  const key = tw.replace(/^shadow-?/, '')
+  return key || 'DEFAULT'
+}
+
+function typeScalePx(row: { size: string; rem: string }): number {
+  const fromSize = Number.parseFloat(row.size)
+  if (Number.isFinite(fromSize) && fromSize > 0) return Math.round(fromSize)
+  const fromRem = Number.parseFloat(row.rem)
+  return Number.isFinite(fromRem) ? Math.round(fromRem * 16) : 16
+}
+
+function uniqueThemeRows<T>(rows: T[], keyOf: (row: T) => string): T[] {
+  const seen = new Set<string>()
+  const unique: T[] = []
+  for (const row of rows) {
+    const key = keyOf(row)
+    if (!key || seen.has(key)) continue
+    seen.add(key)
+    unique.push(row)
+  }
+  return unique
 }
 
 function colorDistanceRgb(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }): number {
