@@ -1,6 +1,9 @@
 # Chrome Web Store listing — Page2Design
 
-**Last updated:** 28 August 2026
+**Last updated:** 28 August 2026  
+**Published listing:** [Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)  
+**Extension ID:** `mghjckjmfhadbceeaoigeglhbojeomjc`  
+**Listing version:** 1.0.0 on the store; this repo is **1.0.1** (patch).
 
 Paste the short line into **Summary** (max 132 characters) and the long block into **Description**. Both are plain text — no Markdown.
 

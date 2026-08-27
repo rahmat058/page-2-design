@@ -9,9 +9,9 @@ export const REPO_URL = 'https://github.com/rahmat058/page-2-design'
 /** Prefer the loaded extension manifest so the UI matches chrome://extensions. */
 function appVersion(): string {
   try {
-    return chrome.runtime.getManifest().version || '1.0.0'
+    return chrome.runtime.getManifest().version || '1.0.1'
   } catch {
-    return '1.0.0'
+    return '1.0.1'
   }
 }
 

@@ -2,10 +2,11 @@
 
 **Last updated:** 28 August 2026  
 **Product:** Page2Design (Chrome extension)  
+**Chrome Web Store:** [Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)  
 **Developer:** [Kazi Rahamatullah](https://github.com/rahmat058)  
 **Contact:** [github.com/rahmat058](https://github.com/rahmat058)
 
-This policy describes how Page2Design handles data when you install and use the extension from the Chrome Web Store (or a build of this open-source project).
+This policy describes how Page2Design handles data when you install and use the extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc) (or a build of this open-source project).
 
 ## Summary
 

@@ -2,9 +2,10 @@
 
 Scan a live webpage and export one **agent-ready** design package — local-only, no backend.
 
-[![Page2Design](./public/icons/icon128.png)](https://github.com/rahmat058/page-2-design)
+[![Page2Design](./public/icons/icon128.png)](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)
 
 <div>
+<a href="https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc"><img src="https://img.shields.io/chrome-web-store/v/mghjckjmfhadbceeaoigeglhbojeomjc?style=for-the-badge&logo=googlechrome&logoColor=white&label=Chrome_Web_Store" alt="Chrome Web Store"></a>
 <img src="https://img.shields.io/badge/Chrome_MV3-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white">
 <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black">
 <img src="https://img.shields.io/badge/TypeScript_5.9-007ACC?style=for-the-badge&logo=typescript&logoColor=white">
@@ -18,11 +19,15 @@ Scan a live webpage and export one **agent-ready** design package — local-only
 
 The ZIP helps Cursor, Claude Code, and similar coding agents recreate the **observed** page. It does not recover original source, React trees, or private form values.
 
-Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md](./CHANGELOG.md)** · Store listing: **[STORE.md](./STORE.md)**
+Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md](./CHANGELOG.md)** · Store listing copy: **[STORE.md](./STORE.md)** · Install: **[Chrome Web Store](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)**
 
 ---
 
 ## 🚀 Quick Start
+
+### Install from the Chrome Web Store
+
+The first published listing is **1.0.0**: **[Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)** (ID `mghjckjmfhadbceeaoigeglhbojeomjc`). This repository is **1.0.1** (patch). Listing copy to paste on updates lives in **[STORE.md](./STORE.md)**.
 
 ### Prerequisites
 
@@ -134,7 +139,7 @@ Page2Design/
 │   ├── shared/                # Types, messages, redaction, device presets
 │   └── tests/                 # Vitest
 ├── ARCHITECTURE.MD            # Pipeline, messages, privacy, limits
-├── STORE.md                   # Chrome Web Store summary + description
+├── STORE.md                   # Chrome Web Store summary + description (live listing linked)
 ├── PRIVACY.md                 # Chrome Web Store privacy policy
 ├── CONTRIBUTING.md
 └── LICENSE
@@ -247,7 +252,8 @@ We welcome issues and pull requests. Please read **[CONTRIBUTING.md](./CONTRIBUT
 - [Report a bug or request a feature](https://github.com/rahmat058/page-2-design/issues)
 - [Security policy](./SECURITY.md)
 - [Privacy policy](./PRIVACY.md)
-- [Chrome Web Store listing](./STORE.md)
+- [Chrome Web Store](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)
+- [Chrome Web Store listing copy](./STORE.md)
 - [Changelog](./CHANGELOG.md)
 
 ---

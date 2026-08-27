@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Page2Design",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scan a webpage and export an agent-ready design reference package. All processing stays on this device.",
   "permissions": ["activeTab", "scripting", "downloads", "storage", "sidePanel", "declarativeNetRequestWithHostAccess"],
   "host_permissions": ["http://*/*", "https://*/*"],

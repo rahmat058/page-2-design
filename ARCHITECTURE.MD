@@ -4,7 +4,7 @@ Chrome **Manifest V3** extension that scans the **active tab** in-page, normaliz
 
 The ZIP describes the **rendered** page so Cursor, Claude Code, and similar agents can recreate it. It does not recover original source, React trees, or private form values.
 
-For install, test, and everyday use — see **[README.md](./README.md)**.
+Install from the **[Chrome Web Store](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)** (first publish: **1.0.0**; this repo is **1.0.1**). For local setup, test, and everyday use — see **[README.md](./README.md)**.
 
 ---
 
@@ -47,7 +47,7 @@ Page2Design/
 ├── CHANGELOG.md
 ├── SECURITY.md
 ├── PRIVACY.md                 # Local-only data handling (store listing URL)
-├── STORE.md                   # Chrome Web Store summary + description
+├── STORE.md                   # Chrome Web Store summary + description (live listing linked)
 ├── README.md
 ├── ARCHITECTURE.MD
 ├── commitlint.config.ts       # Conventional commits + type emojis
