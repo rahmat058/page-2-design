@@ -177,20 +177,23 @@ function analyzeColor(color: ColorToken): ScoredColor | null {
   if (!parsed || parsed.a < 0.35) return null
   const { h, s, l } = rgbToHsl(parsed.r, parsed.g, parsed.b)
   const chroma = (Math.max(parsed.r, parsed.g, parsed.b) - Math.min(parsed.r, parsed.g, parsed.b)) / 255
-  // Prefer instance count over raw fill area so huge hero/pastel washes don't dominate CTAs.
-  const weight = color.count * 120 + Math.min(color.area ?? 0, 24000) * 0.35
+  // Usage-weighted like Wobolo: large surfaces + repeats beat one-off neon CTAs.
+  const weight = color.count * 80 + Math.min(color.area ?? 0, 80000)
   const nearWhite = l > 0.93
-  const nearBlack = l < 0.07
-  const neutral = (chroma < 0.1 || s < 0.1) && !nearWhite && !nearBlack
+  const nearBlack = l < 0.08
+  const neutral = (chroma < 0.12 || s < 0.12) && !nearWhite && !nearBlack
   const roleBoost =
-    color.role === 'accent' || color.role === 'background'
-      ? 1.3
-      : color.role.startsWith('text') || color.role === 'border' || color.role === 'shadow'
-        ? 0.5
-        : 1
-  const chromaBoost = 0.5 + chroma * 2.0 + s * 1.35
-  const toneBoost = nearWhite || nearBlack ? 0.12 : l > 0.26 && l < 0.62 ? 1.55 : l >= 0.62 && l < 0.82 ? 0.7 : 0.55
-  const brandScore = neutral || nearWhite || nearBlack ? 0 : weight * chromaBoost * toneBoost * roleBoost
+    color.role === 'background' || color.role === 'accent'
+      ? 1.15
+      : color.role.startsWith('text')
+        ? 1.05
+        : color.role === 'border' || color.role === 'shadow'
+          ? 0.65
+          : 1
+  // Mid saturation wins; neon (s≈1, chroma≈1) is a highlight, not the page system.
+  const satCurve = s < 0.12 ? 0.35 : s > 0.82 ? 0.22 : 0.55 + s * 0.7
+  const toneBoost = nearWhite || nearBlack ? 0.08 : l > 0.22 && l < 0.72 ? 1.45 : 0.55
+  const brandScore = nearWhite || nearBlack ? 0 : weight * satCurve * toneBoost * roleBoost
   return {
     color,
     h,
@@ -199,30 +202,30 @@ function analyzeColor(color: ColorToken): ScoredColor | null {
     chroma,
     weight,
     brandScore,
-    neutral: neutral || (chroma < 0.08 && !nearWhite && !nearBlack),
+    neutral: neutral || (chroma < 0.1 && !nearWhite && !nearBlack),
   }
 }
 
-/** Score for brand scales. Primary favors CTA fills; Accent may keep warm pastels. */
-function ctaScore(
+function isNeonHighlight(item: ScoredColor): boolean {
+  return item.s > 0.82 && item.chroma > 0.68
+}
+
+/** Representative page color: usage first, neon CTAs last (they belong in Accent). */
+function representativeScore(
   item: ScoredColor,
   buttonElementIds: Set<string>,
   gradientStopRgb: Array<{ r: number; g: number; b: number }>,
-  forPrimary: boolean,
+  slot: 'primary' | 'secondary' | 'accent',
 ): number {
   let score = item.brandScore
   const onButton = item.color.elementIds.some((id) => buttonElementIds.has(id))
-  if (onButton) score *= 3.2
-  if (item.color.properties.some((p) => /background/i.test(p))) score *= 1.15
-  if (item.s >= 0.35 && item.l >= 0.28 && item.l <= 0.58) score *= 1.7
-  // Soft warm pastels / pinks are weak Primary candidates (hero washes), fine as Accent.
-  if (forPrimary && item.h >= 8 && item.h <= 55 && item.l > 0.58) score *= 0.28
-  // Soft pinks are rarely brand Primary/Accent vs peach/coral accents.
-  if (item.h >= 320 && item.h <= 350 && item.l > 0.58) score *= forPrimary ? 0.28 : 0.55
+  if (onButton) score *= slot === 'accent' ? 1.6 : 1.25
+  if (item.color.properties.some((p) => /background/i.test(p))) score *= 1.1
+  if (isNeonHighlight(item)) score *= slot === 'accent' ? 0.85 : 0.08
+  if (slot !== 'accent' && isStatusHue(item)) score *= 0.12
+  if (slot === 'primary' && item.h >= 8 && item.h <= 55 && item.l > 0.58) score *= 0.35
   const rgb = hexRgb(item.color.hex)
-  if (forPrimary && rgb && gradientStopRgb.some((stop) => colorDistanceRgb(stop, rgb) < 28)) score *= 0.45
-  // Keep status greens/ambers/reds out of Primary/Secondary/Accent slots.
-  if (isStatusHue(item)) score *= 0.12
+  if (slot === 'primary' && rgb && gradientStopRgb.some((stop) => colorDistanceRgb(stop, rgb) < 28)) score *= 0.55
   return score
 }
 
@@ -247,88 +250,65 @@ function gradientStopColors(gradients: ColorToken[]): Array<{ r: number; g: numb
   return out
 }
 
+function tooClose(a: ScoredColor, b: ScoredColor): boolean {
+  const dist = colorDistanceRgb(hexRgb(a.color.hex)!, hexRgb(b.color.hex)!)
+  const hues = hueDistance(a.h, b.h)
+  const lightGap = Math.abs(a.l - b.l)
+  if (a.neutral && b.neutral) return dist < 22
+  return dist < 36 || (hues < 26 && dist < 72 && lightGap < 0.12)
+}
+
 function pickColorScales(
   solids: ColorToken[],
   buttonElementIds: Set<string> = new Set(),
   gradients: ColorToken[] = [],
 ): ColorScale[] {
   const scored = solids.map(analyzeColor).filter((item): item is ScoredColor => Boolean(item))
+  const usable = scored.filter((item) => item.l > 0.12 && item.l < 0.88)
   const gradientStops = gradientStopColors(gradients)
-  const chromatic = scored
-    .filter((item) => !item.neutral && item.brandScore > 0 && item.s >= 0.12 && item.l > 0.12 && item.l < 0.92)
-    .map((item) => ({
-      item,
-      primaryScore: ctaScore(item, buttonElementIds, gradientStops, true),
-      accentScore: ctaScore(item, buttonElementIds, gradientStops, false),
-    }))
-    .sort((a, b) => b.primaryScore - a.primaryScore)
+  const ranked = [...usable].sort(
+    (a, b) =>
+      representativeScore(b, buttonElementIds, gradientStops, 'primary') -
+      representativeScore(a, buttonElementIds, gradientStops, 'primary'),
+  )
 
-  const brandPicks: ScoredColor[] = []
-  const pool = [...chromatic]
-  while (brandPicks.length < 3 && pool.length) {
-    let bestIndex = -1
-    let bestScore = -1
-    for (let i = 0; i < pool.length; i++) {
-      const entry = pool[i]!
-      const { item } = entry
-      const tooClose = brandPicks.some((picked) => {
-        const dist = colorDistanceRgb(hexRgb(picked.color.hex)!, hexRgb(item.color.hex)!)
-        const hues = hueDistance(picked.h, item.h)
-        const lightGap = Math.abs(picked.l - item.l)
-        return dist < 38 || (hues < 34 && dist < 95 && lightGap < 0.16)
-      })
-      if (tooClose) continue
-      const minHue = brandPicks.length ? Math.min(...brandPicks.map((picked) => hueDistance(picked.h, item.h))) : 180
-      const diversity = brandPicks.length ? 0.35 + 0.65 * (minHue / 180) : 1
-      const base = brandPicks.length === 0 ? entry.primaryScore : entry.accentScore
-      const score = base * diversity
-      if (score > bestScore) {
-        bestScore = score
-        bestIndex = i
-      }
-    }
-    if (bestIndex < 0) break
-    brandPicks.push(pool.splice(bestIndex, 1)[0]!.item)
+  const picks: ScoredColor[] = []
+  for (const item of ranked) {
+    if (picks.some((picked) => tooClose(picked, item))) continue
+    picks.push(item)
+    if (picks.length >= 4) break
   }
 
-  const neutrals = scored
-    .filter((item) => item.chroma < 0.07 && item.s < 0.1 && item.l > 0.14 && item.l < 0.86)
-    .sort((a, b) => b.weight - a.weight)
+  const greyest = [...picks].sort((a, b) => a.chroma + a.s - (b.chroma + b.s))[0]
+  const brand = picks.filter((item) => item !== greyest)
+  while (brand.length < 3 && picks.length) {
+    const extra = picks.find((item) => !brand.includes(item) && item !== greyest)
+    if (!extra) break
+    brand.push(extra)
+  }
 
-  const neutralPick = neutrals[0]
-
-  const names = ['Primary', 'Secondary', 'Accent'] as const
-  const scales: ColorScale[] = brandPicks.map((item, index) => ({
+  const brandNames = ['Primary', 'Secondary', 'Accent'] as const
+  const scales: ColorScale[] = brand.slice(0, 3).map((item, index) => ({
     id: item.color.id,
-    name: names[index] ?? `Color ${index + 1}`,
+    name: brandNames[index]!,
     baseHex: item.color.hex,
     steps: buildScale(item.color.hex),
   }))
 
-  if (neutralPick) {
+  const neutral = greyest ?? picks[picks.length - 1]
+  if (neutral) {
     scales.push({
-      id: neutralPick.color.id,
+      id: scales.some((s) => s.id === neutral.color.id) ? `${neutral.color.id}-neutral` : neutral.color.id,
       name: 'Neutral',
-      baseHex: neutralPick.color.hex,
-      steps: buildScale(neutralPick.color.hex),
+      baseHex: neutral.color.hex,
+      steps: buildScale(neutral.color.hex),
     })
   }
 
-  if (!scales.length) {
-    const fallback: ColorToken[] = []
-    for (const item of [...scored].sort((a, b) => b.weight - a.weight)) {
-      if (fallback.length >= 4) break
-      if (fallback.some((other) => colorDistanceRgb(hexRgb(other.hex)!, hexRgb(item.color.hex)!) < 28)) continue
-      fallback.push(item.color)
-    }
-    return fallback.map((color, index) => ({
-      id: color.id,
-      name: (['Primary', 'Secondary', 'Accent', 'Neutral'] as const)[index] ?? `Color ${index + 1}`,
-      baseHex: color.hex,
-      steps: buildScale(color.hex),
-    }))
-  }
-
+  const order = ['Primary', 'Secondary', 'Accent', 'Neutral'] as const
+  scales.sort(
+    (a, b) => order.indexOf(a.name as (typeof order)[number]) - order.indexOf(b.name as (typeof order)[number]),
+  )
   return scales
 }
 

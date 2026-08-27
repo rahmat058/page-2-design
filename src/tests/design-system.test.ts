@@ -82,6 +82,7 @@ describe('buildDesignSystem color scales', () => {
     )
 
     const byName = Object.fromEntries(model.scales.map((s) => [s.name, s.baseHex.toLowerCase()]))
+    expect(model.scales.map((s) => s.name)).toEqual(['Primary', 'Secondary', 'Accent', 'Neutral'])
     expect(byName.Primary).toBe('#b3804c')
     expect(byName.Secondary).toBe('#7c6bb5')
     expect(['#e8a07a', '#ff93ab']).toContain(byName.Accent)
@@ -173,5 +174,30 @@ describe('buildDesignSystem color scales', () => {
     expect(tones.warning).toBe('#eab308')
     expect(tones.error).toBe('#dc2626')
     expect(model.semantic.every((s) => !['#22c55e', '#f59e0b', '#ef4444'].includes(s.hex.toLowerCase()))).toBe(true)
+  })
+
+  it('always emits Primary, Secondary, Accent, Neutral and skips neon CTA as Primary', () => {
+    const model = buildDesignSystem(
+      stubDesign([
+        color({ id: 'white', hex: '#FFFFFF', count: 400, area: 120000, role: 'surface' }),
+        color({ id: 'black', hex: '#000000', count: 80, area: 8000, role: 'text' }),
+        color({ id: 'lime', hex: '#CCFF00', count: 10, area: 900, role: 'accent', elementIds: ['btn-cta'] }),
+        color({ id: 'blue', hex: '#1D4CFF', count: 14, area: 1800, role: 'accent' }),
+        color({ id: 'steel', hex: '#63789C', count: 180, area: 42000, role: 'text' }),
+        color({ id: 'slate', hex: '#7B7B84', count: 90, area: 12000, role: 'border' }),
+        color({ id: 'grey', hex: '#808080', count: 70, area: 9000, role: 'border' }),
+        color({ id: 'charcoal', hex: '#29292B', count: 40, area: 16000, role: 'text' }),
+      ]),
+    )
+    const names = model.scales.map((s) => s.name)
+    expect(names).toEqual(['Primary', 'Secondary', 'Accent', 'Neutral'])
+    const byName = Object.fromEntries(model.scales.map((s) => [s.name, s.baseHex.toLowerCase()]))
+    expect(byName.Primary).toBe('#63789c')
+    expect(byName.Primary).not.toBe('#ccff00')
+    expect(['#7b7b84', '#808080', '#1d4cff', '#29292b']).toContain(byName.Secondary)
+    expect(byName.Secondary).not.toBe('#ccff00')
+    expect(byName.Accent).toBeTruthy()
+    expect(byName.Accent).not.toBe('#ccff00')
+    expect(['#808080', '#7b7b84', '#29292b']).toContain(byName.Neutral)
   })
 })
