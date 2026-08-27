@@ -4386,13 +4386,25 @@ body,
 .ds-demo-btn.primary {
   border: 0;
   background: var(--ds-primary);
-  color: #fff;
+  color: var(--ds-primary-ink, #fff);
 }
 
 .ds-demo-btn.secondary {
   border: 0;
-  background: var(--cool);
-  color: var(--plum);
+  background: var(--ds-secondary);
+  color: var(--ds-secondary-ink, #111);
+}
+
+.ds-demo-btn.accent {
+  border: 0;
+  background: var(--ds-accent);
+  color: var(--ds-accent-ink, #111);
+}
+
+.ds-demo-btn.neutral {
+  border: 0;
+  background: var(--ds-neutral);
+  color: var(--ds-neutral-ink, #fff);
 }
 
 .ds-demo-btn.outline {
@@ -4416,25 +4428,29 @@ body,
 
 .ds-demo-badge {
   border-radius: 999px;
-  background: var(--cool);
   padding: 4px 10px;
-  color: var(--plum);
+  font-weight: 600;
   font-size: 11px;
 }
 
 .ds-demo-badge.primary {
-  background: rgb(255 147 171 / 0.2);
+  background: color-mix(in srgb, var(--ds-primary) 18%, #fff);
   color: var(--ds-primary);
 }
 
+.ds-demo-badge.secondary {
+  background: color-mix(in srgb, var(--ds-secondary) 18%, #fff);
+  color: var(--ds-secondary);
+}
+
 .ds-demo-badge.accent {
-  background: rgb(255 161 104 / 0.22);
+  background: color-mix(in srgb, var(--ds-accent) 22%, #fff);
   color: var(--ds-accent);
 }
 
-.ds-demo-badge.secondary {
-  background: var(--lavender);
-  color: var(--plum);
+.ds-demo-badge.neutral {
+  background: color-mix(in srgb, var(--ds-neutral) 16%, #fff);
+  color: var(--ds-neutral);
 }
 
 .ds-demo-input {
@@ -4589,11 +4605,16 @@ body,
   font-size: 9px;
 }
 
+.ds-export {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .ds-export-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 10px;
 }
 
 .ds-export-tabs button {
@@ -4617,7 +4638,7 @@ body,
 }
 
 .ds-export-preview {
-  margin: 0 0 10px;
+  margin: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #1c1618;
@@ -4635,17 +4656,14 @@ body,
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
 .ds-modern {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-  padding: 14px 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
 }
 
 .ds-modern-head {

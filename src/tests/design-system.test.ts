@@ -87,6 +87,10 @@ describe('buildDesignSystem color scales', () => {
     expect(byName.Secondary).toBe('#7c6bb5')
     expect(['#e8a07a', '#ff93ab']).toContain(byName.Accent)
     expect(byName.Neutral).toBe('#737373')
+    expect(model.primary.toLowerCase()).toBe(byName.Primary)
+    expect(model.secondary.toLowerCase()).toBe(byName.Secondary)
+    expect(model.accent.toLowerCase()).toBe(byName.Accent)
+    expect(model.neutral.toLowerCase()).toBe(byName.Neutral)
     expect(['#e5e5e5', '#ffffff', '#000000']).not.toContain(byName.Primary)
 
     const tones = Object.fromEntries(model.semantic.map((s) => [s.tone, s.hex.toLowerCase()]))

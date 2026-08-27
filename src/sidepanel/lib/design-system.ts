@@ -35,6 +35,7 @@ export interface DesignSystemModel {
   primary: string
   secondary: string
   accent: string
+  neutral: string
   radius: string
 }
 
@@ -80,6 +81,7 @@ export function buildDesignSystem(design: NormalizedDesign): DesignSystemModel {
   const primary = byName('Primary') ?? scales[0]?.baseHex ?? '#2e2a42'
   const secondary = byName('Secondary') ?? scales[1]?.baseHex ?? '#d7befc'
   const accent = byName('Accent') ?? scales[2]?.baseHex ?? '#ff93ab'
+  const neutral = byName('Neutral') ?? scales[3]?.baseHex ?? '#737373'
   const radius = radii[0]?.value ?? '12px'
 
   return {
@@ -96,6 +98,7 @@ export function buildDesignSystem(design: NormalizedDesign): DesignSystemModel {
     primary,
     secondary,
     accent,
+    neutral,
     radius,
   }
 }
@@ -633,8 +636,8 @@ function toShadcn(model: DesignSystemModel): string {
     `  --secondary-foreground: #0a0a0a;`,
     `  --accent: ${accent};`,
     `  --accent-foreground: #0a0a0a;`,
-    `  --muted: #f4f4f5;`,
-    `  --muted-foreground: #71717a;`,
+    `  --muted: color-mix(in srgb, ${model.neutral} 12%, #ffffff);`,
+    `  --muted-foreground: ${model.neutral};`,
     `  --border: #e4e4e7;`,
     `  --input: #e4e4e7;`,
     `  --ring: ${primary};`,

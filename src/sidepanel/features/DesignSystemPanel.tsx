@@ -3,6 +3,7 @@
  */
 import { useMemo, useState, type ReactNode } from 'react'
 import { Box, ChevronDown, Copy, Download, FileJson, Palette, Ruler, Sparkles, Type, Wind } from 'lucide-react'
+import { isDarkHex } from '../../normalize/colors'
 import type { NormalizedDesign } from '../../shared/types'
 import { Button } from '../components/Button'
 import { revokeObjectUrlLater } from '../download-asset'
@@ -88,8 +89,6 @@ export function DesignSystemPanel({ design }: { design: NormalizedDesign }) {
         onToggle={() => setOpen((s) => ({ ...s, export: !s.export }))}>
         <ExportBlock model={model} siteName={siteName} />
       </DsSection>
-
-      <ModernFormatsBlock model={model} siteName={siteName} />
     </div>
   )
 }
@@ -247,6 +246,11 @@ function ComponentsBlock({ model }: { model: DesignSystemModel }) {
     ['--ds-primary' as string]: model.primary,
     ['--ds-secondary' as string]: model.secondary,
     ['--ds-accent' as string]: model.accent,
+    ['--ds-neutral' as string]: model.neutral,
+    ['--ds-primary-ink' as string]: inkOn(model.primary),
+    ['--ds-secondary-ink' as string]: inkOn(model.secondary),
+    ['--ds-accent-ink' as string]: inkOn(model.accent),
+    ['--ds-neutral-ink' as string]: inkOn(model.neutral),
     ['--ds-radius' as string]: model.radius,
     ['--ds-font' as string]: model.bodyFont,
     ['--ds-font-display' as string]: model.headingFont,
@@ -261,6 +265,14 @@ function ComponentsBlock({ model }: { model: DesignSystemModel }) {
         <button type="button" className="ds-demo-btn secondary">
           Secondary
         </button>
+        <button type="button" className="ds-demo-btn accent">
+          Accent
+        </button>
+        <button type="button" className="ds-demo-btn neutral">
+          Neutral
+        </button>
+      </div>
+      <div className="ds-demo-row">
         <button type="button" className="ds-demo-btn outline">
           Outline
         </button>
@@ -271,10 +283,10 @@ function ComponentsBlock({ model }: { model: DesignSystemModel }) {
 
       <p className="ds-kicker">Badges</p>
       <div className="ds-demo-row">
-        <span className="ds-demo-badge">Default</span>
         <span className="ds-demo-badge primary">Primary</span>
-        <span className="ds-demo-badge accent">Accent</span>
         <span className="ds-demo-badge secondary">Secondary</span>
+        <span className="ds-demo-badge accent">Accent</span>
+        <span className="ds-demo-badge neutral">Neutral</span>
       </div>
 
       <p className="ds-kicker">Input</p>
@@ -283,10 +295,14 @@ function ComponentsBlock({ model }: { model: DesignSystemModel }) {
       <p className="ds-kicker">Card</p>
       <div className="ds-demo-card">
         <strong>Card title</strong>
-        <p>Sample card using this page’s primary color, radius, and typography tokens.</p>
+        <p>Sample card using this page’s primary, radius, and typography tokens.</p>
       </div>
     </div>
   )
+}
+
+function inkOn(hex: string): string {
+  return isDarkHex(hex) ? '#ffffff' : '#111111'
 }
 
 function TokensBlock({ model }: { model: DesignSystemModel }) {
@@ -400,13 +416,14 @@ function ExportBlock({ model, siteName }: { model: DesignSystemModel; siteName: 
           Download
         </Button>
       </div>
+      <ModernFormatsBlock model={model} siteName={siteName} />
     </div>
   )
 }
 
 function ModernFormatsBlock({ model, siteName }: { model: DesignSystemModel; siteName: string }) {
   return (
-    <section className="ds-modern">
+    <div className="ds-modern">
       <header className="ds-modern-head">
         <p className="ds-kicker">
           <Sparkles size={12} strokeWidth={2} aria-hidden="true" /> Modern formats
@@ -437,7 +454,7 @@ function ModernFormatsBlock({ model, siteName }: { model: DesignSystemModel; sit
           )
         })}
       </ul>
-    </section>
+    </div>
   )
 }
 
