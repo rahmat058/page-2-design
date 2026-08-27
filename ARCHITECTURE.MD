@@ -66,6 +66,7 @@ Page2Design/
 │   │   ├── message-router.ts  # Typed message switch
 │   │   ├── scan-orchestrator.ts
 │   │   ├── read-tab-css.ts    # Live CSS Information (CSS Peeper-style)
+│   │   ├── preview-frame.ts   # Session DNR: allow preview iframe on DENY sites
 │   │   └── device-emulation.ts # Leftover CDP helpers (UI uses iframe preview; no debugger permission)
 │   ├── content/               # Injected page scanner + overlay
 │   │   ├── scan-entry.ts      # Message handlers in the tab
@@ -212,7 +213,7 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 
 **Inspect Mode** (chrome switch) replaces the current view with `InspectorView.tsx` — click an element on the page to see measured styles.
 
-**Responsive** opens from **More Options**. The device list (search + Phones / Tablets / Desktop accordions) replaces the main pane; presets live in `src/shared/device-presets.ts`. The preview iframe loads the current tab URL at that CSS-pixel size so media queries apply. There is **no** `debugger` permission — picking a device does not emulate or squeeze the live page. Sites that forbid framing show a blank preview. `layout.json` is still generated for the ZIP; `LayoutView.tsx` is unused UI.
+**Responsive** opens from **More Options**. The device list (search + Phones / Tablets / Desktop accordions) replaces the main pane; presets live in `src/shared/device-presets.ts`. The preview iframe loads the current tab URL at that CSS-pixel size so media queries apply. There is **no** `debugger` permission — picking a device does not emulate or squeeze the live page. While the flyout is open, `preview-frame.ts` installs a **session** DNR rule (`declarativeNetRequestWithHostAccess`) that removes `X-Frame-Options` and CSP from **extension-initiated `sub_frame`** responses for the active tab host only. Rules are removed when Responsive closes. JavaScript frame-busting can still blank the preview. `layout.json` is still generated for the ZIP; `LayoutView.tsx` is unused UI.
 
 ### CSS Information
 
@@ -249,6 +250,7 @@ All runtime messages are versioned (`MESSAGE_SCHEMA_VERSION`) and parsed in `src
 | `FETCH_ASSET`        | UI / content → SW       | Bytes for ZIP / tiles                               |
 | `TOGGLE_OVERLAY`     | SW → content            | Open / close floating UI                            |
 | Overlay resize       | UI → page (postMessage) | Grow/shrink host for Markdown or Responsive preview |
+| `SET_PREVIEW_FRAME`  | UI → SW                 | Session DNR: allow preview iframe on the active host |
 | `DOCK_SIDE_PANEL`    | UI → SW                 | Open Chrome side panel                              |
 | `SET_INSPECT_MODE`   | UI → content            | Click-to-inspect                                    |
 | `INSPECT_ELEMENT`    | content → UI            | Selected element snapshot                           |
@@ -351,6 +353,7 @@ Vitest (`src/tests/`). No Chrome required.
 | `colors.test.ts`         | Color parse, contrast, grouping               |
 | `design-system.test.ts`  | Ramps, semantic colors, export filenames      |
 | `device-presets.test.ts` | Breakpoint set, rotate, preview window sizing |
+| `preview-frame.test.ts`  | DNR rule for preview iframe header strip      |
 | `generators.test.ts`     | Markdown / JSON output, privacy               |
 | `scan-filters.test.ts`   | DOM noise filters, class keep rules           |
 | `sections.test.ts`       | Section detection                             |
@@ -368,5 +371,5 @@ Vitest (`src/tests/`). No Chrome required.
 - Coverage is capture coverage, not a visual-match percentage
 - Extra viewport capture may briefly resize the window, then restore it
 - CSS Information can differ from CSS Peeper by a few rules or ~0.1s when a sheet is unreadable in one tool and fetched in the other
-- Responsive preview cannot display pages that forbid iframe embedding (`X-Frame-Options` / CSP `frame-ancestors`)
+- Responsive preview: framing headers are stripped only for the extension preview iframe. JavaScript frame-busting or partitioned cookies can still blank the preview
 - Picking a device does not change the live tab’s viewport (no Chrome debugger emulation)

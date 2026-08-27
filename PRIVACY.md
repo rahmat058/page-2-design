@@ -1,6 +1,6 @@
 # Privacy Policy — Page2Design
 
-**Last updated:** 27 August 2026  
+**Last updated:** 28 August 2026  
 **Product:** Page2Design (Chrome extension)  
 **Developer:** [Kazi Rahamatullah](https://github.com/rahmat058)  
 **Contact:** [github.com/rahmat058](https://github.com/rahmat058)
@@ -61,14 +61,15 @@ Note:
 
 ## Permissions (high level)
 
-| Permission / host access    | Purpose                                                     |
-| --------------------------- | ----------------------------------------------------------- |
-| `activeTab`                 | Work with the tab you are using                             |
-| `scripting`                 | Inject the scanner and on-page inspector                    |
-| `storage`                   | Local preferences and local scan/session data               |
-| `downloads`                 | Save the exported ZIP / assets to your computer             |
-| `sidePanel`                 | Show the UI when a floating overlay cannot run              |
-| `http://*/*`, `https://*/*` | Scan normal websites and fetch visible assets when you scan |
+| Permission / host access              | Purpose                                                                                                                |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `activeTab`                           | Work with the tab you are using                                                                                        |
+| `scripting`                           | Inject the scanner and on-page inspector                                                                               |
+| `storage`                             | Local preferences and local scan/session data                                                                          |
+| `downloads`                           | Save the exported ZIP / assets to your computer                                                                        |
+| `sidePanel`                           | Show the UI when a floating overlay cannot run                                                                         |
+| `declarativeNetRequestWithHostAccess` | Let the Responsive preview iframe load the page you already have open (framing headers stripped for that preview only) |
+| `http://*/*`, `https://*/*`           | Scan normal websites and fetch visible assets when you scan                                                            |
 
 ## Children’s privacy
 

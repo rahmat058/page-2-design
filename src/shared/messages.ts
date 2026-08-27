@@ -64,6 +64,7 @@ export type MessageType =
   | 'DEVICE_EMULATION_STATUS'
   | 'RELOAD_EMULATED_TAB'
   | 'SET_EMULATED_ZOOM'
+  | 'SET_PREVIEW_FRAME'
 
 // ---------------------------------------------------------------------------
 // Message interfaces
@@ -380,6 +381,11 @@ export interface SetEmulatedZoomMessage extends MessageBase {
   payload: { factor: number }
 }
 
+export interface SetPreviewFrameMessage extends MessageBase {
+  type: 'SET_PREVIEW_FRAME'
+  payload: { enabled: boolean }
+}
+
 // ---------------------------------------------------------------------------
 // Union, validation, and factories
 // ---------------------------------------------------------------------------
@@ -426,6 +432,7 @@ export type ExtensionMessage =
   | DeviceEmulationStatusMessage
   | ReloadEmulatedTabMessage
   | SetEmulatedZoomMessage
+  | SetPreviewFrameMessage
 
 const MESSAGE_TYPES = new Set<MessageType>([
   'PING',
@@ -469,6 +476,7 @@ const MESSAGE_TYPES = new Set<MessageType>([
   'DEVICE_EMULATION_STATUS',
   'RELOAD_EMULATED_TAB',
   'SET_EMULATED_ZOOM',
+  'SET_PREVIEW_FRAME',
 ])
 
 export function createMessage(partial: {

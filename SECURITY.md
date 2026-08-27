@@ -23,13 +23,14 @@ More detail: [ARCHITECTURE.MD — Privacy](./ARCHITECTURE.MD#privacy).
 
 ## Permissions (why they exist)
 
-| Permission / host           | Why                                                        |
-| --------------------------- | ---------------------------------------------------------- |
-| `activeTab`, `scripting`    | Inject the scanner and overlay into the active tab         |
-| `storage`                   | Local prefs and IndexedDB-backed scan cache                |
-| `downloads`                 | Save the exported ZIP                                      |
-| `sidePanel`                 | Inspector fallback on restricted pages                     |
-| `http://*/*`, `https://*/*` | Scan and fetch assets without an extra click on every page |
+| Permission / host                     | Why                                                                                                                                                      |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activeTab`, `scripting`              | Inject the scanner and overlay into the active tab                                                                                                       |
+| `storage`                             | Local prefs and IndexedDB-backed scan cache                                                                                                              |
+| `downloads`                           | Save the exported ZIP                                                                                                                                    |
+| `sidePanel`                           | Inspector fallback on restricted pages                                                                                                                   |
+| `declarativeNetRequestWithHostAccess` | While Responsive is open, allow the preview iframe to load the active tab by removing that site’s framing headers **only** for this extension’s subframe |
+| `http://*/*`, `https://*/*`           | Scan and fetch assets without an extra click on every page                                                                                               |
 
 The extension does **not** request the `debugger` permission. Responsive preview is an in-extension iframe of the current page URL, not Chrome device metrics override.
 

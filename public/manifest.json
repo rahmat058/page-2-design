@@ -3,7 +3,7 @@
   "name": "Page2Design",
   "version": "1.0.0",
   "description": "Scan a webpage and export an agent-ready design reference package. All processing stays on this device.",
-  "permissions": ["activeTab", "scripting", "downloads", "storage", "sidePanel"],
+  "permissions": ["activeTab", "scripting", "downloads", "storage", "sidePanel", "declarativeNetRequestWithHostAccess"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Page2Design — Scan this page",

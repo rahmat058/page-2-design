@@ -27,6 +27,7 @@ import {
   reloadEmulatedTab,
   setEmulatedZoom,
 } from './device-emulation'
+import { setPreviewFrameEnabled } from './preview-frame'
 
 /** Content → extension broadcasts that only need a sync ack (panel listens too). */
 const SYNC_ACK = new Set(['CONTENT_READY', 'SCAN_PROGRESS', 'INSPECT_ELEMENT', 'PONG'])
@@ -291,6 +292,11 @@ export function routeMessage(
               payload: { ...getDeviceEmulation(), zoom },
             }),
           )
+          return
+        }
+        case 'SET_PREVIEW_FRAME': {
+          await setPreviewFrameEnabled(Boolean(message.payload?.enabled))
+          safeReply(sendResponse, { ok: true })
           return
         }
         default:

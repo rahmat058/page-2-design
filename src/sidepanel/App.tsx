@@ -27,6 +27,7 @@ import { OVERLAY_FLYOUT_GAP, OVERLAY_PREVIEW_MIN, OVERLAY_WIDE_WIDTH, OVERLAY_WI
 import { isOverlayFrame, useOverlayResize, usePanelRuntime, useScanBusy, useResponsiveState } from './hooks'
 import { closePanel, copyAllContent, countFor, dockSidePanel, headingFor, toggleInspectMode } from './lib'
 import { stopDeviceEmulation } from './lib/device-emulation'
+import { setPreviewFrameEnabled } from './lib/preview-frame'
 import { orientedSize, previewFrame } from '../shared/device-presets'
 
 // ---------------------------------------------------------------------------
@@ -45,6 +46,7 @@ export function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [responsiveOpen, setResponsiveOpen] = useState(false)
   const responsive = useResponsiveState()
+  const setPreviewKey = responsive.setPreviewKey
   const mdOpen = view === 'generate-md'
   const onDesignSystem = view === 'design-system' || view === 'colors'
   const overlay = isOverlayFrame()
@@ -70,6 +72,21 @@ export function App() {
     })
   }, [])
 
+  useEffect(() => {
+    if (!flyoutOpen) {
+      void setPreviewFrameEnabled(false)
+      return
+    }
+    let cancelled = false
+    void setPreviewFrameEnabled(true).then(() => {
+      if (!cancelled) setPreviewKey((key) => key + 1)
+    })
+    return () => {
+      cancelled = true
+      void setPreviewFrameEnabled(false)
+    }
+  }, [flyoutOpen, setPreviewKey])
+
   const shellClass = ['overlay-row', flyoutOpen ? 'has-flyout' : '', mdOpen && !inspectOn ? 'is-md-wide' : '']
     .filter(Boolean)
     .join(' ')
@@ -83,7 +100,9 @@ export function App() {
       onClose={() => setResponsiveOpen(false)}
       onRotate={() => responsive.setOrientation((value) => (value === 'portrait' ? 'landscape' : 'portrait'))}
       onZoom={responsive.setZoom}
-      onReload={() => responsive.setPreviewKey((key) => key + 1)}
+      onReload={() => {
+        void setPreviewFrameEnabled(true).then(() => setPreviewKey((key) => key + 1))
+      }}
     />
   ) : null
 

@@ -214,7 +214,7 @@ Place launcher PNGs in `public/icons/` yourself: `icon16.png`, `icon32.png`, `ic
 - Tainted canvas, blocked frames, or failed downloads are recorded as limitations — not invented
 - Coverage is capture coverage, not a visual-match percentage
 - Extra viewport capture may briefly resize the browser window, then restore it
-- Responsive preview is an iframe of the current URL. Sites that send `X-Frame-Options` or a framing CSP show a blank window; that is the site blocking embed, not a failed scan
+- Responsive preview is an iframe of the current URL. Framing headers (`X-Frame-Options` / CSP `frame-ancestors`) are removed **only for that preview iframe** while Responsive is open. A few sites still block with JavaScript frame-busting or third-party cookie rules.
 - The live tab is **not** resized or debugger-emulated when you pick a device
 
 Details: **[ARCHITECTURE.MD](./ARCHITECTURE.MD#remaining-limits)**.
