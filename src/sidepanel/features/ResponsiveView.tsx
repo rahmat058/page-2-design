@@ -1,7 +1,7 @@
 /**
  * Responsive: device list in the extension panel, live preview card to its left.
  */
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, Minus, Plus, RefreshCw, RotateCw, Search, Smartphone, Tablet, Monitor } from 'lucide-react'
 import type { DeviceCategory, DeviceOrientation, DevicePreset } from '../../shared/device-presets'
 import {
@@ -17,7 +17,6 @@ import {
   previewFrame,
 } from '../../shared/device-presets'
 import { OVERLAY_PREVIEW_MIN } from '../../shared/constants'
-import { stopDeviceEmulation } from '../lib/device-emulation'
 import { useScanStore } from '../store/useScanStore'
 
 const CATEGORY_ICON: Record<DeviceCategory, typeof Smartphone> = {
@@ -25,40 +24,6 @@ const CATEGORY_ICON: Record<DeviceCategory, typeof Smartphone> = {
   phone: Smartphone,
   tablet: Tablet,
   desktop: Monitor,
-}
-
-export interface ResponsiveState {
-  selected: DevicePreset | null
-  orientation: DeviceOrientation
-  zoom: number
-  previewKey: number
-}
-
-export function useResponsiveState(): ResponsiveState & {
-  setSelected: Dispatch<SetStateAction<DevicePreset | null>>
-  setOrientation: Dispatch<SetStateAction<DeviceOrientation>>
-  setZoom: Dispatch<SetStateAction<number>>
-  setPreviewKey: Dispatch<SetStateAction<number>>
-  pick: (device: DevicePreset) => void
-} {
-  const [selected, setSelected] = useState<DevicePreset | null>(null)
-  const [orientation, setOrientation] = useState<DeviceOrientation>('portrait')
-  const [zoom, setZoom] = useState(1)
-  const [previewKey, setPreviewKey] = useState(0)
-
-  useEffect(() => {
-    void stopDeviceEmulation()
-  }, [])
-
-  const pick = (device: DevicePreset) => {
-    const nextOrientation = device.id === selected?.id ? orientation : defaultOrientation(device)
-    setSelected(device)
-    setOrientation(nextOrientation)
-    setZoom(1)
-    setPreviewKey((key) => key + 1)
-  }
-
-  return { selected, orientation, zoom, previewKey, setSelected, setOrientation, setZoom, setPreviewKey, pick }
 }
 
 export function ResponsiveDeviceList({

@@ -198,17 +198,17 @@ React 19 + Zustand (`useScanStore`). Same bundle for overlay and side panel.
 
 ### Bottom nav
 
-| View              | Feature module                         | Purpose                                                                 |
-| ----------------- | -------------------------------------- | ----------------------------------------------------------------------- |
-| Overview          | `OverviewView.tsx`                     | Intro, type pair, palette, contrast, CSS info                           |
-| Content           | `ContentView.tsx`                      | Grouped text / links                                                    |
+| View              | Feature module                                   | Purpose                                                                |
+| ----------------- | ------------------------------------------------ | ---------------------------------------------------------------------- |
+| Overview          | `OverviewView.tsx`                               | Intro, type pair, palette, contrast, CSS info                          |
+| Content           | `ContentView.tsx`                                | Grouped text / links                                                   |
 | Design System     | `DesignSystemView.tsx` / `DesignSystemPanel.tsx` | Color ramps, type, components, tokens, CSS/Tailwind/shadcn/JSON export |
-| Typography        | `ColorsView.tsx`                       | Type cards                                                              |
-| Assets            | `ContentView.tsx`                      | Images / icons / SVG (grid or list)                                     |
-| Generate Markdown | `MarkdownView.tsx`                     | Live preview of ZIP markdown / JSON                                     |
-| Export            | `ExportView.tsx`                       | Asset picker + Download ZIP                                             |
-| Developer         | `DeveloperView.tsx`                    | Author profile and repo star link                                       |
-| Responsive        | `ResponsiveView.tsx`                   | Device list in-panel + Mac preview beside the overlay (not a nav tab)   |
+| Typography        | `ColorsView.tsx`                                 | Type cards                                                             |
+| Assets            | `ContentView.tsx`                                | Images / icons / SVG (grid or list)                                    |
+| Generate Markdown | `MarkdownView.tsx`                               | Live preview of ZIP markdown / JSON                                    |
+| Export            | `ExportView.tsx`                                 | Asset picker + Download ZIP                                            |
+| Developer         | `DeveloperView.tsx`                              | Author profile and repo star link                                      |
+| Responsive        | `ResponsiveView.tsx`                             | Device list in-panel + Mac preview beside the overlay (not a nav tab)  |
 
 **Inspect Mode** (chrome switch) replaces the current view with `InspectorView.tsx` — click an element on the page to see measured styles.
 
@@ -233,26 +233,26 @@ CORS sheets: `cssRules` throws → background `fetch` + `countTopLevelCssRules`.
 
 All runtime messages are versioned (`MESSAGE_SCHEMA_VERSION`) and parsed in `src/shared/messages.ts`. Unknown or malformed payloads are dropped.
 
-| Type                 | Direction         | Purpose                         |
-| -------------------- | ----------------- | ------------------------------- |
-| `GET_ACTIVE_TAB`     | UI → SW           | Identify the current tab        |
-| `START_SCAN`         | UI → SW → content | Begin scan                      |
-| `CANCEL_SCAN`        | UI → SW → content | Abort in-flight scan            |
-| `SCAN_CHUNK`         | content → SW      | Partial `PageScan`              |
-| `SCAN_PROGRESS`      | content / SW → UI | Phase + counts                  |
-| `SCAN_COMPLETE`      | content → SW → UI | `assembled: true` after persist |
-| `SCAN_FAILED`        | SW → UI           | User-facing error               |
-| `GET_SCAN`           | UI → SW           | Load raw + normalized           |
-| `GET_CSS_INFO`       | UI → SW           | Live CSS Information            |
-| `START_EXPORT`       | UI → SW           | Build ZIP                       |
-| `CAPTURE_SCREENSHOT` | UI → SW           | Viewport + full-page PNG        |
-| `FETCH_ASSET`        | UI / content → SW | Bytes for ZIP / tiles           |
-| `TOGGLE_OVERLAY`     | SW → content      | Open / close floating UI        |
+| Type                 | Direction               | Purpose                                             |
+| -------------------- | ----------------------- | --------------------------------------------------- |
+| `GET_ACTIVE_TAB`     | UI → SW                 | Identify the current tab                            |
+| `START_SCAN`         | UI → SW → content       | Begin scan                                          |
+| `CANCEL_SCAN`        | UI → SW → content       | Abort in-flight scan                                |
+| `SCAN_CHUNK`         | content → SW            | Partial `PageScan`                                  |
+| `SCAN_PROGRESS`      | content / SW → UI       | Phase + counts                                      |
+| `SCAN_COMPLETE`      | content → SW → UI       | `assembled: true` after persist                     |
+| `SCAN_FAILED`        | SW → UI                 | User-facing error                                   |
+| `GET_SCAN`           | UI → SW                 | Load raw + normalized                               |
+| `GET_CSS_INFO`       | UI → SW                 | Live CSS Information                                |
+| `START_EXPORT`       | UI → SW                 | Build ZIP                                           |
+| `CAPTURE_SCREENSHOT` | UI → SW                 | Viewport + full-page PNG                            |
+| `FETCH_ASSET`        | UI / content → SW       | Bytes for ZIP / tiles                               |
+| `TOGGLE_OVERLAY`     | SW → content            | Open / close floating UI                            |
 | Overlay resize       | UI → page (postMessage) | Grow/shrink host for Markdown or Responsive preview |
-| `DOCK_SIDE_PANEL`    | UI → SW           | Open Chrome side panel          |
-| `SET_INSPECT_MODE`   | UI → content      | Click-to-inspect                |
-| `INSPECT_ELEMENT`    | content → UI      | Selected element snapshot       |
-| `HIGHLIGHT_COLOR`    | UI → content      | Flash matching elements         |
+| `DOCK_SIDE_PANEL`    | UI → SW                 | Open Chrome side panel                              |
+| `SET_INSPECT_MODE`   | UI → content            | Click-to-inspect                                    |
+| `INSPECT_ELEMENT`    | content → UI            | Selected element snapshot                           |
+| `HIGHLIGHT_COLOR`    | UI → content            | Flash matching elements                             |
 
 ---
 
@@ -346,16 +346,16 @@ Tab DOM → content scanners → PageScan chunks
 
 Vitest (`src/tests/`). No Chrome required.
 
-| File                     | Covers                                              |
-| ------------------------ | --------------------------------------------------- |
-| `colors.test.ts`         | Color parse, contrast, grouping                     |
-| `design-system.test.ts`  | Ramps, semantic colors, export filenames            |
-| `device-presets.test.ts` | Breakpoint set, rotate, preview window sizing       |
-| `generators.test.ts`     | Markdown / JSON output, privacy                     |
-| `scan-filters.test.ts`   | DOM noise filters, class keep rules                 |
-| `sections.test.ts`       | Section detection                                   |
-| `utilities.test.ts`      | Filenames, ZIP paths, CSS format, messages          |
-| `viewports.test.ts`      | Breakpoint helpers, frame merge                     |
+| File                     | Covers                                        |
+| ------------------------ | --------------------------------------------- |
+| `colors.test.ts`         | Color parse, contrast, grouping               |
+| `design-system.test.ts`  | Ramps, semantic colors, export filenames      |
+| `device-presets.test.ts` | Breakpoint set, rotate, preview window sizing |
+| `generators.test.ts`     | Markdown / JSON output, privacy               |
+| `scan-filters.test.ts`   | DOM noise filters, class keep rules           |
+| `sections.test.ts`       | Section detection                             |
+| `utilities.test.ts`      | Filenames, ZIP paths, CSS format, messages    |
+| `viewports.test.ts`      | Breakpoint helpers, frame merge               |
 
 `fixtures/reference-page.html` is the manual Chrome fixture (see README).
 
