@@ -23,18 +23,11 @@ import { cancelScan, clearScanData, refreshTab, startScan } from './scan-flow'
 import { useScanStore } from './store/useScanStore'
 import { useToastStore } from './toast'
 import { uniqueVisualAssets } from '../content/asset-scanner'
-import {
-  OVERLAY_FLYOUT_GAP,
-  OVERLAY_PREVIEW_MAX,
-  OVERLAY_PREVIEW_MAX_H,
-  OVERLAY_PREVIEW_MIN,
-  OVERLAY_WIDE_WIDTH,
-  OVERLAY_WIDTH,
-} from '../shared/constants'
+import { OVERLAY_FLYOUT_GAP, OVERLAY_PREVIEW_MIN, OVERLAY_WIDE_WIDTH, OVERLAY_WIDTH } from '../shared/constants'
 import { isOverlayFrame, useOverlayResize, usePanelRuntime, useScanBusy } from './hooks'
 import { closePanel, copyAllContent, countFor, dockSidePanel, headingFor, toggleInspectMode } from './lib'
 import { stopDeviceEmulation } from './lib/device-emulation'
-import { orientedSize, previewWindowSize } from '../shared/device-presets'
+import { orientedSize, previewFrame } from '../shared/device-presets'
 
 // ---------------------------------------------------------------------------
 // App shell
@@ -63,7 +56,7 @@ export function App() {
     if (!flyoutOpen || !overlay) return 0
     if (!responsive.selected) return OVERLAY_PREVIEW_MIN
     const size = orientedSize(responsive.selected, responsive.orientation)
-    const win = previewWindowSize(size, responsive.zoom, OVERLAY_PREVIEW_MAX, OVERLAY_PREVIEW_MAX_H)
+    const win = previewFrame(responsive.selected, size, responsive.zoom)
     return Math.max(OVERLAY_PREVIEW_MIN, win.width)
   }, [flyoutOpen, overlay, responsive.selected, responsive.orientation, responsive.zoom])
   const overlayWidth = panelWidth + (previewWidth ? OVERLAY_FLYOUT_GAP + previewWidth : 0)

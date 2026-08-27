@@ -14,9 +14,9 @@ import {
   formatDpr,
   formatViewport,
   orientedSize,
-  previewWindowSize,
+  previewFrame,
 } from '../../shared/device-presets'
-import { OVERLAY_PREVIEW_MAX, OVERLAY_PREVIEW_MAX_H, OVERLAY_PREVIEW_MIN } from '../../shared/constants'
+import { OVERLAY_PREVIEW_MIN } from '../../shared/constants'
 import { stopDeviceEmulation } from '../lib/device-emulation'
 import { useScanStore } from '../store/useScanStore'
 
@@ -176,7 +176,7 @@ export function ResponsivePreviewCard({
   const tabRestricted = useScanStore((s) => s.tabRestricted)
   const url = useScanStore((s) => s.url)
   const size = selected ? orientedSize(selected, orientation) : { width: 800, height: 600 }
-  const windowSize = previewWindowSize(size, selected ? zoom : 1, OVERLAY_PREVIEW_MAX, OVERLAY_PREVIEW_MAX_H)
+  const windowSize = previewFrame(selected, size, selected ? zoom : 1)
   const cardWidth = selected ? Math.max(OVERLAY_PREVIEW_MIN, windowSize.width) : OVERLAY_PREVIEW_MIN
 
   return (

@@ -4913,7 +4913,8 @@ html:not(.is-overlay) .rsp-mac {
 .rsp-mac-body {
   position: relative;
   background: #fff;
-  overflow: hidden;
+  overflow: auto;
+  overflow-x: hidden;
 }
 
 .rsp-mac-empty {
@@ -5067,7 +5068,7 @@ html:not(.is-overlay) .rsp-mac {
   background: #fff;
   isolation: isolate;
   min-height: min-content;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .rsp-group-head {
@@ -5078,11 +5079,16 @@ html:not(.is-overlay) .rsp-mac {
   cursor: pointer;
   box-shadow: none;
   border: 0;
+  border-radius: 12px;
   background: #fff;
   padding: 10px 12px;
   width: 100%;
   color: var(--plum);
   text-align: left;
+}
+
+.rsp-group.open .rsp-group-head {
+  border-radius: 12px 12px 0 0;
 }
 
 .rsp-group-head strong {
@@ -5112,11 +5118,11 @@ html:not(.is-overlay) .rsp-mac {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   border-top: 1px solid var(--line);
   background: var(--cream);
-  padding: 8px;
+  padding: 10px 8px 12px;
   list-style: none;
 }
 
@@ -5132,14 +5138,14 @@ html:not(.is-overlay) .rsp-mac {
   gap: 8px;
   appearance: none;
   transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
   cursor: pointer;
   box-shadow: none;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 14px 12px;
   width: 100%;
   color: inherit;
   font: inherit;
@@ -5149,14 +5155,15 @@ html:not(.is-overlay) .rsp-mac {
 .rsp-item:hover,
 .rsp-item:focus-visible {
   outline: none;
-  border-color: rgb(46 42 66 / 0.28);
-  background: #fff;
+  box-shadow: 0 10px 28px rgb(215 190 252 / 0.28);
+  border-color: var(--lavender);
+  background: var(--surface);
 }
 
 .rsp-item.is-on {
-  box-shadow: none;
-  border-color: var(--plum);
-  background: #fff;
+  box-shadow: 0 10px 28px rgb(215 190 252 / 0.28);
+  border-color: var(--lavender);
+  background: var(--surface);
 }
 
 .rsp-item-copy {
