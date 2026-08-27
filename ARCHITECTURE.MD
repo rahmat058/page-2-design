@@ -234,27 +234,27 @@ CORS sheets: `cssRules` throws → background `fetch` + `countTopLevelCssRules`.
 
 All runtime messages are versioned (`MESSAGE_SCHEMA_VERSION`) and parsed in `src/shared/messages.ts`. Unknown or malformed payloads are dropped.
 
-| Type                 | Direction               | Purpose                                             |
-| -------------------- | ----------------------- | --------------------------------------------------- |
-| `GET_ACTIVE_TAB`     | UI → SW                 | Identify the current tab                            |
-| `START_SCAN`         | UI → SW → content       | Begin scan                                          |
-| `CANCEL_SCAN`        | UI → SW → content       | Abort in-flight scan                                |
-| `SCAN_CHUNK`         | content → SW            | Partial `PageScan`                                  |
-| `SCAN_PROGRESS`      | content / SW → UI       | Phase + counts                                      |
-| `SCAN_COMPLETE`      | content → SW → UI       | `assembled: true` after persist                     |
-| `SCAN_FAILED`        | SW → UI                 | User-facing error                                   |
-| `GET_SCAN`           | UI → SW                 | Load raw + normalized                               |
-| `GET_CSS_INFO`       | UI → SW                 | Live CSS Information                                |
-| `START_EXPORT`       | UI → SW                 | Build ZIP                                           |
-| `CAPTURE_SCREENSHOT` | UI → SW                 | Viewport + full-page PNG                            |
-| `FETCH_ASSET`        | UI / content → SW       | Bytes for ZIP / tiles                               |
-| `TOGGLE_OVERLAY`     | SW → content            | Open / close floating UI                            |
-| Overlay resize       | UI → page (postMessage) | Grow/shrink host for Markdown or Responsive preview |
+| Type                 | Direction               | Purpose                                              |
+| -------------------- | ----------------------- | ---------------------------------------------------- |
+| `GET_ACTIVE_TAB`     | UI → SW                 | Identify the current tab                             |
+| `START_SCAN`         | UI → SW → content       | Begin scan                                           |
+| `CANCEL_SCAN`        | UI → SW → content       | Abort in-flight scan                                 |
+| `SCAN_CHUNK`         | content → SW            | Partial `PageScan`                                   |
+| `SCAN_PROGRESS`      | content / SW → UI       | Phase + counts                                       |
+| `SCAN_COMPLETE`      | content → SW → UI       | `assembled: true` after persist                      |
+| `SCAN_FAILED`        | SW → UI                 | User-facing error                                    |
+| `GET_SCAN`           | UI → SW                 | Load raw + normalized                                |
+| `GET_CSS_INFO`       | UI → SW                 | Live CSS Information                                 |
+| `START_EXPORT`       | UI → SW                 | Build ZIP                                            |
+| `CAPTURE_SCREENSHOT` | UI → SW                 | Viewport + full-page PNG                             |
+| `FETCH_ASSET`        | UI / content → SW       | Bytes for ZIP / tiles                                |
+| `TOGGLE_OVERLAY`     | SW → content            | Open / close floating UI                             |
+| Overlay resize       | UI → page (postMessage) | Grow/shrink host for Markdown or Responsive preview  |
 | `SET_PREVIEW_FRAME`  | UI → SW                 | Session DNR: allow preview iframe on the active host |
-| `DOCK_SIDE_PANEL`    | UI → SW                 | Open Chrome side panel                              |
-| `SET_INSPECT_MODE`   | UI → content            | Click-to-inspect                                    |
-| `INSPECT_ELEMENT`    | content → UI            | Selected element snapshot                           |
-| `HIGHLIGHT_COLOR`    | UI → content            | Flash matching elements                             |
+| `DOCK_SIDE_PANEL`    | UI → SW                 | Open Chrome side panel                               |
+| `SET_INSPECT_MODE`   | UI → content            | Click-to-inspect                                     |
+| `INSPECT_ELEMENT`    | content → UI            | Selected element snapshot                            |
+| `HIGHLIGHT_COLOR`    | UI → content            | Flash matching elements                              |
 
 ---
 
