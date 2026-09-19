@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Inspect Mode switch changed state when its label text was clicked; only the switch track toggles now.
 - Inspect Mode flickered back on after being switched off: a hover queued before the page received the disable re-enabled the panel, flashing the page head under the chrome bar. The panel now owns inspect mode — page messages only update the inspector while it is on.
 - Inspect Mode left a large near-white block at the top of the panel with dead space under it; the empty-state card now blends with the panel and is centered.
-- Chrome bar hover hints flashed the instant the pointer crossed an icon, dropping a label pill under the bar; they now wait for a short dwell (keyboard focus still reveals them immediately).
+- Chrome bar hover hints dropped a label pill under the bar the instant the pointer crossed an icon; pointer hover no longer reveals them (keyboard focus still does), and bottom-nav hints wait for a short dwell.
 - Removed the bottom nav's legacy `position: fixed` pin, which could paint the nav over the top of the panel whenever the panel content was short.
 
 ## [1.0.1] - 2026-08-28
