@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-18
+
+### Fixed
+
+- Inspect Mode switch changed state when its label text was clicked; only the switch track toggles now.
+- Inspect Mode flickered back on after being switched off: a hover queued before the page received the disable re-enabled the panel, flashing the page head under the chrome bar. The panel now owns inspect mode — page messages only update the inspector while it is on.
+- Inspect Mode left a large near-white block at the top of the panel with dead space under it; the empty-state card now blends with the panel and is centered.
+- Chrome bar hover hints flashed the instant the pointer crossed an icon, dropping a label pill under the bar; they now wait for a short dwell (keyboard focus still reveals them immediately).
+- Removed the bottom nav's legacy `position: fixed` pin, which could paint the nav over the top of the panel whenever the panel content was short.
+
 ## [1.0.1] - 2026-08-28
 
 Patch release after the first Chrome Web Store publish: [Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc).
@@ -48,6 +58,7 @@ First Chrome Web Store release: [Page2Design](https://chromewebstore.google.com/
 - Privacy: sensitive query parameters redacted; password, hidden, and payment-like field values never stored.
 - Unit tests (Vitest), TypeScript, ESLint, and Vite builds for side panel, background, and content scripts.
 
-[Unreleased]: https://github.com/rahmat058/page-2-design/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/rahmat058/page-2-design/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/rahmat058/page-2-design/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/rahmat058/page-2-design/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/rahmat058/page-2-design/releases/tag/v1.0.0

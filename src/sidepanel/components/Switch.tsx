@@ -14,7 +14,12 @@ interface Props {
 export function Switch({ checked, onChange, label, id, disabled }: Props) {
   return (
     <label className={disabled ? 'ui-switch is-disabled' : 'ui-switch'}>
-      {label ? <span className="ui-switch-label">{label}</span> : null}
+      {/* The label stays associated with the input for screen readers, but only the track toggles. */}
+      {label ? (
+        <span className="ui-switch-label" onClick={(event) => event.preventDefault()}>
+          {label}
+        </span>
+      ) : null}
       <input
         id={id}
         type="checkbox"

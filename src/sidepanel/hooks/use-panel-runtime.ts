@@ -41,7 +41,9 @@ export function usePanelRuntime(): void {
       }
       if (message.type === 'INSPECT_ELEMENT') {
         const store = useScanStore.getState()
-        if (!store.inspectOn) store.setInspectOn(true)
+        // The panel owns inspect mode. A hover queued before the switch turned off can still
+        // land after it, so page messages only feed the inspector while inspect mode is on.
+        if (!store.inspectOn) return
         store.setInspected(message.payload)
       }
     })

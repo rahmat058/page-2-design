@@ -1000,10 +1000,7 @@ body,
 
 .bottom-nav {
   display: flex;
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  position: static;
   justify-content: space-around;
   border-top: 1px solid var(--line);
   background: #fff;
@@ -1453,6 +1450,11 @@ body,
   opacity: 0;
 }
 
+/* Chrome bar hints are keyboard-only: hovering must not float pills over the page head. */
+.chrome .icon-btn:hover .tip {
+  opacity: 0;
+}
+
 .nav-btn:first-child .nav-tip,
 .icon-btn .tip.tip-start {
   left: 0;
@@ -1478,6 +1480,13 @@ body,
 .icon-btn:hover .tip.tip-end,
 .icon-btn:focus-visible .tip.tip-end {
   transform: translateX(0) translateY(0);
+}
+
+/* Hover hints wait for a dwell so crossing the bars does not flash them under the content. */
+.nav-btn:hover .nav-tip,
+.icon-btn:hover .tip,
+.md-tool:hover .tip {
+  transition-delay: 0.35s;
 }
 
 /* ---------------------------------------------------------------------------
@@ -2347,7 +2356,6 @@ html.is-overlay #root {
 html.is-overlay .overlay-row .app.inspector {
   flex: 1 1 auto;
   align-self: stretch;
-  box-shadow: 0 16px 40px rgb(16 18 27 / 0.18);
   border-radius: 16px;
   background: var(--bg);
   min-width: 0;
@@ -2482,10 +2490,13 @@ html:not(.is-overlay) .overlay-row .app.inspector {
   padding-bottom: 12px;
 }
 
+.inspector-body > .inspector-empty {
+  margin-block: auto;
+}
+
 .inspector-empty {
   border: 1px dashed var(--line);
   border-radius: 10px;
-  background: var(--paper);
   padding: 20px 16px;
   color: var(--muted);
   font-size: 12px;

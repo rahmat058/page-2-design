@@ -1,0 +1,33 @@
+# Taste
+
+- Always write TypeScript in strict mode; no plain JavaScript in `src`. Confidence: 0.95
+- Use ES modules. Confidence: 0.95
+- Treat Prettier as the source of truth for formatting. Confidence: 0.95
+- Prettier config: no semicolons, single quotes, 120 print width, trailing commas everywhere, arrow parens always, LF line endings. Confidence: 0.95
+- Use 2-space indentation. Confidence: 0.95
+- After making changes, run `npm run typecheck`, `npm run lint`, and `npm test`. Confidence: 0.95
+- Use named exports only; never use default exports. Confidence: 0.9
+- Start every module with a file-level JSDoc block comment describing what it does. Confidence: 0.85
+- Separate logical parts of a file with section-divider comments like `// --- Title ---`. Confidence: 0.85
+- Use kebab-case file names (e.g. `scan-orchestrator.ts`, `use-scan-busy.ts`). Confidence: 0.9
+- Use SCREAMING_SNAKE_CASE for constants. Confidence: 0.9
+- Put shared types/interfaces in `src/shared/types.ts` and shared constants in `src/shared/constants.ts`. Confidence: 0.85
+- Use barrel `index.ts` files to re-export a folder's public API. Confidence: 0.9
+- Build the UI with React 19 and Zustand (`useScanStore`) only; do not add Redux, MobX, TanStack Query, or other state libraries. Confidence: 0.9
+- Place feature views in `src/sidepanel/features/*View.tsx`, shared React hooks in `src/sidepanel/hooks/`, and non-React helpers in `src/sidepanel/lib/`. Confidence: 0.85
+- Use `lucide-react` for icons. Confidence: 0.85
+- Use the folder-per-component pattern (`ComponentName/{index.tsx, lib/, hooks/}`) for non-trivial UI components; thin presentational components can stay a single PascalCase `.tsx` file. Confidence: 0.85
+- Define a local `Props<T>` interface for component props and export components as `export function X`. Confidence: 0.85
+- Write tests with Vitest in `src/tests/*.test.ts` using describe/it/expect; tests must not require Chrome. Confidence: 0.9
+- Prefer unit tests over mocks and use the shared `sampleScan()`/fixtures helpers for scan data. Confidence: 0.8
+- Version runtime messages via `MESSAGE_SCHEMA_VERSION` and drop malformed payloads. Confidence: 0.85
+- Use conventional commit messages with a leading type emoji, a lowercase type, and a short imperative lowercase summary. Confidence: 0.9
+- Allowed commit types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert; optional scopes: overlay, sidepanel, background, content, scan, export, docs. Confidence: 0.85
+- Keep the extension local-only and privacy-first: no backend, analytics, or network calls uploading page content; never store password/hidden/payment field values; redact sensitive query params via `SENSITIVE_QUERY_KEYS`. Confidence: 0.9
+- When changing the scan pipeline, message schema, storage, or ZIP layout, update `ARCHITECTURE.MD` and add an entry under Unreleased in `CHANGELOG.md`. Confidence: 0.85
+- Keep the release version in `CHANGELOG.md` in lockstep with `package.json` — when the version is bumped, move the pending `[Unreleased]` entries into a dated `## [x.y.z] - YYYY-MM-DD` section and update the compare links, leaving an empty `[Unreleased]` on top. Confidence: 0.7
+- Always run `npm run build` before loading the extension in Chrome, and load the `dist/` folder (not the repo root or `public/`) — the manifest lives in `public/manifest.json` and is only assembled into `dist/` by Vite. Confidence: 0.85
+- In toggle/switch UI, only the switch track may change state — clicking the adjacent label text must not toggle the control (keep the label associated with the input for screen readers). Confidence: 0.6
+- The floating overlay panel must use a fixed height (`calc(100vh - 24px)`, capped at 760px) and must NOT be resized dynamically to fit its content — content-driven height changes were explicitly rejected and reverted. Confidence: 0.8
+- Keep panel surfaces visually consistent: an empty-state card should blend with the panel background (no near-white block on the cream panel) and be vertically centered via `margin-block: auto` instead of hugging the top with dead space beneath. Confidence: 0.6
+- The side panel UI must stay stable — no flicker, remount flash, or layout/style shift when Inspect Mode (or similar) is toggled, nor from hover interactions (hover hints/tooltips must not flash in and out as the pointer crosses controls, and must never float over or obscure the PageHead row just below the panel chrome — chrome-button hints should be keyboard-only via `:focus-visible`); such flashes are reported as bugs to eliminate. Confidence: 0.8
