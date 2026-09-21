@@ -27,7 +27,7 @@ Deep dive: **[ARCHITECTURE.MD](./ARCHITECTURE.MD)** · Releases: **[CHANGELOG.md
 
 ### Install from the Chrome Web Store
 
-The first published listing is **1.0.0**: **[Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)** (ID `mghjckjmfhadbceeaoigeglhbojeomjc`). This repository is **1.0.1** (patch). Listing copy to paste on updates lives in **[STORE.md](./STORE.md)**.
+The first published listing is **1.0.0**: **[Page2Design](https://chromewebstore.google.com/detail/page2design/mghjckjmfhadbceeaoigeglhbojeomjc)** (ID `mghjckjmfhadbceeaoigeglhbojeomjc`). This repository is **1.0.2** (patch). Listing copy to paste on updates lives in **[STORE.md](./STORE.md)**.
 
 ### Prerequisites
 
